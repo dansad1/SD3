@@ -6,7 +6,6 @@ from django.core.exceptions import PermissionDenied
 from django.conf import settings
 import mimetypes
 
-from core.models.UploadModel import Upload
 
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB

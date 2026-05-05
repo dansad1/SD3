@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
-from core.api.engine.entity.EntityRegistry import entity_registry
+from SD3.backend.engine.entity.EntityRegistry import entity_registry
 
 
 @require_GET

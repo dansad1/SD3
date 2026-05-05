@@ -1,3 +1,5 @@
+from SD3.backend.engine.entity.EntityRegistry import entity_registry
+from SD3.backend.engine.form.AutoEntityForm import AutoEntityForm
 from SD3.backend.engine.form.BaseForm import BaseForm
 from SD3.backend.engine.registry.BaseRegistry import BaseRegistry
 from SD3.backend.engine.registry.autodiscover import all_subclasses

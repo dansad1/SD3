@@ -4,7 +4,7 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
-from core.api.engine.api.ApiResolver import api_resolver
+from SD3.backend.engine.api.ApiResolver import api_resolver
 
 
 # =========================

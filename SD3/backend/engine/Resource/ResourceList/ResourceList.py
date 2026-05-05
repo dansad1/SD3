@@ -1,14 +1,15 @@
-from core.api.engine.Resource.ResourceList.ResourceListContext import ResourceListContext
-from core.api.engine.Resource.ResourceList.fetch import fetch
-from core.api.engine.Resource.ResourceList.meta import build_meta
 from rest_framework.exceptions import PermissionDenied
 
+from SD3.backend.engine.Resource.ResourceList.ResourceListContext import ResourceListContext
+from SD3.backend.engine.Resource.ResourceList.fetch import fetch
 from SD3.backend.engine.Resource.ResourceList.fields import build_fields
+from SD3.backend.engine.Resource.ResourceList.meta import build_meta
 from SD3.backend.engine.Resource.ResourceList.rows import extract_rows
+from SD3.backend.engine.Resource.ResourceRegistry import resource_registry
 from SD3.backend.engine.entity.Base.permissions import has_permission
 from SD3.backend.engine.entity.EntityRegistry import entity_registry
+from SD3.backend.engine.list.BaseList import BaseList
 
-f
 
 def check_permission(ctx: ResourceListContext):
     resource = ctx.list_obj.get_resource()
@@ -69,7 +70,6 @@ class ResourceList(BaseList):
         if self.resource:
             return self.resource
 
-        from core.api.engine.Resource.ResourceRegistry import resource_registry
 
         resource_code = self.code.replace(".list", "")
         return resource_registry.get(resource_code)

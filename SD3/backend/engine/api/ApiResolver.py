@@ -1,9 +1,8 @@
-# core/api/engine/api/ApiResolver.py
-from core.api.engine.Resource.ResourceRegistry import resource_registry
-from core.api.engine.form.FormRegistry import form_registry
-from core.api.engine.list.ListRegistry import list_registry
-from core.api.engine.action.ActionRegistry import actions
-from core.api.engine.matrix.MatrixRegistry import matrix_registry
+from SD3.backend.engine.Resource.ResourceRegistry import resource_registry
+from SD3.backend.engine.action.ActionRegistry import actions
+from SD3.backend.engine.form.FormRegistry import form_registry
+from SD3.backend.engine.list.ListRegistry import list_registry
+from SD3.backend.engine.matrix.MatrixRegistry import matrix_registry
 
 
 class ApiResolver:
