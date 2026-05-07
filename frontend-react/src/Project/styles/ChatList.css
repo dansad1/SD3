@@ -1,0 +1,195 @@
+.chat-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+
+  background: #ffffff;
+}
+
+/* ================= ITEM ================= */
+
+.chat-list__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 14px;
+  cursor: pointer;
+
+  border-bottom: 1px solid #f1f5f9;
+
+  transition: background 0.15s ease;
+}
+
+.chat-list__item:hover {
+  background: #f8fafc;
+}
+
+.chat-list__item--selected {
+  background: #e6f0ff;
+}
+
+/* ================= AVATAR ================= */
+
+.chat-list__avatar {
+  position: relative;
+
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 600;
+  font-size: 14px;
+
+  flex-shrink: 0;
+}
+
+/* онлайн точка */
+.chat-list__avatar::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+  background: #10b981;
+
+  border: 2px solid white;
+
+  opacity: 0;
+}
+
+.chat-list__item--online .chat-list__avatar::after {
+  opacity: 1;
+}
+
+/* ================= CONTENT ================= */
+
+.chat-list__content {
+  flex: 1;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* верхняя строка */
+.chat-list__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+/* имя */
+.chat-list__title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #111827;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* unread делает жирнее */
+.chat-list__item--unread .chat-list__title {
+  font-weight: 700;
+}
+
+/* subtitle */
+.chat-list__subtitle {
+  font-size: 13px;
+  color: #6b7280;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* unread subtitle */
+.chat-list__item--unread .chat-list__subtitle {
+  color: #111827;
+}
+
+/* ================= META ================= */
+
+.chat-list__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* время */
+.chat-list__time {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* unread время */
+.chat-list__item--unread .chat-list__time {
+  color: #2563eb;
+}
+
+/* ================= BADGE ================= */
+
+.chat-list__badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+
+  background: #2563eb;
+  color: white;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  border-radius: 999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ================= SKELETON ================= */
+
+.skeleton {
+  animation: pulse 1.4s infinite ease-in-out;
+}
+
+.skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e5e7eb;
+}
+
+.skeleton-line {
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 6px;
+}
+
+.skeleton-line.short {
+  width: 40%;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}

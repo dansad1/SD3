@@ -1,0 +1,18 @@
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.ui-pagination {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.ui-pagination button {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}

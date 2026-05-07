@@ -1,0 +1,1 @@
+import.meta.glob("./**/register.{ts,tsx}", { eager: true })

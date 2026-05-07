@@ -1,0 +1,90 @@
+:root {
+  /* =====================
+     COLORS — BACKGROUND
+     ===================== */
+
+  --bg-app: #f5f6fa;
+  --bg-panel: #ffffff;
+  --bg-elevated: #ffffff;
+
+  /* =====================
+     COLORS — BORDERS
+     ===================== */
+
+  --border-subtle: #e3e6ee;
+  --border-strong: #d2d7e2;
+
+  /* =====================
+     COLORS — TEXT
+     ===================== */
+
+  --text-main: #1f2430;
+  --text-muted: #5f6678;
+  --text-soft: #8a90a3;
+
+  /* =====================
+     COLORS — ACCENT
+     ===================== */
+
+  --accent-main: #4f7cff;
+  --accent-hover: #3b68f0;
+  --accent-soft: rgba(79, 124, 255, 0.12);
+
+  /* =====================
+     COLORS — DANGER
+     ===================== */
+
+  --danger-main: #d63a2c;
+  --danger-soft: rgba(214, 58, 44, 0.12);
+
+  /* =====================
+     TYPOGRAPHY
+     ===================== */
+
+  --font-ui: Inter, system-ui, -apple-system, sans-serif;
+  --font-size: 14px;
+  --line-height: 1.45;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* =====================
+     RADIUS
+     ===================== */
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+
+  /* =====================
+     SPACING SCALE
+     ===================== */
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+ /* =====================
+     BUTTONS
+     ===================== */
+  --btn-font-weight: 500;
+  --btn-radius: 6px;
+  --btn-padding: 8px 16px;
+
+  --btn-primary-bg: #3b82f6;
+  --btn-primary-bg-hover: #2563eb;
+  --btn-primary-text: #fff;
+
+  --btn-secondary-bg: #f3f4f6;
+  --btn-secondary-bg-hover: #e5e7eb;
+  --btn-secondary-text: #111827;
+
+  --btn-ghost-bg: transparent;
+  --btn-ghost-bg-hover: rgba(0, 0, 0, 0.05);
+  --btn-ghost-text: #111827;
+
+  --btn-disabled-opacity: 0.5;
+}

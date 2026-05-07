@@ -1,0 +1,17 @@
+.ui-heading {
+  margin: 0 0 var(--space-3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.ui-heading.h1 { font-size: 22px; }
+.ui-heading.h2 { font-size: 18px; }
+.ui-heading.h3 { font-size: 15px; }
+
+.ui-muted {
+  color: var(--text-muted);
+}
+
+.ui-soft {
+  color: var(--text-soft);
+}

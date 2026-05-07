@@ -1,0 +1,272 @@
+/* =========================================================
+   PAGE ROOT
+   ========================================================= */
+
+.page-root {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* =========================================================
+   SURFACE (CHROME)
+   ========================================================= */
+
+.surface {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  display: grid;
+  grid-template-rows: var(--topbar-height, 56px) minmax(0, 1fr);
+  grid-template-areas:
+    "topbar"
+    "main";
+
+  background: var(--app-bg, #f5f6f8);
+
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* =========================================================
+   SURFACE AREAS (BASE)
+   ========================================================= */
+
+.surface-area {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
+
+.surface-area.topbar {
+  grid-area: topbar;
+  pointer-events: auto;
+
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  height: var(--topbar-height, 56px);
+
+  display: flex;
+  align-items: center;
+
+  background: #2c3e50;
+  color: #ffffff;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   MAIN (PAGE DSL MOUNT POINT)
+   ========================================================= */
+
+.surface-area.main {
+  grid-area: main;
+  pointer-events: auto;
+
+  min-width: 0;
+  min-height: 0;
+
+  height: calc(100vh - var(--topbar-height, 56px));
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 16px;
+
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* =========================================================
+   OVERLAY (MODALS / DRAWER)
+   ========================================================= */
+
+.surface-area.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: auto;
+
+  display: none;
+}
+
+.surface-area.overlay.is-open {
+  display: block;
+}
+
+/* затемнение */
+.surface-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* панель / модалка */
+.surface-overlay-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  height: 100%;
+  width: min(86vw, 360px);
+
+  background: #ffffff;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+
+  overflow-y: auto;
+}
+
+/* =========================================================
+   NAV PANEL (TOP NAV)
+   ========================================================= */
+
+/* ================= NAV PANEL ================= */
+
+.nav-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 100%;
+  width: 100%;
+}
+
+/* ================= LEFT (MENU) ================= */
+
+.nav-left {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+/* список */
+.nav-list {
+  display: flex;
+  flex: 1;
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  gap: 4px;
+}
+
+/* каждый пункт */
+.nav-list li {
+  flex: 1;
+  display: flex;
+}
+
+/* ================= LINKS ================= */
+
+.nav-link,
+.nav-button {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px 10px;
+
+  border-radius: 6px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  transition: background 0.15s ease;
+}
+
+/* hover */
+.nav-link:hover,
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* active */
+.nav-link.active {
+  background: #3b82f6;
+  color: #fff;
+}
+
+/* ================= RIGHT (USER) ================= */
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* пользователь */
+.nav-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  margin-left: 16px;
+  padding-left: 16px;
+
+  border-left: 1px solid rgba(255,255,255,0.1);
+}
+
+.nav-user-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.nav-user-meta {
+  font-size: 12px;
+  opacity: 0.7;
+}
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .surface {
+    grid-template-rows: var(--topbar-height, 56px) minmax(0, 1fr);
+  }
+
+  .surface-area.main {
+    padding: 12px;
+  }
+
+  .nav-list {
+    gap: 12px;
+    padding: 0 12px;
+  }
+
+  .surface-overlay-panel {
+    width: min(92vw, 320px);
+  }
+}
+
+/* =========================================================
+   DESIGN TOKENS
+   ========================================================= */
+
+:root {
+  --app-bg: #f5f6f8;
+  --topbar-height: 56px;
+}
+
+.surface-auth {
+  outline: 2px solid red;
+}

@@ -1,0 +1,141 @@
+/* ROOT */
+.journal-print {
+  font-family: "DejaVu Sans", sans-serif;
+  font-size: 11px;
+}
+
+/* BUTTON */
+.journal-print .jp-print-btn {
+  background: #28a745;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+/* TITLE */
+.journal-print .jp-title {
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+/* SCROLL */
+.journal-print .jp-scroll {
+  width: 100%;
+  height: calc(100vh - 120px);
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* TABLE */
+.journal-print .jp-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: max-content;
+}
+
+/* CELLS */
+.journal-print th,
+.journal-print td {
+  border: 0.4px solid #000;
+  padding: 0;
+  text-align: center;
+}
+
+/* HEADER */
+.journal-print .jp-header {
+  border-top: 1.3px solid black;
+  border-bottom: 1.3px solid black;
+}
+
+/* DAY SEPARATOR */
+.journal-print .jp-day-separator {
+  border-left: 2px solid black;
+}
+
+/* STUDENT COLUMN */
+.journal-print .jp-student {
+  width: 220px;
+  text-align: left;
+  padding-left: 6px;
+  font-weight: bold;
+}
+
+/* SLOT */
+.journal-print .jp-slot {
+  width: 16px;
+}
+
+/* VERTICAL TEXT */
+.journal-print .jp-vertical {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 8px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CELL */
+.journal-print .jp-cell {
+  font-size: 12px;
+}
+
+/* GRADE */
+.journal-print .jp-grade {
+  font-size: 9px;
+  margin-top: -2px;
+}
+
+/* SIGN */
+.journal-print .jp-sign {
+  margin-top: 20px;
+}
+
+/* PRINT */
+/* ===== PRINT MODE ===== */
+@page {
+  size: A4 landscape;
+  margin: 5mm;
+}
+
+@media print {
+
+  body * {
+    visibility: hidden;
+  }
+
+  .journal-print,
+  .journal-print * {
+    visibility: visible;
+  }
+
+  .journal-print {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 297mm;
+    min-height: 210mm;
+    padding: 5mm;
+
+    margin: 0 auto;
+  }
+
+  .journal-print .jp-scroll {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .journal-print .jp-table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .jp-print-btn {
+    display: none !important;
+  }
+}

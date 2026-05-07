@@ -1,0 +1,75 @@
+/* =========================
+   PAGE ROOT
+   ========================= */
+
+.page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-app);
+}
+
+/* =========================
+   PAGE MODES
+   ========================= */
+
+/* Auth / Login / Reset */
+/* Auth pages — full height layout */
+.page-container.auth {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center; /* вертикаль */
+  align-items: stretch;    /* горизонталь */
+}
+
+
+
+/* App pages (sidebar + main) */
+.page-container.app {
+  padding: 0;
+}
+
+/* =========================
+   APP LAYOUT (SIDEBAR)
+   ========================= */
+
+.page-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: 100%;
+}
+
+/* sidebar positions */
+.page-layout.with-sidebar-left {
+  grid-template-columns: 240px 1fr;
+}
+
+.page-layout.with-sidebar-right {
+  grid-template-columns: 1fr 240px;
+}
+
+/* =========================
+   AREAS
+   ========================= */
+
+.main {
+  padding: var(--space-6);
+  background: var(--bg-app);
+}
+
+.sidebar {
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-subtle);
+  padding: var(--space-4);
+  z-index: 1;
+}
+.page-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  margin-top: 24px;
+  padding-top: 16px;
+
+  border-top: 1px solid var(--border-subtle);
+}

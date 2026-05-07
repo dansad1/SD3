@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+
+    /* ---------- paths ---------- */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+
+    /* ---------- target ---------- */
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+
+    /* ---------- modules ---------- */
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    /* ---------- JSX DSL ---------- */
+    "jsx": "react-jsx",
+
+    /* ---------- emit ---------- */
+    "noEmit": true,
+
+    /* ---------- types ---------- */
+    "types": ["vite/client"],
+
+    /* ---------- strict ---------- */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    /* ---------- modern ---------- */
+    "useDefineForClassFields": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force"
+  },
+
+  "include": ["src"],
+  "exclude": ["src/framework/DSL/Scripts", "node_modules"]
+}
