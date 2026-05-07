@@ -31,8 +31,9 @@ INSTALLED_APPS = [
     "ckeditor",
 
     # local
+    "backend.users"
 ]
-
+AUTH_USER_MODEL = "users.User"
 # =========================
 # MIDDLEWARE
 # ⚠️ ПОРЯДОК ВАЖЕН

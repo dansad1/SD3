@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import FieldDoesNotExist
 
-from SD3.backend.engine.form.Base.services import load_dynamic_values
+from backend.engine.form.Base.services import load_dynamic_values
 
 
 def serialize_fk(value):

@@ -1,4 +1,4 @@
-from SD3.backend.engine.form.Base.services import save_dynamic_values
+from backend.engine.form.Base.services import save_dynamic_values
 
 
 def save_dynamic(ctx):
