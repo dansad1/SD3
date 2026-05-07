@@ -1,7 +1,5 @@
 from backend.engine.entity.Base.BaseEntity import BaseEntity
-from backend.users.models import (
-    UserField
-)
+from backend.users.models import UserField
 
 
 class UserFieldEntity(BaseEntity):
@@ -18,7 +16,6 @@ class UserFieldEntity(BaseEntity):
         "required",
         "readonly",
         "hidden",
-        "is_multiple",
         "order",
     ]
 
@@ -32,12 +29,22 @@ class UserFieldEntity(BaseEntity):
         "field_type",
     ]
 
-    def get_queryset(self, request):
+    ordering = [
+        "fieldset",
+        "order",
+        "id",
+    ]
 
-        return (
-            super()
-            .get_queryset(request)
-            .select_related(
-                "fieldset"
-            )
-        )
+    capabilities = {
+        "list": "user_fields.view",
+        "view": "user_fields.view",
+        "create": "user_fields.create",
+        "edit": "user_fields.edit",
+        "delete": "user_fields.delete",
+    }
+
+    def get_select_related(self):
+
+        return [
+            "fieldset",
+        ]

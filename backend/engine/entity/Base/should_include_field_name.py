@@ -19,5 +19,3 @@ def should_include_field_name(self, name: str):
     return True
 
 
-def should_include_in_list(self, name: str):
-    return self.should_include_field_name(name)
