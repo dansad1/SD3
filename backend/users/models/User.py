@@ -5,7 +5,9 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 
-from backend.users.models.managers.UserManager import UserManager
+from backend.users.managers import (
+    UserManager
+)
 
 
 class User(
@@ -21,10 +23,6 @@ class User(
         max_length=255,
         unique=True,
         db_index=True,
-    )
-
-    password = models.CharField(
-        max_length=255,
     )
 
     # =========================
@@ -44,10 +42,6 @@ class User(
     )
 
     is_staff = models.BooleanField(
-        default=False,
-    )
-
-    is_superuser = models.BooleanField(
         default=False,
     )
 

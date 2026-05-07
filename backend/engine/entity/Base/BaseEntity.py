@@ -1,13 +1,13 @@
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
 
-from SD3.backend.engine.entity.Base.EntityContext import EntityContext
-from SD3.backend.engine.entity.Base.options import get_options
-from SD3.backend.engine.entity.Base.queryset import get_queryset
-from SD3.backend.engine.entity.Base.representation import represent
-from SD3.backend.engine.utils.permissions import has_permission
+from backend.engine.entity.Base.EntityContext import EntityContext
+from backend.engine.entity.Base.options import get_options
+from backend.engine.entity.Base.permissions import has_permission
+from backend.engine.entity.Base.queryset import get_queryset
+from backend.engine.entity.Base.representation import represent
 
-
+f
 class BaseEntity:
     # -------------------------
     # CONFIG
