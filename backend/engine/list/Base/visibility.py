@@ -1,4 +1,3 @@
-from SD3.backend.engine.list.ListApi import UserListSettings
 
 
 def apply_visibility(ctx):

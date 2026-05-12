@@ -1,9 +1,9 @@
-from SD3.backend.engine.entity.Base.BaseEntity import BaseEntity
-from SD3.backend.engine.registry.BaseRegistry import BaseRegistry
-from SD3.backend.engine.registry.autodiscover import all_subclasses
-from SD3.backend.engine.registry.hooks import RegistryHooks
-from SD3.backend.engine.registry.storage import EntityStorage
-from SD3.backend.engine.registry.validator import validate_duplicate, is_valid_entity_class
+from backend.engine.entity.Base.BaseEntity import BaseEntity
+from backend.engine.registry.BaseRegistry import BaseRegistry
+from backend.engine.registry.autodiscover import all_subclasses
+from backend.engine.registry.hooks import RegistryHooks
+from backend.engine.registry.storage import EntityStorage
+from backend.engine.registry.validator import validate_duplicate, is_valid_entity_class
 
 
 class EntityRegistry(BaseRegistry):

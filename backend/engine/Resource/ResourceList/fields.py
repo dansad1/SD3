@@ -1,4 +1,4 @@
-from SD3.backend.engine.Resource.ResourceList.field_policy import resolve_entity, allow_field
+from backend.engine.Resource.ResourceList.field_policy import resolve_entity
 
 
 def build_fields(ctx):

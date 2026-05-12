@@ -1,7 +1,7 @@
-from SD3.backend.engine.matrix.Base.BaseMatrix import BaseMatrix
-from SD3.backend.engine.registry.BaseRegistry import BaseRegistry
-from SD3.backend.engine.registry.autodiscover import all_subclasses
-from SD3.backend.engine.registry.storage import BaseStorage
+from backend.engine.matrix.Base.BaseMatrix import BaseMatrix
+from backend.engine.registry.BaseRegistry import BaseRegistry
+from backend.engine.registry.autodiscover import all_subclasses
+from backend.engine.registry.storage import BaseStorage
 
 
 class MatrixRegistry(BaseRegistry):

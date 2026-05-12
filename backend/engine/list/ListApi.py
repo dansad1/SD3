@@ -5,8 +5,8 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
-from SD3.backend.engine.entity.EntityRegistry import entity_registry
-from SD3.backend.engine.list.ListRegistry import list_registry
+from backend.engine.entity.EntityRegistry import entity_registry
+from backend.engine.list.ListRegistry import list_registry
 
 
 @require_GET

@@ -1,4 +1,4 @@
-from SD3.backend.engine.entity.EntityRegistry import entity_registry
+from backend.engine.entity.EntityRegistry import entity_registry
 
 
 # =========================

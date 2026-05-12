@@ -1,10 +1,10 @@
 from rest_framework.exceptions import PermissionDenied
 
-from SD3.backend.engine.action.Base.ActionContext import ActionContext
-from SD3.backend.engine.action.Base.execute import execute
-from SD3.backend.engine.action.Base.lifecycle import after, before
-from SD3.backend.engine.action.Base.validate import validate
-from SD3.backend.engine.entity.Base.permissions import has_permission
+from backend.engine.action.Base.ActionContext import ActionContext
+from backend.engine.action.Base.execute import execute
+from backend.engine.action.Base.lifecycle import after, before
+from backend.engine.action.Base.validate import validate
+from backend.engine.utils.permissions import has_permission
 
 
 # =========================

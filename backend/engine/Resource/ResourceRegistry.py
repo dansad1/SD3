@@ -1,7 +1,7 @@
-from SD3.backend.engine.Resource.BaseResource import BaseResource
-from SD3.backend.engine.registry.BaseRegistry import BaseRegistry
-from SD3.backend.engine.registry.autodiscover import all_subclasses
-from SD3.backend.engine.registry.storage import BaseStorage
+from backend.engine.Resource.BaseResource import BaseResource
+from backend.engine.registry.BaseRegistry import BaseRegistry
+from backend.engine.registry.autodiscover import all_subclasses
+from backend.engine.registry.storage import BaseStorage
 
 
 class ResourceRegistry(BaseRegistry):

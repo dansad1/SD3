@@ -1,6 +1,5 @@
-# core/api/engine/list/AutoEntityList.py
-from SD3.backend.engine.list.BaseList import BaseList
-from SD3.backend.engine.schema.builder import EntitySchemaBuilder
+from backend.engine.list.BaseList import BaseList
+from backend.engine.schema.builder import EntitySchemaBuilder
 
 
 class AutoEntityList(BaseList):

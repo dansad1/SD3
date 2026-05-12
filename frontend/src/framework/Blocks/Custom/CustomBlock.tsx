@@ -1,7 +1,5 @@
-import JournalPrint from "@/Project/custom/JournalPrint"
 
 const registry: Record<string, any> = {
-  JournalPrint,
 }
 
 export const CustomBlock = ({ block }: any) => {

@@ -8,7 +8,7 @@ from backend.engine.action.Base.BaseAction import BaseAction
 
 class LoginAction(BaseAction):
 
-    code = "auth.login"
+    code = "login"
 
     def get_fields(self, request, ctx):
         return [

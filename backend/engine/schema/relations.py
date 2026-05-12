@@ -1,4 +1,4 @@
-from core.api.engine.entity.EntityRegistry import entity_registry
+from backend.engine.entity.EntityRegistry import entity_registry
 
 
 def step_relations(ctx):

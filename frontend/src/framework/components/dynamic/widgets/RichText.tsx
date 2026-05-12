@@ -1,29 +1,10 @@
 import { CKEditor } from "@ckeditor/ckeditor5-react"
 
-import {
-  ClassicEditor,
-  Essentials,
-  Paragraph,
-  Bold,
-  Italic,
-  Underline,
-  Heading,
-  List,
-  Link,
-  Table,
-  TableToolbar,
-  BlockQuote,
-  Indent,
-  Undo,
-  SourceEditing,
-  type EventInfo,
-} from "ckeditor5"
-
-import "ckeditor5/ckeditor5.css"
+import ClassicEditor
+  from "@ckeditor/ckeditor5-build-classic"
 
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react"
@@ -63,40 +44,9 @@ const desktopToolbar = [
   "insertTable",
   "blockQuote",
   "|",
-  "sourceEditing",
-  "|",
   "undo",
   "redo",
 ]
-
-const headingOptions = [
-  {
-    model: "paragraph",
-    title: "Обычный текст",
-    class: "ck-heading_paragraph",
-  },
-
-  {
-    model: "heading1",
-    view: "h1",
-    title: "Заголовок 1",
-    class: "ck-heading_heading1",
-  },
-
-  {
-    model: "heading2",
-    view: "h2",
-    title: "Заголовок 2",
-    class: "ck-heading_heading2",
-  },
-
-  {
-    model: "heading3",
-    view: "h3",
-    title: "Заголовок 3",
-    class: "ck-heading_heading3",
-  },
-] as const
 
 export function RichTextWidget(
   props: WidgetProps
@@ -173,56 +123,6 @@ export function RichTextWidget(
   }, [value])
 
   /* =========================
-     CONFIG
-  ========================= */
-
-  const config = useMemo(() => {
-    return {
-      licenseKey: "GPL",
-
-      plugins: [
-        Essentials,
-        Paragraph,
-        Bold,
-        Italic,
-        Underline,
-        Heading,
-        List,
-        Link,
-        Table,
-        TableToolbar,
-        BlockQuote,
-        Indent,
-        Undo,
-        SourceEditing,
-      ],
-
-      toolbar: isMobile
-        ? mobileToolbar
-        : desktopToolbar,
-
-      placeholder: field.label
-        ? `Введите: ${field.label}`
-        : "Введите текст",
-
-      table: {
-        contentToolbar: [
-          "tableColumn",
-          "tableRow",
-          "mergeTableCells",
-        ],
-      },
-
-     heading: {
-  options: headingOptions as any,
-},
-    }
-  }, [
-    isMobile,
-    field.label,
-  ])
-
-  /* =========================
      RENDER
   ========================= */
 
@@ -236,12 +136,23 @@ export function RichTextWidget(
 
           <CKEditor
             editor={ClassicEditor}
+
             disabled={disabled}
+
             data={localValue}
-            config={config}
+
+            config={{
+              toolbar: isMobile
+                ? mobileToolbar
+                : desktopToolbar,
+
+              placeholder: field.label
+                ? `Введите: ${field.label}`
+                : "Введите текст",
+            }}
 
             onChange={(
-              _: EventInfo,
+              _,
               editor
             ) => {
               const html =

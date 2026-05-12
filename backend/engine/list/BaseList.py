@@ -1,16 +1,16 @@
 from django.core.exceptions import PermissionDenied
 
-from SD3.backend.engine.Resource.ResourceList.fields import build_fields
-from SD3.backend.engine.entity.Base.permissions import has_permission
-from SD3.backend.engine.entity.EntityRegistry import entity_registry
-from SD3.backend.engine.list.Base.ListContext import ListContext
-from SD3.backend.engine.list.Base.filters import apply_filters
-from SD3.backend.engine.list.Base.pagination import paginate
-from SD3.backend.engine.list.Base.queryset import load_queryset
-from SD3.backend.engine.list.Base.search import apply_search
-from SD3.backend.engine.list.Base.serialize import serialize
-from SD3.backend.engine.list.Base.sort import apply_sort
-from SD3.backend.engine.list.Base.visibility import apply_visibility
+from backend.engine.entity.EntityRegistry import entity_registry
+from backend.engine.list.Base.ListContext import ListContext
+from backend.engine.list.Base.fields import build_fields
+from backend.engine.list.Base.filters import apply_filters
+from backend.engine.list.Base.pagination import paginate
+from backend.engine.list.Base.queryset import load_queryset
+from backend.engine.list.Base.search import apply_search
+from backend.engine.list.Base.serialize import serialize
+from backend.engine.list.Base.sort import apply_sort
+from backend.engine.list.Base.visibility import apply_visibility
+from backend.engine.utils.permissions import has_permission
 
 
 def check_permission(ctx: ListContext):

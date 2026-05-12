@@ -2,9 +2,7 @@ import json
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 
-from backend.generic.models import DynamicField, DynamicValue
 
-f
 
 
 def serialize_dynamic_value(value):

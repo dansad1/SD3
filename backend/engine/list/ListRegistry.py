@@ -1,11 +1,11 @@
-from SD3.backend.engine.Resource.ResourceList.ResourceList import ResourceList
-from SD3.backend.engine.Resource.ResourceRegistry import resource_registry
-from SD3.backend.engine.entity.EntityRegistry import entity_registry
-from SD3.backend.engine.list.AutoEntityList import AutoEntityList
-from SD3.backend.engine.list.BaseList import BaseList
-from SD3.backend.engine.registry.BaseRegistry import BaseRegistry
-from SD3.backend.engine.registry.autodiscover import all_subclasses
-from SD3.backend.engine.registry.storage import BaseStorage
+from backend.engine.Resource.ResourceList.ResourceList import ResourceList
+from backend.engine.Resource.ResourceRegistry import resource_registry
+from backend.engine.entity.EntityRegistry import entity_registry
+from backend.engine.list.AutoEntityList import AutoEntityList
+from backend.engine.list.BaseList import BaseList
+from backend.engine.registry.BaseRegistry import BaseRegistry
+from backend.engine.registry.autodiscover import all_subclasses
+from backend.engine.registry.storage import BaseStorage
 
 
 class ListRegistry(BaseRegistry):

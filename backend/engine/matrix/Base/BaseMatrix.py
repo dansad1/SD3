@@ -1,11 +1,11 @@
 from rest_framework.exceptions import PermissionDenied
 
-from SD3.backend.engine.matrix.Base.MatrixContext import MatrixContext
-from SD3.backend.engine.matrix.Base.changes import extract_changes
-from SD3.backend.engine.matrix.Base.data import load_data
-from SD3.backend.engine.matrix.Base.save import save
-from SD3.backend.engine.matrix.Base.schema import build_schema
-from SD3.backend.engine.utils.permissions import has_permission
+from backend.engine.matrix.Base.MatrixContext import MatrixContext
+from backend.engine.matrix.Base.changes import extract_changes
+from backend.engine.matrix.Base.data import load_data
+from backend.engine.matrix.Base.save import save
+from backend.engine.matrix.Base.schema import build_schema
+from backend.engine.utils.permissions import has_permission
 
 
 # =========================

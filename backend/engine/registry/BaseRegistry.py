@@ -1,5 +1,5 @@
-from core.api.engine.registry.hooks import RegistryHooks
-from core.api.engine.registry.validator import validate_duplicate
+from backend.engine.registry.hooks import RegistryHooks
+from backend.engine.registry.validator import validate_duplicate
 
 
 class BaseRegistry:

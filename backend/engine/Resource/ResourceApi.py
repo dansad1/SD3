@@ -3,7 +3,7 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
-from SD3.backend.engine.Resource.ResourceRegistry import resource_registry
+from backend.engine.Resource.ResourceRegistry import resource_registry
 
 
 @require_GET

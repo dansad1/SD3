@@ -1,4 +1,4 @@
-from SD3.backend.engine.form.BaseForm import BaseForm
+from backend.engine.form.BaseForm import BaseForm
 
 
 class AutoEntityForm(BaseForm):

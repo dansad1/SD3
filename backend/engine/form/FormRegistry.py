@@ -1,9 +1,9 @@
-from SD3.backend.engine.entity.EntityRegistry import entity_registry
-from SD3.backend.engine.form.AutoEntityForm import AutoEntityForm
-from SD3.backend.engine.form.BaseForm import BaseForm
-from SD3.backend.engine.registry.BaseRegistry import BaseRegistry
-from SD3.backend.engine.registry.autodiscover import all_subclasses
-from SD3.backend.engine.registry.storage import BaseStorage
+from backend.engine.entity.EntityRegistry import entity_registry
+from backend.engine.form.AutoEntityForm import AutoEntityForm
+from backend.engine.form.BaseForm import BaseForm
+from backend.engine.registry.BaseRegistry import BaseRegistry
+from backend.engine.registry.autodiscover import all_subclasses
+from backend.engine.registry.storage import BaseStorage
 
 
 class FormRegistry(BaseRegistry):

@@ -1,5 +1,5 @@
 from backend.engine.entity.Base.BaseEntity import BaseEntity
-from backend.users.models import UserField
+from backend.project.users.models import UserField
 
 
 class UserFieldEntity(BaseEntity):

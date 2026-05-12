@@ -1,18 +1,18 @@
 from django.db import transaction
 from django.core.exceptions import PermissionDenied, ValidationError
 
-from SD3.backend.engine.entity.Base.lifecycle import before_save, after_save
-from SD3.backend.engine.entity.Base.permissions import has_permission
-from SD3.backend.engine.entity.EntityRegistry import entity_registry
-from SD3.backend.engine.form.Base.FormContext import FormContext
-from SD3.backend.engine.form.Base.errors import validation_error_to_dict
-from SD3.backend.engine.form.Base.initial import apply_query_initial
-from SD3.backend.engine.form.Base.instance import load_instance
-from SD3.backend.engine.form.Base.normalize import normalize
-from SD3.backend.engine.form.Base.save import save
-from SD3.backend.engine.form.Base.save_dynamic import save_dynamic
-from SD3.backend.engine.form.Base.schema import build_schema
-from SD3.backend.engine.form.Base.serialize import serialize
+from backend.engine.entity.Base.lifecycle import before_save, after_save
+from backend.engine.entity.EntityRegistry import entity_registry
+from backend.engine.form.Base.FormContext import FormContext
+from backend.engine.form.Base.errors import validation_error_to_dict
+from backend.engine.form.Base.initial import apply_query_initial
+from backend.engine.form.Base.instance import load_instance
+from backend.engine.form.Base.normalize import normalize
+from backend.engine.form.Base.save import save
+from backend.engine.form.Base.save_dynamic import save_dynamic
+from backend.engine.form.Base.schema import build_schema
+from backend.engine.form.Base.serialize import serialize
+from backend.engine.utils.permissions import has_permission
 
 
 # =========================

@@ -1,4 +1,4 @@
-from SD3.backend.engine.schema.builder import EntitySchemaBuilder
+from backend.engine.schema.builder import EntitySchemaBuilder
 
 
 def build_fields(ctx):

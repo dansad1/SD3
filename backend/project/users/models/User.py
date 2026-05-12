@@ -5,7 +5,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 
-from backend.users.managers import (
+from backend.project.users.managers import (
     UserManager
 )
 

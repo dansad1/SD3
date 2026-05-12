@@ -1,4 +1,4 @@
-from SD3.backend.engine.entity.Base.BaseEntity import BaseEntity
+from backend.engine.entity.Base.BaseEntity import BaseEntity
 
 
 def is_valid_entity_class(cls):

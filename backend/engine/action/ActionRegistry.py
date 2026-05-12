@@ -1,9 +1,8 @@
-from SD3.backend.engine.action.Base.BaseAction import BaseAction
-from SD3.backend.engine.registry.BaseRegistry import BaseRegistry
-from SD3.backend.engine.registry.autodiscover import all_subclasses
-from SD3.backend.engine.registry.storage import BaseStorage
+from backend.engine.action.Base.BaseAction import BaseAction
+from backend.engine.registry.BaseRegistry import BaseRegistry
+from backend.engine.registry.autodiscover import all_subclasses
+from backend.engine.registry.storage import BaseStorage
 
-f
 
 class ActionRegistry(BaseRegistry):
 

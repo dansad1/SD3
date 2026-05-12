@@ -10,7 +10,7 @@ from backend.engine.entity.Base.BaseEntity import (
     BaseEntity
 )
 
-from backend.users.models import (
+from backend.project.users.models import (
     User,
     UserField,
 )

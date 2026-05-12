@@ -5,7 +5,7 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
-from SD3.backend.engine.action.ActionRegistry import actions
+from backend.engine.action.ActionRegistry import actions
 
 
 @require_GET

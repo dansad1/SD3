@@ -1,14 +1,14 @@
 from rest_framework.exceptions import PermissionDenied
 
-from SD3.backend.engine.Resource.ResourceList.ResourceListContext import ResourceListContext
-from SD3.backend.engine.Resource.ResourceList.fetch import fetch
-from SD3.backend.engine.Resource.ResourceList.fields import build_fields
-from SD3.backend.engine.Resource.ResourceList.meta import build_meta
-from SD3.backend.engine.Resource.ResourceList.rows import extract_rows
-from SD3.backend.engine.Resource.ResourceRegistry import resource_registry
-from SD3.backend.engine.entity.Base.permissions import has_permission
-from SD3.backend.engine.entity.EntityRegistry import entity_registry
-from SD3.backend.engine.list.BaseList import BaseList
+from backend.engine.Resource.ResourceList.ResourceListContext import ResourceListContext
+from backend.engine.Resource.ResourceList.fetch import fetch
+from backend.engine.Resource.ResourceList.fields import build_fields
+from backend.engine.Resource.ResourceList.meta import build_meta
+from backend.engine.Resource.ResourceList.rows import extract_rows
+from backend.engine.Resource.ResourceRegistry import resource_registry
+from backend.engine.entity.EntityRegistry import entity_registry
+from backend.engine.list.BaseList import BaseList
+from backend.engine.utils.permissions import has_permission
 
 
 def check_permission(ctx: ResourceListContext):

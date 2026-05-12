@@ -58,7 +58,7 @@ def validate_unique(ctx):
     # DYNAMIC FIELD
     # -------------------------
 
-    from backend.users.models import (
+    from backend.project.users import (
         UserFieldValue
     )
 

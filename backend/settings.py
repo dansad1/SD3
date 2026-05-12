@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     "ckeditor",
 
     # local
-    "backend.users"
+"backend.project.users"
 ]
 AUTH_USER_MODEL = "users.User"
 # =========================
@@ -55,8 +55,7 @@ MIDDLEWARE = [
 # =========================
 
 ROOT_URLCONF = 'backend.urls'
-WSGI_APPLICATION = "wsgi.application"
-
+WSGI_APPLICATION = "backend.wsgi.application"
 # =========================
 # DATABASE
 # =========================
