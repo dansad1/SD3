@@ -1,8 +1,0 @@
-.ui-select {
-  position: relative;
-  background: #0c0e13;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 6px 8px;
-  color: var(--text-main);
-}
