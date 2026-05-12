@@ -49,3 +49,20 @@ export type DocumentBlock = BaseBlock & {
 
   refresh?: string[]
 }
+// types.ts
+
+export type DocumentVM = {
+  loading: boolean
+  saving: boolean
+
+  content: string
+
+  editable: boolean
+  fullscreen?: boolean
+
+  setContent: (
+    value: string
+  ) => void
+
+  save: () => void
+}

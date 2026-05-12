@@ -41,7 +41,7 @@ import { normalizeChatList } from "../Blocks/ChatList/normalize"
 import { normalizeUpload } from "../Blocks/Action/upload/normalize"
 import { normalizeTabs } from "../Blocks/Structural/Tabs/normalize"
 import { normalizeCustom } from "../Blocks/Custom/normalize"
-import { normalizeDocument } from "../Blocks/Content/Document/normalize";
+import { normalizeDocument } from "../Blocks/Document/normalize"
 
 /**
  * Строго типизированная карта нормалайзеров.

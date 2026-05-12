@@ -44,6 +44,7 @@ export function DocumentView({
         editor={ClassicEditor}
         disabled={!editable}
         data={content}
+
         onChange={(_, editor) => {
           setContent(
             editor.getData()
