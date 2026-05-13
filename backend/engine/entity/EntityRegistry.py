@@ -46,15 +46,34 @@ class EntityRegistry(BaseRegistry):
     # =========================
 
     def autodiscover(self, force=False):
+
         if self._autodiscovered and not force:
             return
 
-        for cls in all_subclasses(BaseEntity):
-            if is_valid_entity_class(cls):
-                self.register(cls)
+        seen = set()
+
+        for cls in reversed(all_subclasses(BaseEntity)):
+
+            if not is_valid_entity_class(cls):
+                continue
+
+            entity = getattr(cls, "entity", None)
+
+            if not entity:
+                continue
+
+            # ====================================
+            # берем newest class
+            # ====================================
+
+            if entity in seen:
+                continue
+
+            seen.add(entity)
+
+            self.register(cls)
 
         self._autodiscovered = True
-
     # =========================
     # EXTRA API
     # =========================

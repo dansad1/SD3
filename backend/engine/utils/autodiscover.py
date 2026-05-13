@@ -1,63 +1,102 @@
-import pkgutil
+# backend/engine/utils/autodiscover.py
+
 import importlib
-from django.apps import apps
+import pkgutil
+
+import backend
 
 
-def import_recursive(package):
-    if not hasattr(package, "__path__"):
-        return
+# =========================================================
+# SKIP
+# =========================================================
 
-    prefix = package.__name__ + "."
+SKIP_PARTS = {
+    "migrations",
+    "__pycache__",
+    "tests",
+    "node_modules",
+    "static",
+    "media",
+    "asgi",
+    "wsgi",
+    "settings",
+}
 
-    for _, module_name, _ in pkgutil.walk_packages(
-        package.__path__,
-        prefix
-    ):
-        try:
-            importlib.import_module(module_name)
-            print("IMPORT:", module_name)
-        except Exception as e:
-            print("IMPORT ERROR:", module_name, e)
 
+# =========================================================
+# HELPERS
+# =========================================================
+
+def should_skip(module_name):
+
+    parts = module_name.split(".")
+
+    return any(
+        part in SKIP_PARTS
+        for part in parts
+    )
+
+
+# =========================================================
+# AUTODISCOVER
+# =========================================================
 
 def autodiscover_all():
 
-    # -------------------------
-    # ENGINE
-    # -------------------------
+    print()
+    print("📦 AUTODISCOVER START")
+    print()
 
-    try:
-        import core.api.engine.action as action_pkg
-        import_recursive(action_pkg)
-    except ImportError:
-        pass
+    imported = 0
+    errors = 0
 
-    try:
-        import core.api.engine.resource as resource_pkg
-        import_recursive(resource_pkg)
-    except ImportError:
-        pass
+    for _, module_name, _ in pkgutil.walk_packages(
+        backend.__path__,
+        backend.__name__ + ".",
+    ):
 
-    # -------------------------
-    # PROJECT (твои модули)
-    # -------------------------
+        # =========================================
+        # SKIP
+        # =========================================
 
-    try:
-        import core.api.Project as project_pkg
-        import_recursive(project_pkg)
-    except ImportError:
-        pass
-
-    # -------------------------
-    # MATRIX (по apps)
-    # -------------------------
-
-    for app in apps.get_app_configs():
-        try:
-            matrix_pkg = importlib.import_module(
-                f"{app.name}.api.matrix"
-            )
-            import_recursive(matrix_pkg)
-
-        except ModuleNotFoundError:
+        if should_skip(module_name):
             continue
+
+        # =========================================
+        # IMPORT
+        # =========================================
+
+        try:
+
+            importlib.import_module(module_name)
+
+            imported += 1
+
+        except Exception as e:
+
+            errors += 1
+
+            print()
+            print("❌ IMPORT ERROR")
+            print("MODULE:", module_name)
+            print("ERROR :", str(e))
+            print()
+
+    # =========================================
+    # SUMMARY
+    # =========================================
+
+    print()
+    print("╔══════════════════════════════════════╗")
+    print("║         AUTODISCOVER DONE           ║")
+    print("╚══════════════════════════════════════╝")
+
+    print(
+        f"📦 IMPORTED: {imported}"
+    )
+
+    print(
+        f"❌ ERRORS:   {errors}"
+    )
+
+    print()

@@ -14,17 +14,28 @@ class MatrixRegistry(BaseRegistry):
         return self.register_instance(instance.code, instance)
 
     def autodiscover(self, force=False):
+
         if self._autodiscovered and not force:
             return
 
-        for cls in all_subclasses(BaseMatrix):
+        seen = set()
+
+        for cls in reversed(all_subclasses(BaseMatrix)):
+
             meta = getattr(cls, "Meta", None)
+
             code = getattr(meta, "code", None) if meta else None
 
-            if code:
-                self.register(cls)
+            if not code:
+                continue
+
+            if code in seen:
+                continue
+
+            seen.add(code)
+
+            self.register(cls)
 
         self._autodiscovered = True
-
 
 matrix_registry = MatrixRegistry()

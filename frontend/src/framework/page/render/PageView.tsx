@@ -29,22 +29,20 @@ export function PageView({
 
   return (
     <div className="page-container">
-      <div className="ui-container">
 
-        {schema.title && <h1>{schema.title}</h1>}
+      {schema.title && <h1>{schema.title}</h1>}
 
-        {physicalTree && (
-          <PhysicalRenderer node={physicalTree} />
-        )}
+      {physicalTree && (
+        <PhysicalRenderer node={physicalTree} />
+      )}
 
-        {pageReady && actions.length > 0 && (
-          <PageFooter
-            actions={actions}
-            run={runAction}
-          />
-        )}
+      {pageReady && actions.length > 0 && (
+        <PageFooter
+          actions={actions}
+          run={runAction}
+        />
+      )}
 
-      </div>
     </div>
   )
 }

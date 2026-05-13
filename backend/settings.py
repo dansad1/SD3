@@ -23,8 +23,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "backend.generic",
-
+    "backend.generic.apps.GenericConfig",
     # third-party
     "rest_framework",
     "corsheaders",

@@ -1,7 +1,7 @@
 from rest_framework.generics import get_object_or_404
 
-from SD3.backend.engine.action.Base.BaseAction import BaseAction
-from SD3.backend.engine.entity.EntityRegistry import entity_registry
+from backend.engine.action.Base.BaseAction import BaseAction
+from backend.engine.entity.EntityRegistry import entity_registry
 
 
 class EntityDeleteAction(BaseAction):

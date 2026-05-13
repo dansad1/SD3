@@ -1,6 +1,6 @@
-from SD3.backend.engine.entity.EntityRegistry import EntityRegistry
-from SD3.backend.engine.form.FormRegistry import form_registry
-from SD3.backend.engine.list.ListRegistry import list_registry
+from backend.engine.entity.EntityRegistry import EntityRegistry
+from backend.engine.form.FormRegistry import form_registry
+from backend.engine.list.ListRegistry import list_registry
 
 
 class AppRegistry:

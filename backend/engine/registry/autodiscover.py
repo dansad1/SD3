@@ -1,8 +1,13 @@
 def all_subclasses(cls):
-    result = set()
 
-    for subclass in cls.__subclasses__():
-        result.add(subclass)
-        result.update(all_subclasses(subclass))
+    result = []
+
+    for sub in cls.__subclasses__():
+
+        result.append(sub)
+
+        result.extend(
+            all_subclasses(sub)
+        )
 
     return result
