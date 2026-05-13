@@ -1,64 +1,75 @@
+// src/framework/page/controller/PageController.ts
+
 import { AuthContext } from "@/framework/auth/AuthContext"
-import { useContext, useMemo } from "react"
-import type { PageApi } from "../context/types"
-import  { buildPageRuntimeContext } from "../runtime/buildPageRuntimeContext"
-import { usePageEventBus } from "../runtime/events/usePageEventBus"
-import { usePageDebug } from "./hooks/usePageDebug"
-import { usePageEffectsApi } from "./hooks/usePageEffectsApi"
-import { usePageLoadingApi } from "./hooks/usePageLoadingApi"
-import { usePageRouterRuntime } from "./hooks/usePageRouterRuntime"
-import { usePageActionsRuntime } from "./usePageActionsRuntime"
-import { usePageDataStore } from "./usePageDataStore"
-import { usePageDirtyRuntime } from "./usePageDirtyRuntime"
-import { usePageNavigation } from "./usePageNavigation"
+
+import {
+  useContext,
+  useMemo,
+} from "react"
+
+import type { PageApi }
+  from "../context/types"
+
+import { buildPageRuntimeContext }
+  from "../runtime/buildPageRuntimeContext"
+
+import { usePageEventBus }
+  from "../runtime/events/usePageEventBus"
+
+import { usePageDebug }
+  from "./hooks/usePageDebug"
+
+import { usePageEffectsApi }
+  from "./hooks/usePageEffectsApi"
+
+import { usePageLoadingApi }
+  from "./hooks/usePageLoadingApi"
+
+import { usePageRouterRuntime }
+  from "./hooks/usePageRouterRuntime"
+
+import { usePageActionsRuntime }
+  from "./usePageActionsRuntime"
+
+import { usePageDataStore }
+  from "./usePageDataStore"
+
+import { usePageDirtyRuntime }
+  from "./usePageDirtyRuntime"
+
+import { usePageNavigation }
+  from "./usePageNavigation"
+
 
 export function usePageController() {
-  /* ================= RUNTIMES ================= */
 
-  const actionsRuntime = usePageActionsRuntime()
-  const dirtyRuntime = usePageDirtyRuntime()
-  const dataStore = usePageDataStore()
-  const loading = usePageLoadingApi()
-  const eventBus = usePageEventBus()
+  // =====================================================
+  // RUNTIMES
+  // =====================================================
 
-  const { params, query } = usePageRouterRuntime()
+  const actionsRuntime =
+    usePageActionsRuntime()
 
-  /* ================= AUTH ================= */
+  const dirtyRuntime =
+    usePageDirtyRuntime()
 
-  const auth = useContext(AuthContext)
-  const user = auth?.me ?? null
+  const dataStore =
+    usePageDataStore()
 
-  /* ================= RUNTIME CONTEXT ================= */
+  const loading =
+    usePageLoadingApi()
 
-  const runtimeContext = useMemo(() => {
-  return buildPageRuntimeContext(
+  const eventBus =
+    usePageEventBus()
+
+  const {
     params,
     query,
-    {
-      ...dataStore.data,
-      ...dataStore.runtimeData, // 🔥 ВАЖНО
-    },
-    user
-  )
-}, [params, query, dataStore.data, dataStore.runtimeData, user])
+  } = usePageRouterRuntime()
 
-  /*
-    Важно:
-    navigationRuntime не должен зависеть от dataStore.data,
-    иначе формы, которые пишут в page data, могут вызвать infinite loop.
-  */
-  const navigationContext = useMemo(() => {
-    return buildPageRuntimeContext(
-      params,
-      query,
-      {},
-      user
-    )
-  }, [params, query, user])
-
-  const navigationRuntime = usePageNavigation(navigationContext)
-
-  /* ================= ACTIONS ================= */
+  // =====================================================
+  // ACTIONS
+  // =====================================================
 
   const {
     registerHandler,
@@ -67,9 +78,95 @@ export function usePageController() {
     actions,
   } = actionsRuntime
 
-  const { navigate } = navigationRuntime
+  // =====================================================
+  // AUTH
+  // =====================================================
 
-  /* ================= DIRTY ================= */
+  const auth =
+    useContext(AuthContext)
+
+  const user =
+    auth?.me ?? null
+
+  // =====================================================
+  // RUNTIME CONTEXT
+  // =====================================================
+
+  const runtimeContext = useMemo(() => {
+
+    return buildPageRuntimeContext(
+
+      params,
+
+      query,
+
+      {
+        ...dataStore.data,
+
+        ...dataStore.runtimeData,
+      },
+
+      actions,
+
+      user,
+    )
+
+  }, [
+
+    params,
+    query,
+
+    dataStore.data,
+    dataStore.runtimeData,
+
+    actions,
+
+    user,
+  ])
+
+  /*
+    navigationRuntime НЕ должен зависеть
+    от page data иначе можно поймать
+    infinite loop при form sync
+  */
+
+  const navigationContext = useMemo(() => {
+
+    return buildPageRuntimeContext(
+
+      params,
+
+      query,
+
+      {},
+
+      [],
+
+      user,
+    )
+
+  }, [
+    params,
+    query,
+    user,
+  ])
+
+  // =====================================================
+  // NAVIGATION
+  // =====================================================
+
+  const navigationRuntime =
+    usePageNavigation(
+      navigationContext
+    )
+
+  const {
+    navigate,
+  } = navigationRuntime
+
+  // =====================================================
+  // DIRTY
+  // =====================================================
 
   const {
     setDirty,
@@ -78,7 +175,9 @@ export function usePageController() {
     pageDirty,
   } = dirtyRuntime
 
-  /* ================= DATA ================= */
+  // =====================================================
+  // DATA
+  // =====================================================
 
   const {
     setDataKey,
@@ -86,114 +185,199 @@ export function usePageController() {
     setRuntimeData,
   } = dataStore
 
-  /* ================= EFFECTS ================= */
+  // =====================================================
+  // EFFECTS
+  // =====================================================
 
-  const effectsRuntime = usePageEffectsApi({
-    navigate,
-    setDataKey,
-    emit: eventBus.emit,
-  })
+  const effectsRuntime =
+    usePageEffectsApi({
 
-  /* ================= API ================= */
+      navigate,
+
+      setDataKey,
+
+      emit: eventBus.emit,
+    })
+
+  // =====================================================
+  // API
+  // =====================================================
 
   const api: PageApi = useMemo(
     () => ({
-      /* ACTIONS */
+
+      // ===============================================
+      // ACTIONS
+      // ===============================================
+
       registerHandler,
+
       unregisterHandler,
+
       run,
+
       navigate,
 
-      /* LOADING */
+      // ===============================================
+      // LOADING
+      // ===============================================
+
       loading,
 
-      /* DIRTY */
+      // ===============================================
+      // DIRTY
+      // ===============================================
+
       setDirty,
+
       unregisterDirty,
+
       getPageDirty,
 
-      /* DATA */
+      // ===============================================
+      // DATA
+      // ===============================================
+
       setDataKey,
+
       getData,
+
       setRuntimeData,
 
-      /* EFFECTS */
-      runEffect: effectsRuntime.runEffect,
-      runEffects: effectsRuntime.runEffects,
+      // ===============================================
+      // EFFECTS
+      // ===============================================
 
-      /* EVENTS */
-      emit: eventBus.emit,
-      on: eventBus.on,
+      runEffect:
+        effectsRuntime.runEffect,
 
-      /* ROUTER */
+      runEffects:
+        effectsRuntime.runEffects,
+
+      // ===============================================
+      // EVENTS
+      // ===============================================
+
+      emit:
+        eventBus.emit,
+
+      on:
+        eventBus.on,
+
+      // ===============================================
+      // ROUTER
+      // ===============================================
+
       query,
+
       params,
+
       getQuery: () => query,
+
       getParams: () => params,
+
     }),
     [
+
       registerHandler,
+
       unregisterHandler,
+
       run,
+
       navigate,
 
       loading,
 
       setDirty,
+
       unregisterDirty,
+
       getPageDirty,
 
       setDataKey,
+
       getData,
+
       setRuntimeData,
 
       effectsRuntime.runEffect,
+
       effectsRuntime.runEffects,
 
       eventBus.emit,
+
       eventBus.on,
 
       query,
+
       params,
     ]
   )
 
-  /* ================= DEBUG ================= */
+  // =====================================================
+  // DEBUG
+  // =====================================================
 
   usePageDebug({
+
     runtimeContext,
 
     actions,
+
     registerHandler,
+
     unregisterHandler,
+
     run,
 
     pageDirty,
+
     setDirty,
+
     unregisterDirty,
+
     getPageDirty,
 
-    data: dataStore.data,
+    data:
+      dataStore.data,
+
     setDataKey,
+
     getData,
 
-    start: loading.start,
-    finish: loading.finish,
-    isRunning: loading.isRunning,
+    start:
+      loading.start,
 
-    emit: eventBus.emit,
-    on: eventBus.on,
+    finish:
+      loading.finish,
+
+    isRunning:
+      loading.isRunning,
+
+    emit:
+      eventBus.emit,
+
+    on:
+      eventBus.on,
 
     effectsRuntime,
+
     api,
   })
 
-  /* ================= RETURN ================= */
+  // =====================================================
+  // RETURN
+  // =====================================================
 
   return {
+
     api,
+
     actions,
+
     pageDirty,
+
     runtimeContext,
   }
 }

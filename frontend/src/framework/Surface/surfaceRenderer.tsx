@@ -5,9 +5,16 @@ import {
   useSyncExternalStore,
 } from "react"
 
-import { NavPanel } from "../components/ui/NavPanel"
-import { surfaceStore } from "./surfaceStore"
-import type { SurfaceArea } from "./surface"
+import { NavPanel }
+  from "../components/ui/NavPanel"
+
+import { surfaceStore }
+  from "./surfaceStore"
+
+import type {
+  SurfaceArea,
+} from "./surface"
+
 
 const AREAS: SurfaceArea[] = [
   "topbar",
@@ -16,25 +23,50 @@ const AREAS: SurfaceArea[] = [
   "drawer",
 ]
 
+
 export function SurfaceRenderer({
   children,
 }: {
   children?: ReactNode
 }) {
+
   useSyncExternalStore(
+
     surfaceStore.subscribe.bind(surfaceStore),
+
     () => surfaceStore.get(),
+
     () => surfaceStore.get()
   )
 
-  if (!surfaceStore.has()) {
+  const surface =
+    surfaceStore.get()
+
+  if (!surface) {
     return null
   }
 
+  const className = [
+
+    "surface",
+
+    `surface-${surface.mode}`,
+
+  ]
+    .filter(Boolean)
+    .join(" ")
+
   return (
-    <div className="surface surface-app">
+
+    <div className={className}>
+
       {AREAS.map(area => {
-        const node = renderArea(area, children)
+
+        const node = renderArea(
+          surface,
+          area,
+          children
+        )
 
         if (!node) {
           return null
@@ -46,67 +78,138 @@ export function SurfaceRenderer({
           </div>
         )
       })}
+
     </div>
   )
 }
 
+
 function renderArea(
+
+  surface: ReturnType<typeof surfaceStore.get>,
+
   area: SurfaceArea,
+
   children?: ReactNode
 ) {
-  const surface = surfaceStore.get()
+
+  if (!surface) {
+    return null
+  }
+
+  const areaConfig =
+    surface.areas?.[area]
+
+  // =====================================================
+  // EMPTY AREA
+  // =====================================================
+
+  if (
+
+    !areaConfig ||
+
+    areaConfig.type === "empty"
+
+  ) {
+    return null
+  }
+
+  // =====================================================
+  // TOPBAR
+  // =====================================================
 
   if (area === "topbar") {
+
     return (
+
       <div className="surface-area topbar">
+
         <NavPanel />
+
       </div>
     )
   }
+
+  // =====================================================
+  // MAIN
+  // =====================================================
 
   if (area === "main") {
+
     return (
+
       <div className="surface-area main">
+
         {children}
+
       </div>
     )
   }
 
+  // =====================================================
+  // OVERLAY
+  // =====================================================
+
   if (area === "overlay") {
+
     if (!surface.overlay?.open) {
       return null
     }
 
     return (
+
       <div className="surface-area overlay is-open">
+
         <div className="surface-overlay-backdrop" />
 
         <div className="surface-overlay-panel">
+
           <div className="surface-overlay-placeholder">
+
             Overlay:{" "}
+
             {surface.overlay.component}
+
           </div>
+
         </div>
+
       </div>
     )
   }
 
+  // =====================================================
+  // DRAWER
+  // =====================================================
+
   if (area === "drawer") {
+
     if (!surface.drawer?.open) {
       return null
     }
 
     return (
+
       <div
         className={[
+
           "surface-drawer",
-          `surface-drawer-${surface.drawer.side ?? "right"}`,
+
+          `surface-drawer-${
+            surface.drawer.side ?? "right"
+          }`,
+
         ].join(" ")}
       >
+
         <div className="surface-drawer-placeholder">
+
           Drawer:{" "}
+
           {surface.drawer.component}
+
         </div>
+
       </div>
     )
   }

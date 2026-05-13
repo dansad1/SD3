@@ -1,75 +1,119 @@
-/* =========================
+/* =========================================================
    PAGE ROOT
-   ========================= */
+   ========================================================= */
 
 .page-container {
+
   min-height: 100vh;
+
   display: flex;
+
   flex-direction: column;
+
   background: var(--bg-app);
 }
 
-/* =========================
+/* =========================================================
    PAGE MODES
-   ========================= */
+   ========================================================= */
 
-/* Auth / Login / Reset */
-/* Auth pages — full height layout */
-.page-container.auth {
+/*
+  fullscreen pages
+
+  login
+  reset password
+  onboarding
+*/
+
+.page-fullscreen {
   min-height: 100vh;
+}
+
+/*
+  centered layouts
+
+  auth
+  empty state
+  wizard start
+*/
+
+.page-centered {
+
   display: flex;
-  justify-content: center; /* вертикаль */
-  align-items: stretch;    /* горизонталь */
+
+  justify-content: center;
+
+  align-items: center;
 }
 
-
-
-/* App pages (sidebar + main) */
-.page-container.app {
-  padding: 0;
-}
-
-/* =========================
-   APP LAYOUT (SIDEBAR)
-   ========================= */
+/* =========================================================
+   APP LAYOUT
+   ========================================================= */
 
 .page-layout {
+
   display: grid;
+
   grid-template-columns: 240px 1fr;
-  height: 100%;
+
+  min-height: 100vh;
 }
 
-/* sidebar positions */
+/* sidebar left */
+
 .page-layout.with-sidebar-left {
   grid-template-columns: 240px 1fr;
 }
+
+/* sidebar right */
 
 .page-layout.with-sidebar-right {
   grid-template-columns: 1fr 240px;
 }
 
-/* =========================
-   AREAS
-   ========================= */
+/* =========================================================
+   MAIN
+   ========================================================= */
 
 .main {
+
   padding: var(--space-6);
+
   background: var(--bg-app);
 }
 
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
 .sidebar {
+
   background: var(--bg-panel);
-  border-right: 1px solid var(--border-subtle);
+
+  border-right:
+    1px solid var(--border-subtle);
+
   padding: var(--space-4);
+
   z-index: 1;
 }
+
+/* =========================================================
+   PAGE FOOTER
+   ========================================================= */
+
 .page-footer {
+
   display: flex;
+
   justify-content: flex-end;
+
   gap: 12px;
 
   margin-top: 24px;
+
   padding-top: 16px;
 
-  border-top: 1px solid var(--border-subtle);
+  border-top:
+    1px solid var(--border-subtle);
 }

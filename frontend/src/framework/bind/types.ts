@@ -1,23 +1,50 @@
 // src/framework/bind/types.ts
 
 import type { Me } from "../auth/auth"
+import type { ActionDescriptor } from "../Blocks/Action/types"
 
 export type BindValue = {
   bind: string
 }
 
 export type PageRuntimeContext = {
+
+  // =====================================================
+  // PAGE
+  // =====================================================
+
   page: {
     params: Record<string, string>
     query: Record<string, string>
   }
 
+  // =====================================================
+  // ROUTE
+  // =====================================================
+
   params: Record<string, string>
+
   query: Record<string, string>
+
+  // =====================================================
+  // DATA
+  // =====================================================
+
   data: Record<string, unknown>
 
+  // =====================================================
+  // ACTIONS
+  // =====================================================
+
+  actions: ActionDescriptor[]
+
+  // =====================================================
+  // USER
+  // =====================================================
+
   user?: Me | null
-  me?: Me | null // 👈 ВОТ ЭТО ДОБАВЬ
+
+  me?: Me | null
 }
 
 export type BindScope = {
