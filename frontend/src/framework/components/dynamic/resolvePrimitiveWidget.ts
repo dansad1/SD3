@@ -1,44 +1,36 @@
+// resolvePrimitiveWidget.ts
+
 import type {
   FieldSchema,
 } from "@/framework/components/dynamic/types"
 
-import { widgetRegistry } from "@/framework/components/dynamic/registry"
+import {
+  widgetRegistry,
+} from "@/framework/components/dynamic/registry"
 
-export type WidgetKey = keyof typeof widgetRegistry
+export type WidgetKey =
+  keyof typeof widgetRegistry
 
 export function resolvePrimitiveWidget(
   field: FieldSchema
 ): WidgetKey {
-  switch (field.widget) {
-    case "TextInput":
-    case "Textarea":
-    case "NumberInput":
-    case "Checkbox":
-    case "Select":
-    case "MultiSelect":
-    case "DateInput":
-    case "DateTimeInput":
-    case "TimeInput":
-    case "FileInput":
-    case "PasswordInput":
-    case "RichText":
-    case "InsertVariables":
-      return field.widget
-  }
 
-  if (field.entity) {
-    if (field.multiple && field.columns) {
-      return "Checkbox"
+  console.log(
+    "🧠 resolvePrimitiveWidget",
+    {
+      name: field.name,
+      widget: field.widget,
+      html_type: field.html_type,
+      field,
     }
+  )
 
-    if (field.multiple) {
-      return "MultiSelect"
-    }
-
-    return "Select"
-  }
+  /* ========================================
+     html_type priority
+  ======================================== */
 
   if (field.html_type === "password") {
+    console.log("🔐 PASSWORD DETECTED")
     return "PasswordInput"
   }
 
@@ -57,6 +49,52 @@ export function resolvePrimitiveWidget(
   if (field.html_type === "time") {
     return "TimeInput"
   }
+
+  /* ========================================
+     explicit widget
+  ======================================== */
+
+  switch (field.widget) {
+
+    case "TextInput":
+    case "Textarea":
+    case "NumberInput":
+    case "Checkbox":
+    case "Select":
+    case "MultiSelect":
+    case "DateInput":
+    case "DateTimeInput":
+    case "TimeInput":
+    case "FileInput":
+    case "PasswordInput":
+    case "RichText":
+    case "InsertVariables":
+      return field.widget
+  }
+
+  /* ========================================
+     entity fallback
+  ======================================== */
+
+  if (field.entity) {
+
+    if (
+      field.multiple
+      && field.columns
+    ) {
+      return "Checkbox"
+    }
+
+    if (field.multiple) {
+      return "MultiSelect"
+    }
+
+    return "Select"
+  }
+
+  /* ========================================
+     default
+  ======================================== */
 
   return "TextInput"
 }

@@ -1,22 +1,71 @@
 def step_widget(ctx):
-    # 🔥 если widget уже установлен — НЕ ТРОГАЕМ
-    if "widget" in ctx.schema:
-        return
 
     mapping = {
-        "string": "TextInput",
-        "text": "Textarea",
-        "richtext": "RichText",
-        "boolean": "Checkbox",
-        "date": "DateInput",
-        "datetime": "DateTimeInput",
-        "foreignKey": "Select",
-        "manyToMany": "MultiSelect",
-        "json": "Textarea",
+
+        "string": {
+            "widget": "TextInput",
+            "html_type": "text",
+        },
+
+        # 🔥 PASSWORD SUPPORT
+        "password": {
+            "widget": "TextInput",
+            "html_type": "password",
+        },
+
+        "text": {
+            "widget": "Textarea",
+        },
+
+        "richtext": {
+            "widget": "RichText",
+        },
+
+        "boolean": {
+            "widget": "Checkbox",
+        },
+
+        "date": {
+            "widget": "DateInput",
+            "html_type": "date",
+        },
+
+        "datetime": {
+            "widget": "DateTimeInput",
+            "html_type": "datetime-local",
+        },
+
+        "foreignKey": {
+            "widget": "Select",
+        },
+
+        "manyToMany": {
+            "widget": "MultiSelect",
+        },
+
+        "json": {
+            "widget": "Textarea",
+        },
     }
 
-    ctx.schema["widget"] = mapping.get(ctx.type, "TextInput")
+    config = mapping.get(
+        ctx.type,
+        mapping["string"]
+    )
 
-    # html input type
-    if ctx.schema["widget"] == "TextInput":
-        ctx.schema["html_type"] = "text"
+    # =====================================
+    # WIDGET
+    # =====================================
+
+    if "widget" not in ctx.schema:
+        ctx.schema["widget"] = config["widget"]
+
+    # =====================================
+    # HTML TYPE
+    # =====================================
+
+    if (
+        "html_type" not in ctx.schema
+        and "html_type" in config
+    ):
+        ctx.schema["html_type"] = config["html_type"]

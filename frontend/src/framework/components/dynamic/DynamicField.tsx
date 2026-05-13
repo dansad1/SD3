@@ -1,6 +1,8 @@
 import { widgetRegistry } from "./registry"
 import type { FieldSchema, Value } from "./types"
 import FallbackWidget from "./widgets/Fallback"
+import { resolveWidget } from "./widgets/resolveWidget"
+
 
 interface Props {
   field: FieldSchema
@@ -20,11 +22,15 @@ export default function DynamicField({
      Widget resolve
   =============================== */
 
-  const Widget = widgetRegistry[field.widget] ?? FallbackWidget
+  const widgetKey = resolveWidget(field)
 
-  if (!widgetRegistry[field.widget]) {
+  const Widget =
+    widgetRegistry[widgetKey]
+    ?? FallbackWidget
+
+  if (!widgetRegistry[widgetKey]) {
     console.warn(
-      `[DynamicField] Unknown widget "${field.widget}"`,
+      `[DynamicField] Unknown widget "${widgetKey}"`,
       field
     )
   }

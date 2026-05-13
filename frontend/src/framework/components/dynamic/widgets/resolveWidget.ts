@@ -1,98 +1,51 @@
-import type {
-  ApiFormField,
-} from "@/framework/api/form/types"
+// resolveWidget.ts
 
 import type {
   FieldSchema,
 } from "../types"
-import { resolvePrimitiveWidget, type WidgetKey } from "../resolvePrimitiveWidget"
-import { resolveSemanticWidget } from "../semanticResolver"
 
+import {
+  resolvePrimitiveWidget,
+  type WidgetKey,
+} from "../resolvePrimitiveWidget"
 
+import {
+  resolveSemanticWidget,
+} from "../semanticResolver"
 
-/* =========================================================
-   NORMALIZE
-========================================================= */
-
-function normalizeField(
-  field: ApiFormField
-): FieldSchema {
-
-  return {
-
-    id:
-      field.id ||
-      field.name,
-
-    name:
-      field.name,
-
-    label:
-      field.label,
-
-    help_text:
-      field.help_text,
-
-    widget:
-      field.widget,
-
-    semantic:
-      field.semantic,
-
-    view:
-      field.view,
-
-    presentation:
-      field.presentation,
-
-    html_type:
-      field.html_type,
-
-    choices:
-      field.choices,
-
-    entity:
-      field.entity,
-
-    multiple:
-      field.multiple,
-
-    columns:
-      field.columns,
-
-    required:
-      field.required,
-
-    readonly:
-      field.readonly,
-  }
-}
 
 /* =========================================================
    RESOLVE WIDGET
 ========================================================= */
 
 export function resolveWidget(
-  field: ApiFormField
+  field: FieldSchema
 ): WidgetKey {
 
-  const normalized =
-    normalizeField(field)
+  console.log(
+    "🧠 resolveWidget",
+    {
+      name: field.name,
+      widget: field.widget,
+      html_type: field.html_type,
+      semantic: field.semantic,
+      field,
+    }
+  )
 
   /* ========================================
      semantic resolution
   ======================================== */
 
-  if (normalized.semantic?.type) {
+  if (field.semantic?.type) {
 
     const semanticWidget =
       resolveSemanticWidget({
 
-        field:
-          normalized,
+        field,
 
         semanticType:
-          normalized.semantic.type,
+          field.semantic.type,
 
         context:
           "form",
@@ -101,16 +54,21 @@ export function resolveWidget(
           "desktop",
 
         interaction:
-          normalized.readonly
+          field.readonly
             ? "readonly"
             : "editable",
 
         view:
-          normalized.view,
+          field.view,
 
         presentation:
-          normalized.presentation,
+          field.presentation,
       })
+
+    console.log(
+      "🧠 semanticWidget",
+      semanticWidget
+    )
 
     if (semanticWidget) {
       return semanticWidget as WidgetKey
@@ -121,7 +79,13 @@ export function resolveWidget(
      primitive fallback
   ======================================== */
 
-  return resolvePrimitiveWidget(
-    normalized
+  const primitive =
+    resolvePrimitiveWidget(field)
+
+  console.log(
+    "🧠 primitiveWidget",
+    primitive
   )
+
+  return primitive
 }

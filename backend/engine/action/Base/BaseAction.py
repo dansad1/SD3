@@ -1,9 +1,15 @@
 from rest_framework.exceptions import PermissionDenied
 
 from backend.engine.action.Base.ActionContext import ActionContext
+from backend.engine.action.Base.ActionField import ActionField
 from backend.engine.action.Base.execute import execute
 from backend.engine.action.Base.lifecycle import after, before
 from backend.engine.action.Base.validate import validate
+
+from backend.engine.schema.context import FieldContext
+from backend.engine.schema.types import step_detect_type
+from backend.engine.schema.widgets import step_widget
+
 from backend.engine.utils.permissions import has_permission
 
 
@@ -12,15 +18,15 @@ from backend.engine.utils.permissions import has_permission
 # =========================
 
 def check_permission(ctx: ActionContext):
+
     action = ctx.action
     request = ctx.request
 
-    # если permission не задан — action доступен
     if not action.permission:
         return
 
-    # универсальный permission-контекст
     perm_ctx = type("PermCtx", (), {})()
+
     perm_ctx.request = request
     perm_ctx.entity = type("EntityStub", (), {})()
 
@@ -30,6 +36,16 @@ def check_permission(ctx: ActionContext):
 
     if not has_permission(perm_ctx, "run"):
         raise PermissionDenied
+
+
+# =========================
+# FIELD PIPELINE
+# =========================
+
+FIELD_PIPELINE = [
+    step_detect_type,
+    step_widget,
+]
 
 
 # =========================
@@ -52,7 +68,9 @@ PIPELINE = [
 class BaseAction:
 
     code = ""
-    permission = None   # строка permission-кода
+
+    permission = None
+
     confirm = None
     success_message = None
 
@@ -60,7 +78,12 @@ class BaseAction:
     # CONTEXT
     # -------------------------
 
-    def ctx(self, request, ctx=None, payload=None):
+    def ctx(
+        self,
+        request,
+        ctx=None,
+        payload=None,
+    ):
         return ActionContext(
             action=self,
             request=request,
@@ -69,19 +92,59 @@ class BaseAction:
         )
 
     # -------------------------
-    # SCHEMA (для FormBlock action)
+    # SCHEMA
     # -------------------------
 
-    def get_fields(self, request, ctx):
+    def get_fields(
+        self,
+        request,
+        ctx,
+    ):
         return []
 
-    def build(self, request, ctx):
+    def build(
+        self,
+        request,
+        ctx,
+    ):
 
-        action_ctx = self.ctx(request, ctx=ctx)
+        action_ctx = self.ctx(
+            request,
+            ctx=ctx,
+        )
 
         check_permission(action_ctx)
 
-        action_ctx.fields = self.get_fields(request, ctx)
+        fields = []
+
+        for field in self.get_fields(request, ctx):
+
+            adapted = ActionField(field)
+
+            field_ctx = FieldContext(
+                model=None,
+                field=adapted,
+                entity=None,
+                request=request,
+                action="edit",
+            )
+
+            # raw schema
+            field_ctx.schema.update(field)
+
+            # unified pipeline
+            for step in FIELD_PIPELINE:
+                step(field_ctx)
+
+            print(
+                "[ACTION FIELD]",
+                field_ctx.name,
+                field_ctx.schema
+            )
+
+            fields.append(field_ctx.schema)
+
+        action_ctx.fields = fields
 
         return {
             "fields": action_ctx.fields,
@@ -90,34 +153,44 @@ class BaseAction:
         }
 
     # -------------------------
-    # HOOKS (переопределяются)
+    # HOOKS
     # -------------------------
 
-    def validate(self, request, payload, ctx):
+    def validate(
+        self,
+        request,
+        payload,
+        ctx,
+    ):
         return payload
 
-    def run(self, request, payload, ctx):
-        return {"status": "ok"}
+    def run(
+        self,
+        request,
+        payload,
+        ctx,
+    ):
+        return {
+            "status": "ok"
+        }
 
-    def before(self, request, payload, ctx):
+    def before(
+        self,
+        request,
+        payload,
+        ctx,
+    ):
         pass
 
-    def after(self, request, result, ctx):
+    def after(
+        self,
+        request,
+        result,
+        ctx,
+    ):
         pass
 
     # -------------------------
     # EXECUTION
     # -------------------------
 
-    def submit(self, request, payload, ctx):
-
-        action_ctx = self.ctx(
-            request,
-            ctx=ctx,
-            payload=payload
-        )
-
-        for step in PIPELINE:
-            step(action_ctx)
-
-        return action_ctx.result
