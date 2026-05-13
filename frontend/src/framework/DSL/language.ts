@@ -146,6 +146,20 @@ export const Atom = {
       ] as const,
     },
   },
+  link: {
+  props: {
+    label: "string" as Primitive,
+
+    to: "string" as Primitive,
+
+    external: "boolean" as Primitive,
+
+    underline: "boolean" as Primitive,
+    muted: "boolean" as Primitive,
+
+    icon: "string" as Primitive,
+  },
+},
 
   insert_variables: {
     props: {
@@ -181,13 +195,7 @@ export const Action = {
   },
 
 
-  link: {
-    props: {
-      label: "string" as Primitive,
-      to: "string" as Primitive,
-      external: "boolean" as Primitive,
-    },
-  },
+  
 
   upload: {
     props: {

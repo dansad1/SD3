@@ -4,11 +4,36 @@ import type { ApiPageBlock } from "@/framework/page/PageSchema"
 
 /* ================= TYPES ================= */
 
-type HeadingApi = Extract<ApiPageBlock, { type: "heading" }>
-type TextApi = Extract<ApiPageBlock, { type: "text" }>
-type DividerApi = Extract<ApiPageBlock, { type: "divider" }>
-type SpacerApi = Extract<ApiPageBlock, { type: "spacer" }>
-type BadgeApi = Extract<ApiPageBlock, { type: "badge" }>
+type HeadingApi = Extract<
+  ApiPageBlock,
+  { type: "heading" }
+>
+
+type TextApi = Extract<
+  ApiPageBlock,
+  { type: "text" }
+>
+
+type DividerApi = Extract<
+  ApiPageBlock,
+  { type: "divider" }
+>
+
+type SpacerApi = Extract<
+  ApiPageBlock,
+  { type: "spacer" }
+>
+
+type BadgeApi = Extract<
+  ApiPageBlock,
+  { type: "badge" }
+>
+
+type LinkApi = Extract<
+  ApiPageBlock,
+  { type: "link" }
+>
+
 type InsertVariablesApi = Extract<
   ApiPageBlock,
   { type: "insert_variables" }
@@ -21,7 +46,9 @@ export function normalizeHeading(
 ): HeadingApi {
   return {
     ...block,
+
     id: normalizeId(block.id),
+
     level: block.level ?? 1,
     text: block.text ?? "",
   }
@@ -32,8 +59,11 @@ export function normalizeText(
 ): TextApi {
   return {
     ...block,
+
     id: normalizeId(block.id),
+
     value: block.value ?? "",
+    muted: Boolean(block.muted),
   }
 }
 
@@ -42,6 +72,7 @@ export function normalizeDivider(
 ): DividerApi {
   return {
     ...block,
+
     id: normalizeId(block.id),
   }
 }
@@ -51,7 +82,9 @@ export function normalizeSpacer(
 ): SpacerApi {
   return {
     ...block,
+
     id: normalizeId(block.id),
+
     size: block.size ?? 1,
   }
 }
@@ -61,7 +94,36 @@ export function normalizeBadge(
 ): BadgeApi {
   return {
     ...block,
+
     id: normalizeId(block.id),
+
+    label: block.label ?? "",
+    color: block.color ?? "default",
+    size: block.size ?? "md",
+  }
+}
+
+export function normalizeLink(
+  block: LinkApi
+): LinkApi {
+  return {
+    ...block,
+
+    id: normalizeId(block.id),
+
+    label: block.label ?? "",
+    to: block.to ?? "#",
+
+    external: Boolean(block.external),
+
+    underline:
+      block.underline === undefined
+        ? true
+        : Boolean(block.underline),
+
+    muted: Boolean(block.muted),
+
+    icon: block.icon ?? "",
   }
 }
 
@@ -70,10 +132,13 @@ export function normalizeInsertVariables(
 ): InsertVariablesApi {
   return {
     ...block,
+
     id: normalizeId(block.id),
+
     title:
       block.title ??
       "Доступные переменные",
+
     format:
       block.format ??
       "template",

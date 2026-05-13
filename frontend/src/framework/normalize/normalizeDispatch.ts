@@ -9,6 +9,7 @@ import {
   normalizeText,
   normalizeBadge,
   normalizeInsertVariables,
+  normalizeLink,
 } from "../Blocks/Atom/normalize"
 
 import { normalizeForm } from "../Blocks/Form/Layout/normalize"
@@ -87,7 +88,8 @@ chat_list: normalizeChatList,
 
   chat_thread: normalizeChatThread,
     custom: normalizeCustom,
-    document: normalizeDocument
+    document: normalizeDocument,
+    link: normalizeLink
 }
 
 /**

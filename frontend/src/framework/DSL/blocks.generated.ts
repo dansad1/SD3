@@ -117,6 +117,21 @@ export const Badge: DSLComponent<BadgeDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
+export type LinkDSL = {
+  label?: string | `$${string}`
+  to?: string | `$${string}`
+  external?: boolean | `$${string}`
+  underline?: boolean | `$${string}`
+  muted?: boolean | `$${string}`
+  icon?: string | `$${string}`
+}
+
+export const Link: DSLComponent<LinkDSL> = (props) =>
+  Block(
+    { __type: "link", ...props },
+    normalizeChildren(props.children)
+  )
+
 export type Insert_variablesDSL = {
   source?: string | `$${string}`
   targetField?: string | `$${string}`
@@ -142,18 +157,6 @@ export type ActionDSL = {
 export const Action: DSLComponent<ActionDSL> = (props) =>
   Block(
     { __type: "action", ...props },
-    normalizeChildren(props.children)
-  )
-
-export type LinkDSL = {
-  label?: string | `$${string}`
-  to?: string | `$${string}`
-  external?: boolean | `$${string}`
-}
-
-export const Link: DSLComponent<LinkDSL> = (props) =>
-  Block(
-    { __type: "link", ...props },
     normalizeChildren(props.children)
   )
 

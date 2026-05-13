@@ -5,8 +5,7 @@ import {
   useSyncExternalStore,
 } from "react"
 
-import { NavPanel }
-  from "../components/ui/NavPanel"
+
 
 import { surfaceStore }
   from "./surfaceStore"
@@ -14,6 +13,7 @@ import { surfaceStore }
 import type {
   SurfaceArea,
 } from "./surface"
+import { NavPanel } from "../components/ui/Navpanel"
 
 
 const AREAS: SurfaceArea[] = [

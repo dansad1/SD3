@@ -30,7 +30,19 @@ export type BadgeBlock = BaseBlock & {
   color: "default" | "success" | "warning" | "danger"
   size: "sm" | "md" | "lg"
 }
+export type LinkBlock = BaseBlock & {
+  type: "link"
 
+  label?: string
+  to?: string
+
+  external?: boolean
+
+  underline?: boolean
+  muted?: boolean
+
+  icon?: string
+}
 
 
 
