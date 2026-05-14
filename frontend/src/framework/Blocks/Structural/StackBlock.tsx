@@ -8,12 +8,41 @@ export const StackBlock: BlockComponent<"stack"> = ({
 }) => {
   const className = [
     "ui-stack",
-    block.variant && `variant-${block.variant}`,
-    block.gap && `gap-${block.gap}`,
-    block.align && `align-${block.align}`,
+
+    // semantic variants
+    block.variant &&
+      `variant-${block.variant}`,
+
+    // spacing
+    block.gap &&
+      `gap-${block.gap}`,
+
+    // alignment
+    block.align &&
+      `align-${block.align}`,
+
+    // justify
+    block.justify &&
+      `justify-${block.justify}`,
+
+    // size presets
+    block.size &&
+      `size-${block.size}`,
+
+    // width presets
+    block.width &&
+      `width-${block.width}`,
+
+    // padding presets
+    block.padding &&
+      `padding-${block.padding}`,
   ]
     .filter(Boolean)
     .join(" ")
 
-  return <div className={className}>{children}</div>
+  return (
+    <div className={className}>
+      {children}
+    </div>
+  )
 }

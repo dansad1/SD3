@@ -1,10 +1,11 @@
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from backend.engine.action.Base.ActionContext import ActionContext
 from backend.engine.action.Base.ActionField import ActionField
 from backend.engine.action.Base.execute import execute
 from backend.engine.action.Base.lifecycle import after, before
 from backend.engine.action.Base.validate import validate
+from backend.engine.form.Base.errors import validation_error_to_dict
 
 from backend.engine.schema.context import FieldContext
 from backend.engine.schema.types import step_detect_type
@@ -193,4 +194,35 @@ class BaseAction:
     # -------------------------
     # EXECUTION
     # -------------------------
+    def submit(
+            self,
+            request,
+            payload,
+            ctx,
+    ):
 
+        action_ctx = self.ctx(
+            request,
+            ctx=ctx,
+            payload=payload,
+        )
+
+        try:
+            for step in PIPELINE:
+                step(action_ctx)
+
+        except ValidationError as e:
+            return {
+                "status": "error",
+                "errors": validation_error_to_dict(e),
+            }
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "errors": {
+                    "__all__": [str(e)]
+                },
+            }
+
+        return action_ctx.result

@@ -49,20 +49,90 @@ export const Block = {
 export const Structural = {
 
   container: {
-    props: {
-      maxWidth: ["xs", "sm", "md", "lg", "xl"] as const,
-      align: ["left", "center", "right"] as const,
-      padding: ["none", "sm", "md", "lg"] as const,
-    },
+  props: {
+    maxWidth: [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+      "full",
+    ] as const,
+
+    align: [
+      "left",
+      "center",
+      "right",
+    ] as const,
+
+    padding: [
+      "none",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+    ] as const,
+
+    fluid: "boolean" as Primitive,
+
+    fullHeight: "boolean" as Primitive,
   },
+},
 
   stack: {
-    props: {
-      gap: ["none", "sm", "md", "lg"] as const,
-      align: ["start", "center", "end", "stretch"] as const,
-      variant: ["default", "card"] as const,
-    },
+  props: {
+    gap: [
+      "none",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+    ] as const,
+
+    align: [
+      "start",
+      "center",
+      "end",
+      "stretch",
+    ] as const,
+
+    variant: [
+      "default",
+      "card",
+    ] as const,
+
+    size: [
+      "sm",
+      "md",
+      "lg",
+      "xl",
+      "full",
+    ] as const,
+
+    padding: [
+      "none",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+    ] as const,
+
+    width: [
+      "auto",
+      "sm",
+      "md",
+      "lg",
+      "full",
+    ] as const,
+
+    justify: [
+      "start",
+      "center",
+      "between",
+      "end",
+    ] as const,
   },
+},
 
   split: {
     props: {
@@ -113,12 +183,41 @@ export const Atom = {
     },
   },
 
-  text: {
-    props: {
-      value: "string" as Primitive,
-      muted: "boolean" as Primitive,
-    },
+ text: {
+  props: {
+    value: "string" as Primitive,
+
+    variant: [
+      "default",
+      "muted",
+      "subtle",
+      "danger",
+      "success",
+    ] as const,
+
+    size: [
+      "sm",
+      "md",
+      "lg",
+      "xl",
+    ] as const,
+
+    weight: [
+      "regular",
+      "medium",
+      "semibold",
+      "bold",
+    ] as const,
+
+    align: [
+      "left",
+      "center",
+      "right",
+    ] as const,
+
+    nowrap: "boolean" as Primitive,
   },
+},
 
   divider: {
     props: {} as const,
@@ -154,10 +253,28 @@ export const Atom = {
 
     external: "boolean" as Primitive,
 
-    underline: "boolean" as Primitive,
-    muted: "boolean" as Primitive,
+    disabled: "boolean" as Primitive,
 
     icon: "string" as Primitive,
+
+    variant: [
+      "default",
+      "muted",
+      "subtle",
+      "danger",
+    ] as const,
+
+    underline: [
+      "always",
+      "hover",
+      "never",
+    ] as const,
+
+    size: [
+      "sm",
+      "md",
+      "lg",
+    ] as const,
   },
 },
 

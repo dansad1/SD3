@@ -1,13 +1,20 @@
-import type { PageEffect } from "@/framework/page/runtime/effects/types"
+import type { PageEffect }
+  from "@/framework/page/runtime/effects/types"
 
-export function isActionResult(
-  value: unknown
-): value is {
+export interface ActionResult {
   status?: string
   message?: string
   redirect?: string
   effects?: PageEffect[]
-} {
+
+  // 🔥 NEW
+  errors?: Record<string, string[]>
+}
+
+export function isActionResult(
+  value: unknown
+): value is ActionResult {
+
   return (
     typeof value === "object" &&
     value !== null

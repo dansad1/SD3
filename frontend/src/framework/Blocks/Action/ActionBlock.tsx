@@ -31,13 +31,28 @@ export function ActionBlock({
   const loading = isRunning(finalAction)
 
   return (
-    <button
-      type="button"
-      className={`ui-btn ui-btn-${variant}`}
-      disabled={loading}
-      onClick={() => void runAction(finalAction, ctx)}
-    >
-      {loading ? "..." : label}
-    </button>
+   <button
+  type="button"
+  className={[
+    "ui-btn",
+
+    `ui-btn-${variant}`,
+
+    "ui-btn-md",
+
+    loading && "is-loading",
+  ]
+    .filter(Boolean)
+    .join(" ")}
+  disabled={loading}
+  aria-busy={loading}
+  onClick={() =>
+    void runAction(finalAction, ctx)
+  }
+>
+  <span className="ui-btn-label">
+    {loading ? "..." : label}
+  </span>
+</button>
   )
 }

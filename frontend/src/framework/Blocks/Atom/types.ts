@@ -20,8 +20,34 @@ export type SpacerBlock = BaseBlock & {
 
 export type TextBlock = BaseBlock & {
   type: "text"
-  value: string
-  muted?: boolean
+
+  value?: string
+
+  variant?:
+    | "default"
+    | "muted"
+    | "subtle"
+    | "danger"
+    | "success"
+
+  size?:
+    | "sm"
+    | "md"
+    | "lg"
+    | "xl"
+
+  weight?:
+    | "regular"
+    | "medium"
+    | "semibold"
+    | "bold"
+
+  align?:
+    | "left"
+    | "center"
+    | "right"
+
+  nowrap?: boolean
 }
 
 export type BadgeBlock = BaseBlock & {
@@ -34,14 +60,30 @@ export type LinkBlock = BaseBlock & {
   type: "link"
 
   label?: string
+
   to?: string
 
   external?: boolean
 
-  underline?: boolean
-  muted?: boolean
+  disabled?: boolean
 
   icon?: string
+
+  variant?:
+    | "default"
+    | "muted"
+    | "subtle"
+    | "danger"
+
+  underline?:
+    | "always"
+    | "hover"
+    | "never"
+
+  size?:
+    | "sm"
+    | "md"
+    | "lg"
 }
 
 

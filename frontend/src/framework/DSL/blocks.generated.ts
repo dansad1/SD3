@@ -6,9 +6,11 @@ import type { DSLComponent } from "./runtime/types"
 
 export type Bind<T> = T | `$${string}`
 export type ContainerDSL = {
-  maxWidth?: ("xs" | "sm" | "md" | "lg" | "xl") | `$${string}`
+  maxWidth?: ("xs" | "sm" | "md" | "lg" | "xl" | "full") | `$${string}`
   align?: ("left" | "center" | "right") | `$${string}`
-  padding?: ("none" | "sm" | "md" | "lg") | `$${string}`
+  padding?: ("none" | "sm" | "md" | "lg" | "xl") | `$${string}`
+  fluid?: boolean | `$${string}`
+  fullHeight?: boolean | `$${string}`
 }
 
 export const Container: DSLComponent<ContainerDSL> = (props) =>
@@ -18,9 +20,13 @@ export const Container: DSLComponent<ContainerDSL> = (props) =>
   )
 
 export type StackDSL = {
-  gap?: ("none" | "sm" | "md" | "lg") | `$${string}`
+  gap?: ("none" | "sm" | "md" | "lg" | "xl") | `$${string}`
   align?: ("start" | "center" | "end" | "stretch") | `$${string}`
   variant?: ("default" | "card") | `$${string}`
+  size?: ("sm" | "md" | "lg" | "xl" | "full") | `$${string}`
+  padding?: ("none" | "sm" | "md" | "lg" | "xl") | `$${string}`
+  width?: ("auto" | "sm" | "md" | "lg" | "full") | `$${string}`
+  justify?: ("start" | "center" | "between" | "end") | `$${string}`
 }
 
 export const Stack: DSLComponent<StackDSL> = (props) =>
@@ -78,7 +84,11 @@ export const Heading: DSLComponent<HeadingDSL> = (props) =>
 
 export type TextDSL = {
   value?: string | `$${string}`
-  muted?: boolean | `$${string}`
+  variant?: ("default" | "muted" | "subtle" | "danger" | "success") | `$${string}`
+  size?: ("sm" | "md" | "lg" | "xl") | `$${string}`
+  weight?: ("regular" | "medium" | "semibold" | "bold") | `$${string}`
+  align?: ("left" | "center" | "right") | `$${string}`
+  nowrap?: boolean | `$${string}`
 }
 
 export const Text: DSLComponent<TextDSL> = (props) =>
@@ -121,9 +131,11 @@ export type LinkDSL = {
   label?: string | `$${string}`
   to?: string | `$${string}`
   external?: boolean | `$${string}`
-  underline?: boolean | `$${string}`
-  muted?: boolean | `$${string}`
+  disabled?: boolean | `$${string}`
   icon?: string | `$${string}`
+  variant?: ("default" | "muted" | "subtle" | "danger") | `$${string}`
+  underline?: ("always" | "hover" | "never") | `$${string}`
+  size?: ("sm" | "md" | "lg") | `$${string}`
 }
 
 export const Link: DSLComponent<LinkDSL> = (props) =>
