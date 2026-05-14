@@ -1,0 +1,3 @@
+.ui-spacer-sm { height: var(--space-2); }
+.ui-spacer-md { height: var(--space-4); }
+.ui-spacer-lg { height: var(--space-6); }

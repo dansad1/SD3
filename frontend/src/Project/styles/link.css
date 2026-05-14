@@ -1,0 +1,142 @@
+/* ======================================================
+   LINK
+   ====================================================== */
+
+.ui-link {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  width: fit-content;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.12s ease;
+
+  line-height: 1.4;
+}
+
+/* ======================================================
+   INTERACTION
+   ====================================================== */
+
+.ui-link:hover {
+  opacity: 0.92;
+}
+
+.ui-link:active {
+  transform: translateY(1px);
+}
+
+.ui-link:focus-visible {
+  outline: 2px solid rgba(99,102,241,0.35);
+
+  outline-offset: 3px;
+
+  border-radius: 6px;
+}
+
+/* ======================================================
+   VARIANTS
+   ====================================================== */
+
+.ui-link.variant-default {
+  color: var(--link-color);
+}
+
+.ui-link.variant-muted {
+  color: var(--text-secondary);
+
+  opacity: 0.78;
+}
+
+.ui-link.variant-subtle {
+  color: inherit;
+
+  opacity: 0.88;
+}
+
+.ui-link.variant-danger {
+  color: #dc2626;
+}
+
+/* ======================================================
+   UNDERLINE
+   ====================================================== */
+
+.ui-link.underline-always {
+  text-decoration: underline;
+}
+
+.ui-link.underline-hover {
+  text-decoration: none;
+}
+
+.ui-link.underline-hover:hover {
+  text-decoration: underline;
+}
+
+.ui-link.underline-never {
+  text-decoration: none;
+}
+
+/* ======================================================
+   SIZES
+   ====================================================== */
+
+.ui-link.size-sm {
+  font-size: 0.875rem;
+}
+
+.ui-link.size-md {
+  font-size: 1rem;
+}
+
+.ui-link.size-lg {
+  font-size: 1.125rem;
+}
+
+/* ======================================================
+   STATES
+   ====================================================== */
+
+.ui-link.disabled {
+  opacity: 0.45;
+
+  pointer-events: none;
+
+  cursor: not-allowed;
+}
+
+.ui-link.external {
+  font-weight: 500;
+}
+
+/* ======================================================
+   PARTS
+   ====================================================== */
+
+.ui-link-label {
+  line-height: inherit;
+}
+
+.ui-link-icon {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.ui-link-external {
+  font-size: 0.82em;
+
+  opacity: 0.7;
+}
