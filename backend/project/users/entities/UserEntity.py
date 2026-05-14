@@ -20,7 +20,7 @@ class UserEntity(BaseEntity):
 
     model = User
 
-    entity = "users"
+    entity = "user"
 
     # =====================================================
     # UI

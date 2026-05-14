@@ -18,79 +18,38 @@ export async function runEffect(
   console.log("[runEffect] incoming", effect)
 
   switch (effect.type) {
-    case "toast": {
-      console.log("[runEffect] toast", {
-        message: effect.message,
-        variant: effect.variant,
-      })
-
+    case "toast":
       return await runToastEffect(effect, deps)
-    }
 
-    case "navigate": {
-      console.log("[runEffect] navigate", {
-        page: effect.page,
-      })
-
+    case "navigate":
       return await runNavigateEffect(effect, deps)
-    }
 
-    case "reload": {
-      console.log("[runEffect] reload", {
-        target: effect.target,
-      })
-
+    case "reload":
       return await runReloadEffect(effect, deps)
-    }
 
-    case "set_data": {
-      console.log("[runEffect] set_data", {
-        key: effect.key,
-        value: effect.value,
-      })
-
+    case "set_data":
       return await runSetDataEffect(effect, deps)
-    }
 
-    case "emit": {
-      console.log("[runEffect] emit", {
-        event: effect.event,
-        payload: effect.payload,
-      })
-
+    case "emit":
       return await runEmitEffect(effect, deps)
-    }
 
-    case "close_modal": {
-      console.log("[runEffect] close_modal")
-
+    case "close_modal":
       return await runCloseModalEffect(effect, deps)
-    }
 
-    case "open_modal": {
-      console.log("[runEffect] open_modal", {
-        modal: effect.modal,
-        payload: effect.payload,
-      })
-
+    case "open_modal":
       return await runOpenModalEffect(effect, deps)
-    }
-
-    /* ================= AUTH ================= */
 
     case "auth.reload_user": {
       console.log("[runEffect] auth.reload_user")
 
-      window.dispatchEvent(
-        new CustomEvent("app:effect", {
-          detail: { type: "auth.reload_user" },
-        })
-      )
+      const refresh = (window as any).__refreshAuth
+
+      if (typeof refresh === "function") {
+        await refresh()
+      }
 
       return
     }
-
-    /* ================= FALLBACK ================= */
 
     default: {
       const exhaustive: never = effect

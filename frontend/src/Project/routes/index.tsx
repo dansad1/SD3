@@ -4,42 +4,68 @@ import { AuthContext } from "@/framework/auth/AuthContext"
 import SchemaRoute from "./SchemaRoute"
 
 export default function AppRoutes() {
+
   const auth = useContext(AuthContext)
 
   /* ================= LOADING ================= */
 
   if (!auth || auth.status === "loading") {
-    return null // или спиннер
+    return null
   }
 
   /* ================= ROUTES ================= */
 
   return (
+
     <Routes>
 
-      {/* 🔐 LOGIN (всегда доступен) */}
-      <Route path="/login" element={<SchemaRoute />} />
+      {/* 🔐 LOGIN */}
+      <Route
+        path="/login"
+        element={<SchemaRoute />}
+      />
 
       {/* 🏠 ROOT */}
       <Route
         path="/"
         element={
           auth.status === "authenticated"
-            ? <Navigate to="/page/schedule:week" replace />
-            : <Navigate to="/login" replace />
+
+            ? (
+              <Navigate
+                to="/page/user:list"
+                replace
+              />
+            )
+
+            : (
+              <Navigate
+                to="/login"
+                replace
+              />
+            )
         }
       />
 
-      {/* 🔐 PROTECTED PAGES */}
+      {/* 🔐 PROTECTED */}
       <Route
         path="/page/:code"
         element={
+
           auth.status === "authenticated"
+
             ? <SchemaRoute />
-            : <Navigate to="/login" replace />
+
+            : (
+              <Navigate
+                to="/login"
+                replace
+              />
+            )
         }
       />
 
     </Routes>
+
   )
 }

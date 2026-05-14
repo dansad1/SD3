@@ -1,4 +1,9 @@
-import { useMemo } from "react"
+import {
+  useMemo,
+  useCallback,
+  useRef,
+  useEffect,
+} from "react"
 
 import { usePageAction }
   from "../../Action/usePageAction"
@@ -15,29 +20,36 @@ import type {
   FormEntityConfig,
 } from "../types/FormConfig"
 
-
 export function useFormController(
   config: FormConfig
 ) {
 
-  // =====================================================
-  // FORM
-  // =====================================================
+  /* ==================================================== */
+  /* FORM */
+  /* ==================================================== */
 
   const form =
     useFormRuntime(config)
 
- 
+  /* ==================================================== */
+  /* SUBMIT REF */
+  /* ==================================================== */
 
-  // =====================================================
-  // ACTION ID
-  // =====================================================
+  const submitRef =
+    useRef(form.submit)
+
+  useEffect(() => {
+
+    submitRef.current =
+      form.submit
+
+  }, [form.submit])
+
+  /* ==================================================== */
+  /* ACTION ID */
+  /* ==================================================== */
 
   const actionId = useMemo(() => {
-
-    // ===================================================
-    // ENTITY FORM
-    // ===================================================
 
     if (config.formType === "entity") {
 
@@ -45,6 +57,7 @@ export function useFormController(
         config as FormEntityConfig
 
       const scope =
+
         entityConfig.objectId
 
           ? `${entityConfig.entity}:${entityConfig.objectId}`
@@ -54,10 +67,6 @@ export function useFormController(
       return `form:${scope}`
     }
 
-    // ===================================================
-    // ACTION FORM
-    // ===================================================
-
     const actionConfig =
       config as FormActionConfig
 
@@ -65,29 +74,23 @@ export function useFormController(
 
   }, [config])
 
-  // =====================================================
-  // DIRTY
-  // =====================================================
+  /* ==================================================== */
+  /* DIRTY */
+  /* ==================================================== */
 
   usePageDirty(
     actionId,
     form.dirty
   )
 
-  // =====================================================
-  // LABEL
-  // =====================================================
+  /* ==================================================== */
+  /* LABEL */
+  /* ==================================================== */
 
-  function getSubmitLabel(
-    config: FormConfig
-  ) {
+  const label = useMemo(() => {
 
     const submit =
       config.submit
-
-    // ===============================================
-    // CUSTOM LABEL
-    // ===============================================
 
     if (
 
@@ -104,61 +107,85 @@ export function useFormController(
       return submit.label
     }
 
-    // ===============================================
-    // ENTITY DEFAULT
-    // ===============================================
-
     if (config.formType === "entity") {
 
       return "Сохранить"
     }
 
-    // ===============================================
-    // ACTION DEFAULT
-    // ===============================================
-
     return "Отправить"
-  }
 
-  const label =
-    getSubmitLabel(config)
+  }, [config])
 
-  // =====================================================
-  // RUN
-  // =====================================================
+  /* ==================================================== */
+  /* RUN */
+  /* ==================================================== */
 
-  const run = async () => {
+  const run = useCallback(async () => {
 
     console.log(
-      "🚀 FORM SUBMIT",
-      form.values
+      "🚀 FORM SUBMIT"
     )
 
-    return await form.submit()
-  }
+    return await submitRef.current()
 
-  // =====================================================
-  // REGISTER ACTION
-  // =====================================================
+  }, [])
 
-  usePageAction(actionId, {
+  /* ==================================================== */
+  /* VALIDATE */
+  /* ==================================================== */
 
-    id: actionId,
+  const validate = useCallback(() => {
 
-    order: 10,
+    return true
+
+  }, [])
+
+  /* ==================================================== */
+  /* ACTION HANDLER */
+  /* ==================================================== */
+
+  const actionHandler = useMemo(() => {
+
+    return {
+
+      id: actionId,
+
+      order: 10,
+
+      label,
+
+      placement: "form" as const,
+
+      validate,
+
+      run,
+
+    }
+
+  }, [
+
+    actionId,
 
     label,
 
-    placement: "form",
-
-    validate: () => true,
+    validate,
 
     run,
-  })
 
-  // =====================================================
-  // RETURN
-  // =====================================================
+  ])
+
+  /* ==================================================== */
+  /* REGISTER ACTION */
+  /* ==================================================== */
+
+  usePageAction(
+    actionId,
+    actionHandler
+  )
+
+  /* ==================================================== */
+  /* RETURN */
+  /* ==================================================== */
 
   return form
 }

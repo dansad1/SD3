@@ -17,75 +17,163 @@ function isLink(item: MenuItem): item is Extract<MenuItem, { to: string }> {
 }
 
 export function NavPanel() {
-  const auth = useContext(AuthContext)
-  const navigate = useNavigate()
 
-  if (!auth || auth.status === "loading") return null
-  if (auth.status !== "authenticated") return null
+  const auth =
+    useContext(AuthContext)
 
-  const permissions = auth.me?.permissions ?? []
-  const items = filterMenu(MENU, permissions)
+  const navigate =
+    useNavigate()
 
-  const handleAction = async (item: Extract<MenuItem, { action: string }>) => {
-    if (item.action === "auth.logout") {
-      const res = await auth.logout()
+  if (!auth || auth.status === "loading") {
+    return null
+  }
 
-      if (res?.redirect) {
-        navigate("/page/" + res.redirect)
-      }
+  if (auth.status !== "authenticated") {
+    return null
+  }
+
+  // 🔥 ВОТ ЭТОГО НЕ ХВАТАЛО
+  const { logout } = auth
+
+  const permissions =
+    auth.me?.permissions ?? []
+
+  const items =
+    filterMenu(
+      MENU,
+      permissions
+    )
+
+  const handleAction = async (
+    item: Extract<
+      MenuItem,
+      { action: string }
+    >
+  ) => {
+
+    /* ====================================== */
+    /* LOGOUT */
+    /* ====================================== */
+
+    if (
+      item.action === "logout"
+    ) {
+
+      await logout()
 
       return
     }
 
-    const res = await submitAction(item.action, {})
+    /* ====================================== */
+    /* GENERIC ACTION */
+    /* ====================================== */
+
+    const res =
+      await submitAction(
+        item.action,
+        {}
+      )
 
     if (res?.redirect) {
-      navigate("/page/" + res.redirect)
+
+      navigate(
+        "/page/" +
+        res.redirect
+      )
     }
   }
 
- return (
-  <nav className="nav-panel">
+  return (
 
-    {/* 📋 MENU (слева) */}
-    <div className="nav-left">
-      <ul className="nav-list">
-        {items.map((item) => (
-          <li key={item.label}>
-            {isLink(item) ? (
-              <NavLink
-                to={item.to}
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                {item.label}
-              </NavLink>
-            ) : (
-              <button
-                onClick={() => handleAction(item)}
-                className="nav-link nav-button"
-              >
-                {item.label}
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <nav className="nav-panel">
 
-    {/* 👤 USER (справа) */}
-    <div className="nav-right">
-      <div className="nav-user">
-        <div className="nav-user-name">
-          {auth.me?.username}
-        </div>
-        <div className="nav-user-meta">
-          {auth.me?.email}
-        </div>
+      {/* ================================== */}
+      {/* MENU */}
+      {/* ================================== */}
+
+      <div className="nav-left">
+
+        <ul className="nav-list">
+
+          {items.map((item) => (
+
+            <li key={item.label}>
+
+              {isLink(item)
+
+                ? (
+
+                  <NavLink
+                    to={item.to}
+
+                    className={({
+                      isActive
+                    }) =>
+
+                      isActive
+
+                        ? "nav-link active"
+
+                        : "nav-link"
+                    }
+                  >
+
+                    {item.label}
+
+                  </NavLink>
+
+                ) : (
+
+                  <button
+
+                    onClick={() =>
+                      handleAction(item)
+                    }
+
+                    className="
+                      nav-link
+                      nav-button
+                    "
+                  >
+
+                    {item.label}
+
+                  </button>
+
+                )}
+
+            </li>
+
+          ))}
+
+        </ul>
+
       </div>
-    </div>
 
-  </nav>
-)
+      {/* ================================== */}
+      {/* USER */}
+      {/* ================================== */}
+
+      <div className="nav-right">
+
+        <div className="nav-user">
+
+          <div className="nav-user-name">
+
+            {auth.me?.username}
+
+          </div>
+
+          <div className="nav-user-meta">
+
+            {auth.me?.email}
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </nav>
+  )
 }
