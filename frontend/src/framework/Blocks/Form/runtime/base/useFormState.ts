@@ -1,286 +1,295 @@
+// src/framework/Blocks/Form/runtime/base/useFormState.ts
+
 import {
   useCallback,
-  useRef,
-  useState,
-  useEffect,
   useMemo,
+  useState,
 } from "react"
 
-import type { Json } from "@/framework/types/json"
-import type { FormSchema } from "../../types/types"
-import type {
-  FormRuntimeMeta,
-  FormRuntimeState,
-} from "../reactions/types"
+import type { Json }
+  from "@/framework/types/json"
 
-/* ================= TYPES ================= */
+import type { FormSchema }
+  from "../../types/types"
 
-export type FormState = ReturnType<
-  typeof useFormState<FormSchema>
->
+export type FormValues =
+  Record<string, Json>
 
-type Primitive = string | number | boolean | null
+export type FieldErrors =
+  Record<string, string[]>
 
-type RelationObject = {
-  value?: Primitive
-  id?: Primitive
+export type FormState = {
+  values: FormValues
+  initialValues: FormValues
+
+  fieldErrors: FieldErrors
+  formError: string | null
+
+  schema: FormSchema | null
+
+  dirty: boolean
+  loading: boolean
+  saving: boolean
+  readonly: boolean
+
+  setValue: (
+    name: string,
+    value: Json
+  ) => void
+
+  setValues: (
+    values: FormValues
+  ) => void
+
+  setInitialValues: (
+    values: FormValues
+  ) => void
+
+  setFieldErrors: (
+    errors: FieldErrors
+  ) => void
+
+  clearFieldError: (
+    name: string
+  ) => void
+
+  setFormError: (
+    value: string | null
+  ) => void
+
+  setLoading: (
+    value: boolean
+  ) => void
+
+  setSaving: (
+    value: boolean
+  ) => void
+
+  setDirty: (
+    value: boolean
+  ) => void
+
+  setSchema: (
+    schema: FormSchema | null
+  ) => void
+
+  resetDirty: () => void
+
+  reset: () => void
+
+  buildPayload: (
+    mode?: "all" | "dirty"
+  ) => FormValues
 }
 
-/* ================= HELPERS ================= */
+type Params = {
+  initial?: FormValues
+  readonly?: boolean
+}
 
-function normalizeValue(value: Json): Json {
-  if (Array.isArray(value)) {
-    return value
-      .map(v => {
-        if (typeof v === "object" && v !== null) {
-          const obj = v as RelationObject
+export function useFormState({
+  initial = {},
+  readonly = false,
+}: Params = {}): FormState {
+  const [values, setValuesState] =
+    useState<FormValues>(initial)
 
-          if (obj.value !== undefined) return obj.value
-          if (obj.id !== undefined) return obj.id
+  const [
+    initialValues,
+    setInitialValuesState,
+  ] = useState<FormValues>(initial)
 
-          return null
+  const [
+    fieldErrors,
+    setFieldErrorsState,
+  ] = useState<FieldErrors>({})
+
+  const [
+    formError,
+    setFormError,
+  ] = useState<string | null>(null)
+
+  const [
+    schema,
+    setSchemaState,
+  ] = useState<FormSchema | null>(null)
+
+  const [dirty, setDirty] =
+    useState(false)
+
+  const [loading, setLoading] =
+    useState(false)
+
+  const [saving, setSaving] =
+    useState(false)
+
+  const setValue = useCallback(
+    (
+      name: string,
+      value: Json
+    ) => {
+      setValuesState(prev => ({
+        ...prev,
+        [name]: value,
+      }))
+
+      setDirty(true)
+
+      setFieldErrorsState(prev => {
+        if (!prev[name]) {
+          return prev
         }
 
-        return v
+        const next = { ...prev }
+        delete next[name]
+
+        return next
       })
-      .filter((v): v is Primitive => v !== null)
-  }
-
-  if (typeof value === "object" && value !== null) {
-    const obj = value as RelationObject
-
-    if (obj.value !== undefined) return obj.value
-    if (obj.id !== undefined) return obj.id
-
-    return null
-  }
-
-  return value
-}
-
-function createMeta(): FormRuntimeMeta {
-  return {
-    visible: {},
-    disabled: {},
-  }
-}
-
-/* ================= HOOK ================= */
-
-export function useFormState<Schema>() {
-  const [schema, setSchema] = useState<Schema | null>(null)
-
-  const [values, setValues] = useState<Record<string, Json>>({})
-  const [initial, setInitial] = useState<Record<string, Json>>({})
-  const [meta, setMeta] = useState<FormRuntimeMeta>(createMeta)
-
-  const [dirtyFields, setDirtyFields] = useState<Set<string>>(new Set())
-
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-  const [formError, setFormError] = useState<string | null>(null)
-
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [readonly, setReadonly] = useState(false)
-
-  const valuesRef = useRef(values)
-  const initialRef = useRef(initial)
-
-  /* ================= SYNC REFS ================= */
-
-  useEffect(() => {
-    valuesRef.current = values
-  }, [values])
-
-  useEffect(() => {
-    initialRef.current = initial
-  }, [initial])
-
-  const dirty = dirtyFields.size > 0
-
-  /* ================= DIRTY ================= */
-
-  const recalcDirty = useCallback(
-    (nextValues: Record<string, Json>) => {
-      const nextDirty = new Set<string>()
-
-      for (const [key, value] of Object.entries(nextValues)) {
-        if (value !== initialRef.current[key]) {
-          nextDirty.add(key)
-        }
-      }
-
-      setDirtyFields(nextDirty)
     },
     []
   )
 
-  /* ================= INITIAL ================= */
+  const setValues = useCallback(
+    (
+      next: FormValues
+    ) => {
+      setValuesState(next)
+      setDirty(true)
+    },
+    []
+  )
 
-  const setInitialValues = useCallback((init: Record<string, Json>) => {
-    const normalized = Object.fromEntries(
-      Object.entries(init).map(([key, value]) => [
-        key,
-        normalizeValue(value),
-      ])
+  const setInitialValues =
+    useCallback(
+      (
+        next: FormValues
+      ) => {
+        setInitialValuesState(next)
+        setValuesState(next)
+        setDirty(false)
+      },
+      []
     )
 
-    setValues(normalized)
-    setInitial(normalized)
-    setMeta(createMeta())
+  const setFieldErrors =
+    useCallback(
+      (
+        errors: FieldErrors
+      ) => {
+        console.log(
+          "🧨 SET FIELD ERRORS",
+          errors
+        )
 
-    setDirtyFields(new Set())
-    setFieldErrors({})
-    setFormError(null)
-  }, [])
+        setFieldErrorsState(errors)
+      },
+      []
+    )
 
-  /* ================= 🔥 setValue (FINAL) ================= */
+  const clearFieldError =
+    useCallback(
+      (
+        name: string
+      ) => {
+        setFieldErrorsState(prev => {
+          if (!prev[name]) {
+            return prev
+          }
 
-  const setValue = useCallback((
-    name: string,
-    value: Json | ((prev: Json) => Json)
-  ) => {
-    let computedNext: Json
+          const next = { ...prev }
+          delete next[name]
 
-    setValues(prev => {
-      const prevValue = prev[name]
+          return next
+        })
+      },
+      []
+    )
 
-      computedNext =
-        typeof value === "function"
-          ? (value as (v: Json) => Json)(prevValue)
-          : value
-
-      const next = {
-        ...prev,
-        [name]: computedNext,
-      }
-
-      valuesRef.current = next
-      return next
-    })
-
-    setDirtyFields(prev => {
-      const next = new Set(prev)
-
-      const initialValue = initialRef.current[name]
-
-      if (computedNext !== initialValue) {
-        next.add(name)
-      } else {
-        next.delete(name)
-      }
-
-      return next
-    })
-  }, [])
-
-  /* ================= PATCH ================= */
-
-  const patch = useCallback((patchValues: Record<string, Json>) => {
-    setValues(prev => {
-      const next = {
-        ...prev,
-        ...patchValues,
-      }
-
-      valuesRef.current = next
-      return next
-    })
-
-    recalcDirty({
-      ...valuesRef.current,
-      ...patchValues,
-    })
-  }, [recalcDirty])
-
-  /* ================= RUNTIME ================= */
-
-  const replaceRuntimeState = useCallback(
-    (next: FormRuntimeState) => {
-      setValues(next.values)
-      valuesRef.current = next.values
-
-      setMeta(next.meta)
-      recalcDirty(next.values)
+  const setSchema = useCallback(
+    (
+      next: FormSchema | null
+    ) => {
+      setSchemaState(next)
     },
-    [recalcDirty]
+    []
   )
 
-  /* ================= RESET ================= */
+  const resetDirty =
+    useCallback(() => {
+      setDirty(false)
+    }, [])
 
-  const resetDirty = useCallback(() => {
-    const nextInitial = { ...valuesRef.current }
+  const reset =
+    useCallback(() => {
+      setValuesState(initialValues)
+      setFieldErrorsState({})
+      setFormError(null)
+      setDirty(false)
+      setSaving(false)
+    }, [initialValues])
 
-    setInitial(nextInitial)
-    initialRef.current = nextInitial
+  const buildPayload =
+    useCallback(
+      (
+        _mode:
+          | "all"
+          | "dirty" = "all"
+      ) => {
+        return values
+      },
+      [values]
+    )
 
-    setDirtyFields(new Set())
-  }, [])
+  return useMemo(() => ({
+    values,
+    initialValues,
 
-  /* ================= PAYLOAD ================= */
+    fieldErrors,
+    formError,
 
-  const buildPayload = useCallback(
-    (strategy: "all" | "dirty") => {
-      const v = valuesRef.current
+    schema,
 
-      if (strategy === "all") {
-        return { ...v }
-      }
+    dirty,
+    loading,
+    saving,
+    readonly,
 
-      return Object.fromEntries(
-        Array.from(dirtyFields).map(key => [key, v[key]])
-      )
-    },
-    [dirtyFields]
-  )
+    setValue,
+    setValues,
+    setInitialValues,
 
-  /* ================= RETURN ================= */
+    setFieldErrors,
+    clearFieldError,
+    setFormError,
 
-  return useMemo(
-    () => ({
-      schema,
-      values,
-      meta,
+    setLoading,
+    setSaving,
+    setDirty,
 
-      loading,
-      saving,
-      readonly,
-      dirty,
-      dirtyFields,
+    setSchema,
 
-      fieldErrors,
-      formError,
+    resetDirty,
+    reset,
 
-      setSchema,
-      setInitialValues,
-      setLoading,
-      setSaving,
-      setReadonly,
-      setFieldErrors,
-      setFormError,
-
-      setValue,
-      patch,
-      replaceRuntimeState,
-      resetDirty,
-      buildPayload,
-    }),
-    [
-      schema,
-      values,
-      meta,
-      loading,
-      saving,
-      readonly,
-      dirty,
-      dirtyFields,
-      fieldErrors,
-      formError,
-      setValue,
-      patch,
-      replaceRuntimeState,
-      resetDirty,
-      buildPayload,
-    ]
-  )
+    buildPayload,
+  }), [
+    values,
+    initialValues,
+    fieldErrors,
+    formError,
+    schema,
+    dirty,
+    loading,
+    saving,
+    readonly,
+    setValue,
+    setValues,
+    setInitialValues,
+    setFieldErrors,
+    clearFieldError,
+    setSchema,
+    resetDirty,
+    reset,
+    buildPayload,
+  ])
 }

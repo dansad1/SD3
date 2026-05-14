@@ -10,21 +10,64 @@ export async function handleSubmitError(
   state: FormState,
   page: PageApi
 ) {
-  const err = parseApiError(error)
 
-  console.error("❌ SUBMIT ERROR", err)
+  const err =
+    parseApiError(error)
+
+  console.error(
+    "❌ SUBMIT ERROR",
+    err
+  )
+
+  // =====================
+  // FIELD ERRORS
+  // =====================
 
   if (err.field_errors) {
-    state.setFieldErrors(err.field_errors)
+
+    state.setFieldErrors(
+      err.field_errors
+    )
   }
 
-  const message = getApiErrorMessage(err)
+  // =====================
+  // MESSAGE
+  // =====================
 
-  state.setFormError(message)
+  const message =
+    getApiErrorMessage(err)
+
+  // =====================
+  // ONLY GLOBAL ERRORS
+  // =====================
+
+  const hasOnlyGlobalErrors =
+    Boolean(
+      err.field_errors?.__all__
+    )
+
+  if (hasOnlyGlobalErrors) {
+
+    state.setFormError(message)
+
+  } else {
+
+    // field validation
+    // НЕ пишем в form body
+
+    state.setFormError(null)
+  }
+
+  // =====================
+  // TOAST
+  // =====================
 
   await page.runEffect({
+
     type: "toast",
+
     variant: "error",
+
     message,
   })
 }

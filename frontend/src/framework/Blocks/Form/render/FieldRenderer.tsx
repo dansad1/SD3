@@ -6,7 +6,8 @@ import type {
   Value,
 } from "@/framework/components/dynamic/types"
 
-import type { Json } from "@/framework/types/json"
+import type { Json }
+  from "@/framework/types/json"
 
 /* ================= COMMAND ================= */
 
@@ -16,7 +17,10 @@ type FieldCommand = {
   mode: "append" | "replace"
 }
 
-function isCommand(v: unknown): v is FieldCommand {
+function isCommand(
+  v: unknown
+): v is FieldCommand {
+
   return (
     typeof v === "object" &&
     v !== null &&
@@ -29,11 +33,18 @@ function isCommand(v: unknown): v is FieldCommand {
 /* ================= conversions ================= */
 
 type ValueObject = {
-  value: string | number | null
+  value:
+    | string
+    | number
+    | null
+
   label?: string
 }
 
-function isValueObject(v: unknown): v is ValueObject {
+function isValueObject(
+  v: unknown
+): v is ValueObject {
+
   return (
     typeof v === "object" &&
     v !== null &&
@@ -41,71 +52,135 @@ function isValueObject(v: unknown): v is ValueObject {
   )
 }
 
-function toValue(value: Json): Value {
-  if (value === null || value === undefined) return null
+function toValue(
+  value: Json
+): Value {
 
-  if (isValueObject(value)) {
-    const v = value.value
-    return v == null ? null : String(v)
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return null
   }
 
-  if (typeof value === "number") return String(value)
+  if (isValueObject(value)) {
+
+    const v = value.value
+
+    return v == null
+      ? null
+      : String(v)
+  }
+
+  if (
+    typeof value === "number"
+  ) {
+    return String(value)
+  }
 
   return value as Value
 }
 
-function toJson(value: Value): Json {
-  if (value instanceof File) return null
+function toJson(
+  value: Value
+): Json {
+
+  if (value instanceof File) {
+    return null
+  }
+
   return value as Json
 }
 
 /* ================= types ================= */
 
 type Props = {
+
   field: FieldSchema
+
   value: Json
 
+  errors?: string[]
+
   // текущее поле
-  onChange: (v: Json) => void
+  onChange: (
+    v: Json
+  ) => void
 
   // 🔥 доступ к форме
   setFieldValue: (
     name: string,
-    updater: (prev: Json) => Json
+    updater: (
+      prev: Json
+    ) => Json
   ) => void
 }
 
 /* ================= component ================= */
 
 export function FieldRenderer({
+
   field,
+
   value,
+
+  errors = [],
+
   onChange,
+
   setFieldValue,
+
 }: Props) {
-  const options = field.choices ?? []
+
+  // ================= ERRORS =================
+
+  const error =
+    errors[0]
+
+  // ================= OPTIONS =================
+
+  const options =
+    field.choices ?? []
 
   const isCheckboxList =
-    Boolean(field.multiple) && options.length > 0
+    Boolean(field.multiple) &&
+    options.length > 0
 
-  const normalizedValue = toValue(value)
+  const normalizedValue =
+    toValue(value)
 
-  console.log("🎯 FIELD RENDER", {
-    name: field.name,
-    widget: field.widget,
-    rawValue: value,
-    normalizedValue,
-  })
+  console.log(
+    "🎯 FIELD RENDER",
+    {
+      name: field.name,
+      widget: field.widget,
+      rawValue: value,
+      normalizedValue,
+      errors,
+    }
+  )
 
   return (
-    <div className="form-field">
+
+    <div
+      className={
+        error
+          ? "form-field has-error"
+          : "form-field"
+      }
+    >
 
       {/* ================= LABEL ================= */}
 
       {field.label && (
+
         <label className="form-label">
+
           {field.label}
-          {field.required && " *"}
+
+          {field.required &&
+            " *"}
+
         </label>
       )}
 
@@ -116,57 +191,101 @@ export function FieldRenderer({
         {isCheckboxList ? (
 
           <div className="ui-checkbox-list">
+
             <OptionIterator
               options={options}
               value={normalizedValue}
               multiple
-              onChange={(v) => onChange(v as Json)}
+              onChange={(v) =>
+                onChange(v as Json)
+              }
             >
+
               {(opt, ctx) => (
+
                 <label
                   key={opt.value}
-                  className="ui-checkbox-item"
+                  className="
+                    ui-checkbox-item
+                  "
                 >
+
                   <input
                     type="checkbox"
-                    checked={ctx.checked}
-                    onChange={ctx.toggle}
+                    checked={
+                      ctx.checked
+                    }
+                    onChange={
+                      ctx.toggle
+                    }
                   />
-                  <span>{opt.label}</span>
+
+                  <span>
+                    {opt.label}
+                  </span>
+
                 </label>
               )}
+
             </OptionIterator>
+
           </div>
 
         ) : (
 
           <DynamicField
+
             field={field}
-            value={normalizedValue}
+
+            value={
+              normalizedValue
+            }
+
             onChange={(v) => {
 
-              /* ================= COMMAND ================= */
+              // ================= COMMAND =================
 
               if (isCommand(v)) {
-                const { targetField, value, mode } = v
 
-                setFieldValue(targetField, (prev) => {
-                  const prevStr =
-                    typeof prev === "string" ? prev : ""
+                const {
+                  targetField,
+                  value,
+                  mode,
+                } = v
 
-                  if (mode === "append") {
-                    return (prevStr + value) as Json
+                setFieldValue(
+                  targetField,
+                  (prev) => {
+
+                    const prevStr =
+                      typeof prev ===
+                      "string"
+                        ? prev
+                        : ""
+
+                    if (
+                      mode ===
+                      "append"
+                    ) {
+
+                      return (
+                        prevStr +
+                        value
+                      ) as Json
+                    }
+
+                    return value as Json
                   }
-
-                  return value as Json
-                })
+                )
 
                 return
               }
 
-              /* ================= NORMAL ================= */
+              // ================= NORMAL =================
 
-              onChange(toJson(v))
+              onChange(
+                toJson(v)
+              )
             }}
           />
 
@@ -174,11 +293,28 @@ export function FieldRenderer({
 
       </div>
 
+      {/* ================= ERROR ================= */}
+
+      {error && (
+
+        <div
+          className="
+            form-error-text
+          "
+        >
+          {error}
+        </div>
+
+      )}
+
       {/* ================= HELP ================= */}
 
       {field.help_text && (
+
         <div className="form-help">
+
           {field.help_text}
+
         </div>
       )}
 

@@ -1,7 +1,7 @@
 # backend/auth/actions/LoginAction.py
 
 from django.contrib.auth import authenticate, login
-from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError
 
 from backend.engine.action.Base.BaseAction import BaseAction
 

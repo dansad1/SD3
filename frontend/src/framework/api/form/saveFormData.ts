@@ -1,4 +1,5 @@
 // src/framework/api/form/saveFormData.ts
+
 import { traceRuntime } from "@/framework/trace/runtime"
 import type { Json } from "@/framework/types/json"
 import { api } from "../client"
@@ -21,17 +22,52 @@ export type FormSubmitResult = {
   id?: string | number
   [key: string]: unknown
 }
+
+function assertSubmitResult(
+  result: FormSubmitResult
+): FormSubmitResult {
+
+  if (result.status === "error") {
+
+    throw {
+      type: "validation",
+
+      field_errors: result.errors ?? {},
+
+      message:
+        result.message ||
+        "Ошибка валидации формы",
+    }
+  }
+
+  return result
+}
+
 export function saveFormData(
   entity: string,
   data: Record<string, Json>,
   mode: "create" | "edit" = "create",
   objectId?: string | number
 ): Promise<FormSubmitResult> {
-  const query = buildFormParams(mode, objectId)
-  const url = `/entity/${entity}/form/submit/?${query}`
 
-  const exec = () =>
-    api.post<FormSubmitResult>(url, data)
+  const query = buildFormParams(
+    mode,
+    objectId
+  )
+
+  const url =
+    `/entity/${entity}/form/submit/?${query}`
+
+  const exec = async () => {
+
+    const result =
+      await api.post<FormSubmitResult>(
+        url,
+        data
+      )
+
+    return assertSubmitResult(result)
+  }
 
   const trace = traceRuntime.current()
 
@@ -47,7 +83,8 @@ export function saveFormData(
       entity,
       mode,
       objectId,
-      payloadKeys: Object.keys(data).length,
+      payloadKeys:
+        Object.keys(data).length,
     }
   )
 }
