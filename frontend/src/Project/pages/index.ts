@@ -20,4 +20,5 @@ for (const path in modules) {
   }
 
   PAGES[page.id] = page
+  console.log("PROJECT PAGES REGISTRY")
 }

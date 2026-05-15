@@ -13,10 +13,20 @@ export type MenuItem =
     }
 
 export const MENU: MenuItem[] = [
-  
+
+  {
+    label: "Пользователи",
+    to: "/page/user:list",
+  },
+
+  {
+    label: "Роли",
+    to: "/page/role:list",
+  },
+
   {
     label: "Выйти",
     action: "logout",
-    // permission не нужен
   },
+
 ]
