@@ -1,22 +1,41 @@
 // src/framework/Blocks/Control/types.ts
 
-import type { PageBlock } from "@/framework/page/PageSchema"
 
-export type IfBlock = {
-  type: "if"
-  id?: string
-  when?: string          // ⭐ лучше optional
-  blocks?: PageBlock[]   // ⭐ лучше optional
-}
+import type {
+  PageBlock,
+} from "@/framework/page/PageSchema"
+import type { BaseBlock } from "../BlockType"
 
-// src/framework/Blocks/Control/types.ts
+/* =========================================================
+   IF
+   ========================================================= */
 
-export type ForBlock = {
-  type: "for"
-  id?: string
-  each?: unknown
-  range?: number | string
-  as: string
-  index?: string
-  blocks?: PageBlock[]
-}
+export type IfBlock =
+  BaseBlock & {
+
+    type: "if"
+
+    when?: string | boolean
+
+    blocks?: PageBlock[]
+  }
+
+/* =========================================================
+   FOR
+   ========================================================= */
+
+export type ForBlock =
+  BaseBlock & {
+
+    type: "for"
+
+    each?: unknown
+
+    range?: number | string
+
+    as: string
+
+    index?: string
+
+    blocks?: PageBlock[]
+  }

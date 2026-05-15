@@ -4,24 +4,32 @@ from django.apps import AppConfig
 
 
 class GenericConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
+
+    default_auto_field = (
+        "django.db.models.BigAutoField"
+    )
 
     name = "backend.generic"
 
+    _bootstrapped = False
+
     def ready(self):
 
-        # ====================================
-        # run only in reloader child
-        # ====================================
-
-        if os.environ.get("RUN_MAIN") != "true":
-            return
-
-        if getattr(self, "_bootstrapped", False):
+        # already bootstrapped
+        if self._bootstrapped:
             return
 
         self._bootstrapped = True
 
-        from backend.bootstrap import bootstrap
+        # skip autoreloader parent
+        if os.environ.get(
+            "RUN_MAIN"
+        ) != "true":
+
+            return
+
+        from backend.bootstrap import (
+            bootstrap
+        )
 
         bootstrap(force=True)

@@ -12,74 +12,144 @@ type Options = {
   enabled?: boolean
 }
 
-export function useTableCollection<T extends BaseRow>(
+export function useTableCollection<
+  T extends BaseRow
+>(
   entity: string,
-  params: Record<string, unknown>,
+
+  params: Record<
+    string,
+    unknown
+  >,
+
   options?: Options
 ) {
-  const enabled = options?.enabled ?? true
+
+  const enabled =
+    options?.enabled ?? true
 
   /* ===============================
      QUERY STRING
   =============================== */
 
-  const queryString = useMemo(() => {
-    return buildQuery(params)
-  }, [params])
+  const queryString =
+    useMemo(() => {
+
+      return buildQuery(params)
+
+    }, [params])
 
   /* ===============================
      LOAD
   =============================== */
 
-  const load = useCallback(async () => {
-    if (!enabled || !entity || entity === "__disabled__") {
-      return {
-        items: [],
-        fields: [],
-        page: { page: 1, pages: 1, total: 0 },
-        capabilities: {},
+  const load = useCallback(
+    async () => {
+
+      if (
+        !enabled ||
+        !entity ||
+        entity === "__disabled__"
+      ) {
+
+        return {
+
+          items: [],
+
+          fields: [],
+
+          page: {
+            page: 1,
+            pages: 1,
+            total: 0,
+          },
+
+          capabilities: {},
+        }
       }
-    }
 
-    const url = `/entity/${entity}/list/?${queryString}`
+      const url =
+        `/entity/${entity}/list/?${queryString}`
 
-    const exec = () => api.get<ApiListResponse<T>>(url)
+      const exec = () =>
 
-    const trace = traceRuntime.current()
+        api.get<
+          ApiListResponse<T>
+        >(url)
 
-    const res = !trace
-      ? await exec()
-      : await trace.step("table_load", exec, {
-          block: "Table",
-          entity,
-          query: queryString,
-        })
+      const trace =
+        traceRuntime.current()
 
-    return {
-      items: res.items ?? res.rows ?? [],
-      fields: res.fields ?? [],
-      page: res.page,
-      capabilities: res.capabilities ?? {},
-    }
-  }, [entity, queryString, enabled])
+      const res = !trace
+
+        ? await exec()
+
+        : await trace.step(
+            "table_load",
+            exec,
+            {
+              block: "Table",
+              entity,
+              query: queryString,
+            }
+          )
+
+      return {
+
+        items:
+          res.items ??
+          res.rows ??
+          [],
+
+        fields:
+          res.fields ?? [],
+
+        page:
+          res.page,
+
+        capabilities:
+          res.capabilities ?? {},
+      }
+    },
+    [
+      entity,
+      queryString,
+      enabled,
+    ]
+  )
 
   /* ===============================
      COLLECTION
   =============================== */
 
-  const collection = useAsyncCollection(load)
+  const collection =
+    useAsyncCollection(load)
 
   /* ===============================
      RESULT
   =============================== */
 
   return {
-    items: collection.items ?? [],
-    fields: collection.fields ?? [],
-    page: collection.page ?? null,
-    capabilities: collection.capabilities ?? {},
 
-    loading: collection.loading,
-    reload: collection.reload,
+    items:
+      collection.items ?? [],
+
+    fields:
+      collection.fields ?? [],
+
+    page:
+      collection.page ?? null,
+
+    capabilities:
+      collection.capabilities ?? {},
+
+    loading:
+      collection.loading,
+
+    error:
+      collection.error ?? null,
+
+    reload:
+      collection.reload,
   }
 }

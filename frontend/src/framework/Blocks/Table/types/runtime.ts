@@ -57,6 +57,7 @@ export interface TableCtrlBase<T extends BaseRow> {
   rows: T[]
 
   isLoading?: boolean
+  error?: string | null
 
   capabilities?: TableCapabilities
 

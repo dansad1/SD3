@@ -1,4 +1,6 @@
+// ============================================================
 // src/framework/Blocks/Form/runtime/base/useFormState.ts
+// ============================================================
 
 import {
   useCallback,
@@ -12,6 +14,14 @@ import type { Json }
 import type { FormSchema }
   from "../../types/types"
 
+import type {
+  BlockCapabilities,
+} from "@/framework/Blocks/BlockType"
+
+/* ============================================================
+   TYPES
+   ============================================================ */
+
 export type FormValues =
   Record<string, Json>
 
@@ -19,17 +29,26 @@ export type FieldErrors =
   Record<string, string[]>
 
 export type FormState = {
+
   values: FormValues
+
   initialValues: FormValues
 
   fieldErrors: FieldErrors
+
   formError: string | null
 
   schema: FormSchema | null
 
+  // 🔥 NEW
+  capabilities?: BlockCapabilities
+
   dirty: boolean
+
   loading: boolean
+
   saving: boolean
+
   readonly: boolean
 
   setValue: (
@@ -73,6 +92,11 @@ export type FormState = {
     schema: FormSchema | null
   ) => void
 
+  // 🔥 NEW
+  setCapabilities: (
+    capabilities?: BlockCapabilities
+  ) => void
+
   resetDirty: () => void
 
   reset: () => void
@@ -82,22 +106,41 @@ export type FormState = {
   ) => FormValues
 }
 
+/* ============================================================
+   PARAMS
+   ============================================================ */
+
 type Params = {
   initial?: FormValues
   readonly?: boolean
 }
 
+/* ============================================================
+   STATE
+   ============================================================ */
+
 export function useFormState({
   initial = {},
   readonly = false,
 }: Params = {}): FormState {
-  const [values, setValuesState] =
-    useState<FormValues>(initial)
+
+  /* ========================================================
+     VALUES
+     ======================================================== */
+
+  const [
+    values,
+    setValuesState,
+  ] = useState<FormValues>(initial)
 
   const [
     initialValues,
     setInitialValuesState,
   ] = useState<FormValues>(initial)
+
+  /* ========================================================
+     ERRORS
+     ======================================================== */
 
   const [
     fieldErrors,
@@ -109,25 +152,54 @@ export function useFormState({
     setFormError,
   ] = useState<string | null>(null)
 
+  /* ========================================================
+     SCHEMA
+     ======================================================== */
+
   const [
     schema,
     setSchemaState,
   ] = useState<FormSchema | null>(null)
 
-  const [dirty, setDirty] =
-    useState(false)
+  /* ========================================================
+     CAPABILITIES
+     ======================================================== */
 
-  const [loading, setLoading] =
-    useState(false)
+  const [
+    capabilities,
+    setCapabilitiesState,
+  ] = useState<BlockCapabilities>()
 
-  const [saving, setSaving] =
-    useState(false)
+  /* ========================================================
+     FLAGS
+     ======================================================== */
+
+  const [
+    dirty,
+    setDirty,
+  ] = useState(false)
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false)
+
+  const [
+    saving,
+    setSaving,
+  ] = useState(false)
+
+  /* ========================================================
+     SET VALUE
+     ======================================================== */
 
   const setValue = useCallback(
+
     (
       name: string,
       value: Json
     ) => {
+
       setValuesState(prev => ({
         ...prev,
         [name]: value,
@@ -136,46 +208,74 @@ export function useFormState({
       setDirty(true)
 
       setFieldErrorsState(prev => {
+
         if (!prev[name]) {
           return prev
         }
 
-        const next = { ...prev }
+        const next = {
+          ...prev,
+        }
+
         delete next[name]
 
         return next
       })
     },
+
     []
   )
 
+  /* ========================================================
+     SET VALUES
+     ======================================================== */
+
   const setValues = useCallback(
+
     (
       next: FormValues
     ) => {
+
       setValuesState(next)
+
       setDirty(true)
     },
+
     []
   )
 
+  /* ========================================================
+     INITIAL VALUES
+     ======================================================== */
+
   const setInitialValues =
     useCallback(
+
       (
         next: FormValues
       ) => {
+
         setInitialValuesState(next)
+
         setValuesState(next)
+
         setDirty(false)
       },
+
       []
     )
 
+  /* ========================================================
+     FIELD ERRORS
+     ======================================================== */
+
   const setFieldErrors =
     useCallback(
+
       (
         errors: FieldErrors
       ) => {
+
         console.log(
           "🧨 SET FIELD ERRORS",
           errors
@@ -183,113 +283,220 @@ export function useFormState({
 
         setFieldErrorsState(errors)
       },
+
       []
     )
 
+  /* ========================================================
+     CLEAR FIELD ERROR
+     ======================================================== */
+
   const clearFieldError =
     useCallback(
+
       (
         name: string
       ) => {
+
         setFieldErrorsState(prev => {
+
           if (!prev[name]) {
             return prev
           }
 
-          const next = { ...prev }
+          const next = {
+            ...prev,
+          }
+
           delete next[name]
 
           return next
         })
       },
+
       []
     )
 
+  /* ========================================================
+     SCHEMA
+     ======================================================== */
+
   const setSchema = useCallback(
+
     (
       next: FormSchema | null
     ) => {
+
       setSchemaState(next)
     },
+
     []
   )
 
+  /* ========================================================
+     CAPABILITIES
+     ======================================================== */
+
+  const setCapabilities =
+    useCallback(
+
+      (
+        next?: BlockCapabilities
+      ) => {
+
+        setCapabilitiesState(next)
+      },
+
+      []
+    )
+
+  /* ========================================================
+     RESET DIRTY
+     ======================================================== */
+
   const resetDirty =
     useCallback(() => {
+
       setDirty(false)
+
     }, [])
+
+  /* ========================================================
+     RESET
+     ======================================================== */
 
   const reset =
     useCallback(() => {
+
       setValuesState(initialValues)
+
       setFieldErrorsState({})
+
       setFormError(null)
+
       setDirty(false)
+
       setSaving(false)
+
     }, [initialValues])
+
+  /* ========================================================
+     BUILD PAYLOAD
+     ======================================================== */
 
   const buildPayload =
     useCallback(
+
       (
         _mode:
           | "all"
           | "dirty" = "all"
       ) => {
+
         return values
       },
+
       [values]
     )
 
+  /* ========================================================
+     RETURN
+     ======================================================== */
+
   return useMemo(() => ({
+
     values,
+
     initialValues,
 
     fieldErrors,
+
     formError,
 
     schema,
 
+    // 🔥 NEW
+    capabilities,
+
     dirty,
+
     loading,
+
     saving,
+
     readonly,
 
     setValue,
+
     setValues,
+
     setInitialValues,
 
     setFieldErrors,
+
     clearFieldError,
+
     setFormError,
 
     setLoading,
+
     setSaving,
+
     setDirty,
 
     setSchema,
 
+    // 🔥 NEW
+    setCapabilities,
+
     resetDirty,
+
     reset,
 
     buildPayload,
+
   }), [
+
     values,
+
     initialValues,
+
     fieldErrors,
+
     formError,
+
     schema,
+
+    // 🔥 NEW
+    capabilities,
+
     dirty,
+
     loading,
+
     saving,
+
     readonly,
+
     setValue,
+
     setValues,
+
     setInitialValues,
+
     setFieldErrors,
+
     clearFieldError,
+
     setSchema,
+
+    // 🔥 NEW
+    setCapabilities,
+
     resetDirty,
+
     reset,
+
     buildPayload,
   ])
 }

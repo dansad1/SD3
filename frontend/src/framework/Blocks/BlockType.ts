@@ -4,6 +4,7 @@
 export type BaseBlock = {
   id?: string | number
   layout?: BlockLayout
+ capabilities?: BlockCapabilities
 }
 // src/framework/blocks/layout.ts
 
@@ -21,3 +22,16 @@ export type BlockLayout = {
   hidden?: boolean
   area?: Area
 }
+export type CoreCapability =
+  | "view"
+  | "create"
+  | "edit"
+  | "delete"
+  | "run"
+
+export type CapabilityValue = boolean
+
+
+export type BlockCapabilities =
+  Partial<Record<CoreCapability, CapabilityValue>>
+  & Record<string, CapabilityValue | undefined>

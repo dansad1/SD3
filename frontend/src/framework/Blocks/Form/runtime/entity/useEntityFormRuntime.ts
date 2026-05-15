@@ -1,24 +1,78 @@
-import { useEffect, useMemo, useRef } from "react"
+// ============================================================
+// src/framework/Blocks/Form/runtime/entity/useEntityFormRuntime.ts
+// ============================================================
+
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
+
 import isEqual from "fast-deep-equal"
 
-import { useFormState } from "../base/useFormState"
-import { useEntityLoader } from "./useEntityLoader"
-import { useEntityOptionsLoader } from "./useEntityOptionsLoader"
-import { useEntitySubmit } from "./useEntitySubmit"
+import {
+  useFormState,
+} from "../base/useFormState"
 
-import { usePageApi } from "@/framework/page/context/usePageApi"
+import {
+  useEntityLoader,
+} from "./useEntityLoader"
 
-import type { FormSchema } from "../../types/types"
-import type { FormValues } from "../reactions/types"
-import type { FormEntityConfig } from "../../types/FormConfig"
-import type { ActionContext } from "@/framework/Blocks/Action/types"
+import {
+  useEntityOptionsLoader,
+} from "./useEntityOptionsLoader"
 
-import { useFormReactions } from "../reactions/useFormReactions"
+import {
+  useEntitySubmit,
+} from "./useEntitySubmit"
+
+import {
+  usePageApi,
+} from "@/framework/page/context/usePageApi"
+
+import type {
+  FormValues,
+} from "../reactions/types"
+
+import type {
+  FormEntityConfig,
+} from "../../types/FormConfig"
+
+import type {
+  ActionContext,
+} from "@/framework/Blocks/Action/types"
+
+import {
+  useFormReactions,
+} from "../reactions/useFormReactions"
+import type { BlockCapabilities } from "@/framework/Blocks/BlockType"
+
 
 export function useEntityFormRuntime(
   params: FormEntityConfig | null
 ) {
-  const state = useFormState<FormSchema>()
+
+  /* =====================================================
+     FORM STATE
+  ===================================================== */
+
+  const state =
+    useFormState()
+
+  /* =====================================================
+     CAPABILITIES
+  ===================================================== */
+
+  const [
+    capabilities,
+    setCapabilities,
+  ] = useState<BlockCapabilities>()
+
+  /* =====================================================
+     PAGE
+  ===================================================== */
+
   const page = usePageApi()
 
   const {
@@ -27,80 +81,155 @@ export function useEntityFormRuntime(
     setDataKey,
   } = page
 
-  const prevValuesRef = useRef<FormValues | null>(null)
-  const clearedRef = useRef<string | null>(null)
-  const stateRef = useRef(state)
+  /* =====================================================
+     REFS
+  ===================================================== */
+
+  const prevValuesRef =
+    useRef<FormValues | null>(null)
+
+  const clearedRef =
+    useRef<string | null>(null)
+
+  const stateRef =
+    useRef(state)
 
   useEffect(() => {
     stateRef.current = state
   }, [state])
 
   /* =====================================================
-     ✅ RESOLVE RUNTIME (ГЛАВНОЕ ИСПРАВЛЕНИЕ)
+     RESOLVE RUNTIME
   ===================================================== */
 
   const resolvedObjectId =
+
     params?.objectId &&
+
     params.objectId !== "undefined" &&
+
     params.objectId !== "null"
+
       ? params.objectId
+
       : undefined
 
   const resolvedMode =
+
     params?.mode ??
-    (resolvedObjectId ? "edit" : "create")
+
+    (
+      resolvedObjectId
+        ? "edit"
+        : "create"
+    )
 
   /* =====================================================
      LOAD
   ===================================================== */
 
   useEntityLoader({
-    entity: params?.entity,
-    mode: resolvedMode,
-    objectId: resolvedObjectId,
+
+    entity:
+      params?.entity,
+
+    mode:
+      resolvedMode,
+
+    objectId:
+      resolvedObjectId,
+
     state,
+
+    onCapabilities:
+      setCapabilities,
   })
 
+  /* =====================================================
+     OPTIONS
+  ===================================================== */
+
   useEntityOptionsLoader(state)
-  useFormReactions({ state })
+
+  /* =====================================================
+     REACTIONS
+  ===================================================== */
+
+  useFormReactions({
+    state,
+  })
 
   /* =====================================================
      ACTION: setValue
   ===================================================== */
 
-  const setValueHandler = useMemo(() => ({
-    id: "form:setValue",
+  const setValueHandler =
+    useMemo(() => ({
 
-    run: (ctx: ActionContext) => {
-      const payload = ctx.payload as {
-        field: string
-        value: string
-        mode?: "append" | "replace"
-      } | undefined
+      id: "form:setValue",
 
-      if (!payload) return
+      run: (
+        ctx: ActionContext
+      ) => {
 
-      const current =
-        stateRef.current.values[payload.field]
+        const payload =
+          ctx.payload as {
 
-      const nextValue =
-        payload.mode === "append"
-          ? `${typeof current === "string" ? current : ""}${payload.value}`
-          : payload.value
+            field: string
 
-      stateRef.current.setValue(payload.field, nextValue)
-    },
-  }), [])
+            value: string
+
+            mode?:
+              | "append"
+              | "replace"
+
+          } | undefined
+
+        if (!payload) {
+          return
+        }
+
+        const current =
+
+          stateRef.current
+            .values[payload.field]
+
+        const nextValue =
+
+          payload.mode === "append"
+
+            ? `${typeof current === "string" ? current : ""}${payload.value}`
+
+            : payload.value
+
+        stateRef.current.setValue(
+          payload.field,
+          nextValue
+        )
+      },
+    }), [])
 
   useEffect(() => {
-    registerHandler("form:setValue", setValueHandler)
+
+    registerHandler(
+      "form:setValue",
+      setValueHandler
+    )
 
     return () => {
-      unregisterHandler("form:setValue", setValueHandler.id)
+
+      unregisterHandler(
+        "form:setValue",
+        setValueHandler.id
+      )
     }
+
   }, [
+
     registerHandler,
+
     unregisterHandler,
+
     setValueHandler,
   ])
 
@@ -109,22 +238,56 @@ export function useEntityFormRuntime(
   ===================================================== */
 
   useEffect(() => {
-    if (!params?.entity) return
-    if (resolvedMode !== "edit") return
 
-    const values = state.values as FormValues
+    if (!params?.entity) {
+      return
+    }
 
-    if (!values) return
-    if (Object.keys(values).length === 0) return
-    if (isEqual(prevValuesRef.current, values)) return
+    if (
+      resolvedMode !== "edit"
+    ) {
+      return
+    }
 
-    prevValuesRef.current = values
-    setDataKey(params.entity, values)
+    const values =
+      state.values as FormValues
+
+    if (!values) {
+      return
+    }
+
+    if (
+      Object.keys(values)
+        .length === 0
+    ) {
+      return
+    }
+
+    if (
+      isEqual(
+        prevValuesRef.current,
+        values
+      )
+    ) {
+      return
+    }
+
+    prevValuesRef.current =
+      values
+
+    setDataKey(
+      params.entity,
+      values
+    )
 
   }, [
+
     params?.entity,
+
     resolvedMode,
+
     state.values,
+
     setDataKey,
   ])
 
@@ -133,19 +296,40 @@ export function useEntityFormRuntime(
   ===================================================== */
 
   useEffect(() => {
-    if (!params?.entity) return
 
-    if (resolvedMode === "create") {
-      if (clearedRef.current === params.entity) return
-
-      clearedRef.current = params.entity
-      prevValuesRef.current = null
-
-      setDataKey(params.entity, undefined)
+    if (!params?.entity) {
+      return
     }
+
+    if (
+      resolvedMode === "create"
+    ) {
+
+      if (
+        clearedRef.current ===
+        params.entity
+      ) {
+        return
+      }
+
+      clearedRef.current =
+        params.entity
+
+      prevValuesRef.current =
+        null
+
+      setDataKey(
+        params.entity,
+        undefined
+      )
+    }
+
   }, [
+
     params?.entity,
+
     resolvedMode,
+
     setDataKey,
   ])
 
@@ -153,27 +337,55 @@ export function useEntityFormRuntime(
      SUBMIT
   ===================================================== */
 
-  const submit = useEntitySubmit({
-    entity: params?.entity,
-    mode: resolvedMode,
-    objectId: resolvedObjectId,
-    state,
-    redirect: params?.submit?.redirect,
-  })
+  const submit =
+    useEntitySubmit({
+
+      entity:
+        params?.entity,
+
+      mode:
+        resolvedMode,
+
+      objectId:
+        resolvedObjectId,
+
+      state,
+
+      redirect:
+        params?.submit?.redirect,
+    })
 
   /* =====================================================
      VALIDATE
   ===================================================== */
 
   const validate = () => {
-    if (!params) return false
-    if (resolvedMode === "view") return false
+
+    if (!params) {
+      return false
+    }
+
+    if (
+      resolvedMode === "view"
+    ) {
+      return false
+    }
+
     return true
   }
 
+  /* =====================================================
+     RETURN
+  ===================================================== */
+
   return {
+
     ...state,
+
+    capabilities,
+
     submit,
+
     validate,
   }
 }

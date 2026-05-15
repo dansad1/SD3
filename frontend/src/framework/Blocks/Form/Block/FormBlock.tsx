@@ -1,4 +1,6 @@
+// ============================================================
 // src/framework/Blocks/Form/Block/FormBlock.tsx
+// ============================================================
 
 import {
   useEffect,
@@ -6,8 +8,9 @@ import {
   type ReactNode,
 } from "react"
 
-import { FormRenderer }
-  from "../render/FormRenderer"
+import {
+  FormRenderer,
+} from "../render/FormRenderer"
 
 import {
   useFormController,
@@ -41,6 +44,10 @@ import {
   useActionsByPlacement,
 } from "../../Action/handlers/useActionsByPlacement"
 
+import {
+  CapabilityBoundary,
+} from "@/framework/security/CapabilityBoundary"
+
 type Props = {
   config: FormConfig
   children?: ReactNode
@@ -72,7 +79,7 @@ export function FormBlock({
   )
 
   // =====================================================
-  // FORM
+  // FORM CONTROLLER
   // =====================================================
 
   const form =
@@ -129,14 +136,18 @@ export function FormBlock({
     )
 
   // =====================================================
-  // SYNC DATA
+  // SYNC FORM VALUES → PAGE RUNTIME
   // =====================================================
 
   useEffect(() => {
 
-    if (!entity) return
+    if (!entity) {
+      return
+    }
 
-    if (!form.values) return
+    if (!form.values) {
+      return
+    }
 
     setRuntimeData(entity, {
       ...form.values,
@@ -168,47 +179,60 @@ export function FormBlock({
     form.fieldErrors
   )
 
+  console.log(
+    "🛡 FORM CAPABILITIES",
+    form.capabilities
+  )
+
   // =====================================================
   // RENDER
   // =====================================================
 
   return (
 
-    <FormContext.Provider
-      value={form}
+    <CapabilityBoundary
+      capabilities={
+        form.capabilities
+      }
     >
 
-      <>
+      <FormContext.Provider
+        value={form}
+      >
 
-        <FormRenderer
+        <>
 
-          key={scope}
+          <FormRenderer
 
-          schema={finalSchema}
+            key={scope}
 
-          values={form.values}
+            schema={finalSchema}
 
-          fieldErrors={
-            form.fieldErrors
-          }
+            values={form.values}
 
-          formError={
-            form.formError
-          }
+            fieldErrors={
+              form.fieldErrors
+            }
 
-          onChange={
-            form.setValue
-          }
+            formError={
+              form.formError
+            }
 
-          actions={
-            formActions
-          }
-        />
+            onChange={
+              form.setValue
+            }
 
-        {children}
+            actions={
+              formActions
+            }
+          />
 
-      </>
+          {children}
 
-    </FormContext.Provider>
+        </>
+
+      </FormContext.Provider>
+
+    </CapabilityBoundary>
   )
 }

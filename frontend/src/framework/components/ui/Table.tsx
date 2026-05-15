@@ -1,13 +1,12 @@
 import React from "react"
-import type { TableCtrlBase, BaseRow } from "@/framework/Blocks/Table/types/runtime"
+import type {
+  TableCtrlBase,
+  BaseRow,
+} from "@/framework/Blocks/Table/types/runtime"
 import type { Json } from "@/framework/types/json"
-
-/* ================= HELPERS ================= */
 
 function renderCell(value: Json) {
   if (value === null || value === undefined) return ""
-
-  // допускаем расширение (UI может подмешать ReactNode)
   if (React.isValidElement(value)) return value
 
   if (typeof value === "object") {
@@ -34,8 +33,6 @@ function getSortDirection(
   return sort.direction
 }
 
-/* ================= COMPONENT ================= */
-
 export default function Table<T extends BaseRow>({
   ctrl,
   enableSorting = true,
@@ -51,6 +48,7 @@ export default function Table<T extends BaseRow>({
     sort,
     selection,
     isLoading,
+    error,
     rowActions,
     onRowAction,
     onRowClick,
@@ -65,11 +63,21 @@ export default function Table<T extends BaseRow>({
     (hasSelection ? 1 : 0) +
     (hasRowActions ? 1 : 0)
 
-  /* ================= STATES ================= */
+  if (error) {
+    return (
+      <div className="ui-table-error">
+        {error}
+      </div>
+    )
+  }
 
   if (!fields?.length) {
     if (isLoading) {
-      return <div className="ui-table-loading">Загрузка…</div>
+      return (
+        <div className="ui-table-loading">
+          Загрузка…
+        </div>
+      )
     }
 
     return (
@@ -79,14 +87,11 @@ export default function Table<T extends BaseRow>({
     )
   }
 
-  /* ================= RENDER ================= */
-
   return (
     <div className="ui-table-wrapper">
       <table className="ui-table">
         <thead>
           <tr>
-            {/* selection */}
             {hasSelection && selection && (
               <th style={{ width: 44 }}>
                 <input
@@ -98,7 +103,6 @@ export default function Table<T extends BaseRow>({
               </th>
             )}
 
-            {/* columns */}
             {fields.map((col) => {
               const sortable =
                 enableSorting &&
@@ -113,9 +117,7 @@ export default function Table<T extends BaseRow>({
                   className={[
                     sortable ? "sortable" : "",
                     direction ? "active-sort" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
+                  ].filter(Boolean).join(" ")}
                   onClick={() => sortable && sort && sort.set(col.key)}
                 >
                   <span className="th-content">
@@ -126,8 +128,8 @@ export default function Table<T extends BaseRow>({
                         {direction === "asc"
                           ? "▲"
                           : direction === "desc"
-                          ? "▼"
-                          : "↕"}
+                            ? "▼"
+                            : "↕"}
                       </span>
                     )}
                   </span>
@@ -135,13 +137,15 @@ export default function Table<T extends BaseRow>({
               )
             })}
 
-            {/* row actions */}
-            {hasRowActions && <th style={{ width: 160 }}>Действия</th>}
+            {hasRowActions && (
+              <th style={{ width: 160 }}>
+                Действия
+              </th>
+            )}
           </tr>
         </thead>
 
         <tbody>
-          {/* empty */}
           {!isLoading && rows.length === 0 && (
             <tr>
               <td colSpan={totalCols} className="empty">
@@ -150,14 +154,12 @@ export default function Table<T extends BaseRow>({
             </tr>
           )}
 
-          {/* rows */}
           {rows.map((row, index) => (
             <tr
               key={getRowKey(row, index)}
               className={hasRowClick ? "clickable-row" : undefined}
               onClick={() => hasRowClick && onRowClick?.(row)}
             >
-              {/* selection */}
               {hasSelection && selection && (
                 <td>
                   <input
@@ -171,7 +173,6 @@ export default function Table<T extends BaseRow>({
                 </td>
               )}
 
-              {/* cells */}
               {fields.map((col) => (
                 <td
                   key={col.key}
@@ -183,7 +184,6 @@ export default function Table<T extends BaseRow>({
                 </td>
               ))}
 
-              {/* actions */}
               {hasRowActions && rowActions && (
                 <td>
                   <div style={{ display: "flex", gap: 6 }}>
@@ -209,9 +209,10 @@ export default function Table<T extends BaseRow>({
         </tbody>
       </table>
 
-      {/* loading overlay */}
       {isLoading && (
-        <div className="ui-table-loading-overlay">Загрузка…</div>
+        <div className="ui-table-loading-overlay">
+          Загрузка…
+        </div>
       )}
     </div>
   )

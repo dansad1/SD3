@@ -7,6 +7,7 @@ import type {
 import type { TableApiBlock } from "../types/api"
 import type { PageApi } from "@/framework/page/context/types"
 import type { ToolbarAction } from "@/framework/components/ToolBars/toolbar"
+import type { BlockCapabilities } from "../../BlockType"
 
 /* ========================================
    FEATURE PHASE
@@ -66,19 +67,28 @@ export type TableListData<T extends BaseRow> = {
 
 export interface TableFeatureContext<
   T extends BaseRow,
-  TCtrl extends TableCtrlBase<T> = TableCtrlBase<T>
+  TCtrl extends TableCtrlBase<T> =
+    TableCtrlBase<T>
 > {
+
   block: TableApiBlock
 
   entity: string
+
   fieldset: string
+
+  // 🔥 SERVER CAPABILITIES
+  capabilities?: BlockCapabilities
 
   query: {
     page: number
     search: string
     sort?: string
+
     setPage: (p: number) => void
+
     setSearch: (q: string) => void
+
     setSort: (s: string) => void
   }
 
@@ -98,28 +108,35 @@ export interface TableFeatureContext<
       ctx?: ActionContext
     ) => Promise<unknown>
 
-    isRunning: (id: string) => boolean
+    isRunning: (
+      id: string
+    ) => boolean
   }
 
   ctrl: Partial<TCtrl>
 
   toolbar?: {
     actions?: ToolbarAction[]
+
     search?: {
       value: string
-      onChange: (v: string) => void
+
+      onChange: (
+        v: string
+      ) => void
     }
   }
 
   modals?: {
     visibleFields?: {
       isOpen: boolean
+
       open: () => void
+
       close: () => void
     }
   }
 }
-
 /* ========================================
    FEATURE INTERFACE
 ======================================== */

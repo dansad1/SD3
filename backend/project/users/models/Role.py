@@ -1,6 +1,13 @@
 from django.db import models
 
 
+from django.db import models
+
+from backend.project.users.models.Permission import (
+    Permission
+)
+
+
 class UserRole(models.Model):
 
     code = models.SlugField(
@@ -25,6 +32,12 @@ class UserRole(models.Model):
         default=0,
     )
 
+    permissions = models.ManyToManyField(
+        Permission,
+        blank=True,
+        related_name="roles",
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
@@ -41,4 +54,5 @@ class UserRole(models.Model):
         ]
 
     def __str__(self):
+
         return self.name

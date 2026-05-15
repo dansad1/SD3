@@ -39,9 +39,16 @@ export const Block = {
       hidden: "boolean" as Primitive,
       area: Layout.area,
     },
+
+    capabilities: {
+      view: "boolean" as Primitive,
+      create: "boolean" as Primitive,
+      edit: "boolean" as Primitive,
+      delete: "boolean" as Primitive,
+      run: "boolean" as Primitive,
+    },
   },
 } as const
-
 /* =========================
    STRUCTURAL (COMPOSITION)
    ========================= */

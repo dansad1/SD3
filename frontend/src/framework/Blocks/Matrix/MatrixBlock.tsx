@@ -1,37 +1,124 @@
-import { useMatrix } from "./runtime/useMatrix"
-import { MatrixGrid } from "./MatrixGrid"
-import { usePageRuntimeContext } from "@/framework/page/runtime/usePageRuntimeContext"
-import { resolveObject } from "@/framework/bind/expression/resolveUnified"
+// ============================================================
+// src/framework/Blocks/Matrix/MatrixBlock.tsx
+// ============================================================
 
+import {
+  CapabilityBoundary,
+} from "@/framework/security/CapabilityBoundary"
+
+import {
+  useCan,
+} from "@/framework/security/useCan"
+
+import {
+  useMatrix,
+} from "./runtime/useMatrix"
+
+import {
+  MatrixGrid,
+} from "./MatrixGrid"
+
+import {
+  usePageRuntimeContext,
+} from "@/framework/page/runtime/usePageRuntimeContext"
+
+import {
+  resolveObject,
+} from "@/framework/bind/expression/resolveUnified"
+
+import type {
+  MatrixBlock as MatrixBlockType,
+} from "./types"
 
 type Props = {
-  code: string
-  context?: Record<string, unknown>
-    params?: Record<string, unknown> // 👈 ДОБАВЬ
-
+  block: MatrixBlockType
 }
 
-export const MatrixBlock = ({ code, context, params }: Props) => {
-  const runtimeCtx = usePageRuntimeContext()
+export const MatrixBlock = ({
+  block,
+}: Props) => {
 
-  const raw = params || context
+  const runtimeCtx =
+    usePageRuntimeContext()
 
-  const resolvedContext = raw
-    ? resolveObject(raw, runtimeCtx)
-    : raw
+  /* =====================================================
+     RESOLVE CONTEXT
+     ===================================================== */
 
-  console.log("MATRIX RAW:", raw)
-  console.log("MATRIX RESOLVED:", resolvedContext)
+  const raw =
+    block.params ??
+    block.context
 
-  const { data, updateCell } = useMatrix(code, resolvedContext)
+  const resolvedContext =
+    raw
+      ? resolveObject(
+          raw,
+          runtimeCtx
+        )
+      : raw
 
-  if (!data) return <div>Loading...</div>
+  console.log(
+    "MATRIX RAW:",
+    raw
+  )
+
+  console.log(
+    "MATRIX RESOLVED:",
+    resolvedContext
+  )
+
+  /* =====================================================
+     MATRIX RUNTIME
+     ===================================================== */
+
+  const {
+    data,
+    updateCell,
+  } = useMatrix(
+    block.code,
+    resolvedContext
+  )
+
+  /* =====================================================
+     CAPABILITIES
+     ===================================================== */
+
+  const canEdit =
+    useCan("edit", false)
+
+  /* =====================================================
+     LOADING
+     ===================================================== */
+
+  if (!data) {
+    return <div>Loading...</div>
+  }
+
+  /* =====================================================
+     RENDER
+     ===================================================== */
 
   return (
-    <MatrixGrid
-      layout={data.layout}
-      cells={data.cells}
-      onChange={updateCell}
-    />
+
+    <CapabilityBoundary
+      capabilities={
+        data.capabilities
+      }
+    >
+
+      <MatrixGrid
+
+        layout={data.layout}
+
+        cells={data.cells}
+
+        onChange={
+          canEdit
+            ? updateCell
+            : undefined
+        }
+      />
+
+    </CapabilityBoundary>
   )
 }

@@ -6,57 +6,125 @@ import { BlockToolbar } from "@/framework/components/ToolBars/ListToolbar"
 
 import type { TableFeatureContext } from "../features/types"
 import type { BaseRow } from "../types/runtime"
-import { useActionExecutor } from "../../Action/executor/useActionExecutor"
+
+import { useActionExecutor }
+  from "../../Action/executor/useActionExecutor"
 
 type Props<T extends BaseRow> = {
   ctx: TableFeatureContext<T>
 }
 
-export function TableView<T extends BaseRow>({ ctx }: Props<T>) {
-  const { runAction } = useActionExecutor()
+export function TableView<
+  T extends BaseRow
+>({
+  ctx,
+}: Props<T>) {
 
-  const toolbar = ctx.toolbar ?? {}
-  const ctrl = ctx.ctrl ?? {}
-  const list = ctx.list
+  const { runAction } =
+    useActionExecutor()
 
-  const fields = list?.fields ?? []
-  const rows = list?.rows ?? []
-  const isLoading = list?.loading ?? false
+  const toolbar =
+    ctx.toolbar ?? {}
+
+  const ctrl =
+    ctx.ctrl ?? {}
+
+  const list =
+    ctx.list
+
+  const fields =
+    list?.fields ?? []
+
+  const rows =
+    list?.rows ?? []
+
+  const isLoading =
+    list?.loading ?? false
+
+  const error =
+    list?.error ?? null
 
   const handleSaved = () => {
+
     void list?.reload?.()
+
   }
 
   return (
     <>
+
       <BlockToolbar
-        actions={toolbar.actions ?? []}
-        search={toolbar.search}
+        actions={
+          toolbar.actions ?? []
+        }
+
+        search={
+          toolbar.search
+        }
+
         onAction={(a) => {
-          const target = a.action ?? a.to
-          if (!target) return
-          void runAction(target, a.ctx)
+
+          const target =
+            a.action ?? a.to
+
+          if (!target) {
+            return
+          }
+
+          void runAction(
+            target,
+            a.ctx
+          )
         }}
       />
 
       <Table
         ctrl={{
+
           ...ctrl,
+
           fields,
+
           rows,
+
           isLoading,
+
+          error,
+
         }}
       />
 
       {ctx.modals?.visibleFields && (
+
         <VisibleFieldsModal
-          isOpen={ctx.modals.visibleFields.isOpen}
-          onClose={ctx.modals.visibleFields.close}
-          entity={ctx.entity}
-          fieldset={ctx.fieldset}
-          onSaved={handleSaved}
+
+          isOpen={
+            ctx.modals
+              .visibleFields
+              .isOpen
+          }
+
+          onClose={
+            ctx.modals
+              .visibleFields
+              .close
+          }
+
+          entity={
+            ctx.entity
+          }
+
+          fieldset={
+            ctx.fieldset
+          }
+
+          onSaved={
+            handleSaved
+          }
         />
+
       )}
+
     </>
   )
 }

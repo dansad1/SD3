@@ -1,4 +1,5 @@
 import type { Json } from "@/framework/types/json"
+import type { BaseBlock } from "../../BlockType"
 
 export type UploadTempItem = {
   id: number
@@ -18,19 +19,25 @@ export type UploadRefreshEffect =
       action: string
     }
 
-export type UploadBlock = {
+export type UploadBlock = BaseBlock & {
   type: "upload"
-  id?: string
+
   name: string
   label?: string
   multiple?: boolean
+
   upload_action: string
   commit_action: string
+
   ctx?: Record<string, unknown>
+
   refresh?: UploadRefreshEffect[]
+
   auto_commit?: boolean
   disabled?: boolean
+
   accept?: string
+
   files?: UploadTempItem[]
 }
 export type UploadCtx = Record<string, Json>
