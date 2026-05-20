@@ -1,11 +1,14 @@
 from rest_framework.exceptions import (
-    PermissionDenied
+    PermissionDenied,
 )
 
 from backend.engine.entity.Base.EntityContext import (
-    EntityContext
+    EntityContext,
 )
-from backend.engine.entity.Base.delete import perform_delete
+
+from backend.engine.entity.Base.delete import (
+    perform_delete,
+)
 
 from backend.engine.entity.Base.permissions import (
     has_permission,
@@ -22,13 +25,7 @@ from backend.engine.entity.Base.options import (
 from backend.engine.entity.Base.representation import (
     represent,
 )
-
-from backend.engine.entity.Base.visibility import (
-    should_include_field_name,
-    should_include_in_list,
-)
-
-
+from backend.generic.models import DjangoField, DynamicField
 
 
 class BaseEntity:
@@ -124,6 +121,7 @@ class BaseEntity:
             request,
             action,
         ):
+
             raise PermissionDenied
 
     def get_capabilities_for_user(
@@ -132,10 +130,12 @@ class BaseEntity:
     ):
 
         return {
+
             action: self.has_permission(
                 request,
                 action,
             )
+
             for action in [
                 "list",
                 "view",
@@ -186,9 +186,13 @@ class BaseEntity:
     ):
 
         return represent(
+
             entity=self,
+
             obj=obj,
+
             field=field,
+
             mode=mode,
         )
 
@@ -216,6 +220,80 @@ class BaseEntity:
         )
 
     # =====================================================
+    # RUNTIME FIELDS
+    # =====================================================
+
+    def get_fields(
+            self,
+            request,
+            obj=None,
+    ):
+
+        fields = []
+
+        # =================================================
+        # DJANGO FIELDS
+        # =================================================
+
+        for field in (
+                self.model._meta.get_fields()
+        ):
+
+            # ---------------------------------------------
+            # NAME
+            # ---------------------------------------------
+
+            name = getattr(
+                field,
+                "name",
+                None,
+            )
+
+            if not name:
+                continue
+
+            # ---------------------------------------------
+            # INCLUDE
+            # ---------------------------------------------
+
+            if not self.include_model_field(
+                    field
+            ):
+                continue
+
+            # ---------------------------------------------
+            # DJANGO FIELD
+            # ---------------------------------------------
+
+            fields.append(
+                DjangoField(field)
+            )
+
+        # =================================================
+        # DYNAMIC FIELDS
+        # =================================================
+
+        for field in self.get_dynamic_fields(
+                request,
+                obj=obj,
+        ):
+            fields.append(
+                DynamicField(field)
+            )
+
+        # =================================================
+        # SORT
+        # =================================================
+
+        fields.sort(
+            key=lambda x: (
+                x.order,
+                x.name,
+            )
+        )
+
+        return fields
+    # =====================================================
     # DYNAMIC FIELDS
     # =====================================================
 
@@ -228,39 +306,60 @@ class BaseEntity:
         return []
 
     # =====================================================
-    # FIELD FILTERS
+    # FIELD POLICY
     # =====================================================
 
-    def should_include_field(
+    def include_model_field(
         self,
         field,
     ):
 
         name = field.name
 
-        # -------------------------
-        # COMMON POLICY
-        # -------------------------
+        # =================================================
+        # INCLUDE LIST
+        # =================================================
 
-        if not should_include_field_name(
-            self,
-            name,
+        if (
+            self.include_fields
+            and name not in self.include_fields
         ):
+
             return False
 
-        # -------------------------
+        # =================================================
+        # EXCLUDE LIST
+        # =================================================
+
+        if (
+            self.exclude_fields
+            and name in self.exclude_fields
+        ):
+
+            return False
+
+        # =================================================
+        # SYSTEM
+        # =================================================
+
+        if name in self.system_exclude_fields:
+
+            return False
+
+        # =================================================
         # REVERSE RELATIONS
-        # -------------------------
+        # =================================================
 
         if (
             field.auto_created
             and not field.concrete
         ):
+
             return False
 
-        # -------------------------
-        # AUTO M2M
-        # -------------------------
+        # =================================================
+        # AUTO MANY TO MANY
+        # =================================================
 
         if (
             getattr(
@@ -270,40 +369,10 @@ class BaseEntity:
             )
             and field.auto_created
         ):
+
             return False
 
         return True
-
-    def should_include_dynamic_field(
-        self,
-        request,
-        field,
-    ):
-
-        return should_include_field_name(
-            self,
-            field.name,
-        )
-
-    def should_include_field_name(
-        self,
-        name,
-    ):
-
-        return should_include_field_name(
-            self,
-            name,
-        )
-
-    def should_include_in_list(
-        self,
-        name,
-    ):
-
-        return should_include_in_list(
-            self,
-            name,
-        )
 
     # =====================================================
     # SAVE LIFECYCLE
@@ -372,19 +441,6 @@ class BaseEntity:
         )
 
     # =====================================================
-    # SCHEMA
-    # =====================================================
-
-    def customize_field_schema(
-        self,
-        request,
-        schema,
-        field=None,
-    ):
-
-        return schema
-
-    # =====================================================
     # VALIDATION
     # =====================================================
 
@@ -397,8 +453,6 @@ class BaseEntity:
 
         """
         Entity-level validation hook.
-
-        Используется после schema validation.
         """
 
         return payload

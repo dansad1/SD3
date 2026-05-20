@@ -25,6 +25,7 @@ from backend.engine.list.ListRegistry import (
 from backend.engine.form.Base.errors import (
     validation_error_to_dict,
 )
+from backend.project.users.models.UserListSettings import UserListSettings
 
 
 # =========================================================
@@ -126,8 +127,6 @@ def entity_list_api(
 # SETTINGS
 # =========================================================
 
-class UserListSettings:
-    pass
 
 
 # =========================================================

@@ -1,15 +1,80 @@
 class ListContext:
-    def __init__(self, *, list_obj, request):
+
+    def __init__(
+        self,
+        *,
+        list_obj,
+        request,
+    ):
+
+        # =================================================
+        # CORE
+        # =================================================
+
         self.list = list_obj
+
         self.request = request
 
-        self.entity = list_obj.get_entity()
+        self.user = request.user
+
+        self.entity = (
+            list_obj.get_entity()
+        )
+
+        self.model = (
+            self.entity.model
+        )
+
+        # =================================================
+        # QUERYSET
+        # =================================================
 
         self.qs = None
-        self.fields = []
-        self.rows = []
 
         self.page = None
+
         self.paginator = None
 
+        # =================================================
+        # RUNTIME FIELDS
+        # =================================================
+
+        self.runtime_fields = []
+
+        self.field_map = {}
+
+        # =================================================
+        # SCHEMA
+        # =================================================
+
+        self.fields = []
+
+        self.columns = []
+
+        # =================================================
+        # DATA
+        # =================================================
+
+        self.rows = []
+
+        # =================================================
+        # FILTERS
+        # =================================================
+
+        self.filters = {}
+
+        self.search = None
+
+        self.ordering = []
+
+        # =================================================
+        # CAPABILITIES
+        # =================================================
+
         self.capabilities = {}
+
+        # =================================================
+        # RESULT
+        # =================================================
+
+        self.result = {}

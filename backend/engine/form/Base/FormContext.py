@@ -1,21 +1,75 @@
 class FormContext:
-    def __init__(self, *, form, request, mode, pk=None, payload=None):
-        self.form = form
-        self.request = request
-        self.mode = mode
-        self.pk = pk
-        self.payload = payload or {}
 
-        self.entity = form.get_entity()
-        self.model = self.entity.model
+    def __init__(
+        self,
+        *,
+        form,
+        request,
+        mode,
+        pk=None,
+        payload=None,
+    ):
+
+        # =================================================
+        # CORE
+        # =================================================
+
+        self.form = form
+
+        self.request = request
+
+        self.mode = mode
+
+        self.pk = pk
+
+        self.payload = (
+            payload or {}
+        )
+
+        # =================================================
+        # ENTITY
+        # =================================================
+
+        self.entity = (
+            form.get_entity()
+        )
+
+        self.model = (
+            self.entity.model
+        )
+
+        # =================================================
+        # RUNTIME
+        # =================================================
 
         self.instance = None
+
+        self.runtime_fields = []
+
+        self.field_map = {}
+
+        # =================================================
+        # SCHEMA
+        # =================================================
+
         self.fields = []
-        self.capabilities = {}
+
+        self.schema = {}
+
+        # =================================================
+        # DATA
+        # =================================================
 
         self.data = {}
-        self.clean = {}
-        self.m2m = {}
-        self.dynamic = {}
+
+        # =================================================
+        # ACCESS
+        # =================================================
+
+        self.capabilities = {}
+
+        # =================================================
+        # RESULT
+        # =================================================
 
         self.result = None

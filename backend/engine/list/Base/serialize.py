@@ -1,25 +1,71 @@
-from backend.engine.form.Base.services import load_dynamic_values
-
+# =========================================================
+# backend/engine/list/Base/serialize.py
+# =========================================================
 
 def serialize(ctx):
+
     rows = []
 
+    runtime_fields = (
+        ctx.runtime_fields
+        or []
+    )
+
     for obj in ctx.page.object_list:
-        dynamic_values = load_dynamic_values(
-            entity_code=ctx.entity.entity,
-            obj=obj,
-        )
 
-        row = {"id": obj.pk}
+        row = {
+            "id": obj.pk,
+        }
 
-        for f in ctx.fields:
-            key = f["key"]
+        for field in runtime_fields:
 
-            if f.get("dynamic"):
-                row[key] = dynamic_values.get(key, "")
-            else:
-                row[key] = ctx.entity.represent(obj, key)
+            # =====================================
+            # HIDDEN
+            # =====================================
+
+            if field.hidden:
+                continue
+
+            # =====================================
+            # LIST DISPLAY
+            # =====================================
+
+            allowed = set(
+                ctx.entity.list_display
+                or []
+            )
+
+            if (
+                allowed
+                and field.name
+                not in allowed
+            ):
+                continue
+
+            # =====================================
+            # VALUE
+            # =====================================
+
+            value = field.get_value(
+                obj
+            )
+
+            # =====================================
+            # SERIALIZE
+            # =====================================
+
+            value = field.serialize(
+                value
+            )
+
+            # =====================================
+            # RESULT
+            # =====================================
+
+            row[field.name] = value
 
         rows.append(row)
 
     ctx.rows = rows
+
+    return ctx

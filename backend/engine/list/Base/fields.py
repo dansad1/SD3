@@ -1,25 +1,83 @@
-from backend.engine.schema.builder import EntitySchemaBuilder
-
+# =========================================================
+# backend/engine/list/Base/fields.py
+# =========================================================
 
 def build_fields(ctx):
-    builder = EntitySchemaBuilder(ctx.entity)
-    schema = builder.build(ctx.request, action="view")
 
-    allowed = set(ctx.entity.list_display or [])
+    runtime_fields = (
+        ctx.entity.get_fields(
+            request=ctx.request
+        )
+        or []
+    )
+
+    ctx.runtime_fields = (
+        runtime_fields
+    )
+
+    allowed = set(
+        ctx.entity.list_display
+        or []
+    )
 
     fields = []
 
-    for f in schema["fields"]:
-        name = f["name"]
+    for field in runtime_fields:
 
-        if allowed and name not in allowed:
+        # =====================================
+        # HIDDEN
+        # =====================================
+
+        if field.hidden:
             continue
 
+        # =====================================
+        # LIST DISPLAY
+        # =====================================
+
+        if (
+            allowed
+            and field.name
+            not in allowed
+        ):
+            continue
+
+        # =====================================
+        # SCHEMA
+        # =====================================
+
+        schema = field.get_schema()
+
+        # =====================================
+        # RESULT
+        # =====================================
+
         fields.append({
-            "key": name,
-            "label": f["label"],
-            "sortable": not f.get("dynamic", False),
-            "dynamic": bool(f.get("dynamic", False)),
+
+            "key":
+                field.name,
+
+            "label":
+                schema.get(
+                    "label",
+                    field.name,
+                ),
+
+            "sortable":
+                not schema.get(
+                    "dynamic",
+                    False,
+                ),
+
+            "dynamic":
+                bool(
+                    schema.get(
+                        "dynamic",
+                        False,
+                    )
+                ),
         })
 
     ctx.fields = fields
+
+    return ctx

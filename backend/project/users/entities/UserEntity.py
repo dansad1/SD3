@@ -71,23 +71,55 @@ class UserEntity(BaseEntity):
     # DYNAMIC FIELDS
     # =====================================================
 
+    # =====================================================
+    # DYNAMIC FIELDS
+    # =====================================================
+
     def get_dynamic_fields(
-        self,
-        request,
-        obj=None,
+            self,
+            request,
+            obj=None,
     ):
 
         fieldset = request.GET.get(
             "fieldset"
         )
 
-        if not fieldset:
+        # =============================================
+        # DEFAULT / EMPTY
+        # =============================================
+
+        if (
+                not fieldset
+                or fieldset == "default"
+        ):
             return []
+
+        # =============================================
+        # VALIDATION
+        # =============================================
+
+        try:
+
+            fieldset_id = int(
+                fieldset
+            )
+
+        except (
+                TypeError,
+                ValueError,
+        ):
+
+            return []
+
+        # =============================================
+        # RESULT
+        # =============================================
 
         return (
             UserField.objects
             .filter(
-                fieldset_id=fieldset,
+                fieldset_id=fieldset_id,
                 fieldset__is_active=True,
             )
             .order_by(
@@ -95,7 +127,6 @@ class UserEntity(BaseEntity):
                 "id",
             )
         )
-
     # =====================================================
     # OPTIONS
     # =====================================================

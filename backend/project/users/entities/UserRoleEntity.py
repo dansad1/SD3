@@ -191,23 +191,3 @@ class UserRoleEntity(BaseEntity):
     # SCHEMA
     # =====================================================
 
-    def customize_field_schema(
-        self,
-        request,
-        schema,
-        field=None,
-    ):
-
-        # priority
-
-        if schema["name"] == "priority":
-
-            schema["min"] = 0
-
-        # code
-
-        if schema["name"] == "code":
-
-            schema["autocomplete"] = False
-
-        return schema

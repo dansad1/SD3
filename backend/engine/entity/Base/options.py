@@ -1,17 +1,23 @@
 from django.db.models import Q
 
 from backend.engine.entity.Base.queryset import (
-    get_queryset
+    get_queryset,
 )
 
 
-# =========================
+# =========================================================
 # SEARCH
-# =========================
+# =========================================================
 
-def apply_search(ctx, qs):
+def apply_search(
+    ctx,
+    qs,
+):
 
-    q = ctx.request.GET.get("q")
+    q = (
+        ctx.request.GET.get("q")
+        or ""
+    ).strip()
 
     if not q:
         return qs
@@ -27,6 +33,7 @@ def apply_search(ctx, qs):
     cond = Q()
 
     for field in fields:
+
         cond |= Q(
             **{
                 f"{field}__icontains": q
@@ -36,11 +43,14 @@ def apply_search(ctx, qs):
     return qs.filter(cond)
 
 
-# =========================
+# =========================================================
 # LIMIT
-# =========================
+# =========================================================
 
-def apply_limit(ctx, qs):
+def apply_limit(
+    ctx,
+    qs,
+):
 
     limit = (
         ctx.request.GET.get("limit")
@@ -48,8 +58,11 @@ def apply_limit(ctx, qs):
     )
 
     try:
+
         limit = int(limit)
+
     except Exception:
+
         limit = 100
 
     limit = max(
@@ -57,33 +70,28 @@ def apply_limit(ctx, qs):
         min(limit, 500),
     )
 
-    return qs[:limit]
+    ctx.limit = limit
+
+    return qs
 
 
-# =========================
-# REPRESENT
-# =========================
+# =========================================================
+# SERIALIZE
+# =========================================================
 
 def serialize_option(
     entity,
     obj,
 ):
 
-    if hasattr(
-        entity,
-        "represent_option",
-    ):
-        return entity.represent_option(obj)
-
-    return {
-        "value": obj.pk,
-        "label": str(obj),
-    }
+    return entity.represent_option(
+        obj
+    )
 
 
-# =========================
+# =========================================================
 # PIPELINE
-# =========================
+# =========================================================
 
 PIPELINE = [
     apply_search,
@@ -91,21 +99,40 @@ PIPELINE = [
 ]
 
 
-# =========================
+# =========================================================
 # MAIN
-# =========================
+# =========================================================
 
 def get_options(ctx):
 
     qs = get_queryset(ctx)
 
     for step in PIPELINE:
+
         qs = step(ctx, qs)
 
+    # =============================================
+    # LIMIT
+    # =============================================
+
+    limit = getattr(
+        ctx,
+        "limit",
+        100,
+    )
+
+    qs = qs[:limit]
+
+    # =============================================
+    # RESULT
+    # =============================================
+
     return [
+
         serialize_option(
             ctx.entity,
             obj,
         )
+
         for obj in qs
     ]
