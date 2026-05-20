@@ -7,35 +7,69 @@ import type {
   RenderView,
 } from "@/framework/components/dynamic/types"
 
+import type {
+  WidgetKey,
+} from "./registry"
+
+/* =========================================================
+   INPUT
+========================================================= */
+
 export type SemanticResolveInput = {
+
   field: FieldSchema
 
   semanticType: string
 
   context: RenderContext
+
   platform: Platform
+
   interaction: InteractionMode
 
   view?: RenderView
+
   presentation?: PresentationNode
 }
 
+/* =========================================================
+   RESOLVER
+========================================================= */
+
 export type SemanticResolverFn = (
   input: SemanticResolveInput
-) => string | null
+) => WidgetKey | null
 
-let resolver: SemanticResolverFn | null = null
+/* =========================================================
+   RUNTIME
+========================================================= */
+
+let resolver:
+  SemanticResolverFn
+  | null = null
+
+/* =========================================================
+   REGISTER
+========================================================= */
 
 export function registerSemanticResolver(
   fn: SemanticResolverFn
 ) {
+
   resolver = fn
 }
 
+/* =========================================================
+   RESOLVE
+========================================================= */
+
 export function resolveSemanticWidget(
   input: SemanticResolveInput
-): string | null {
-  if (!resolver) return null
+): WidgetKey | null {
+
+  if (!resolver) {
+    return null
+  }
 
   return resolver(input)
 }

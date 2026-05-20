@@ -1,89 +1,38 @@
-// resolvePrimitiveWidget.ts
-
-import type {
-  FieldSchema,
-} from "@/framework/components/dynamic/types"
-
-import {
-  widgetRegistry,
-} from "@/framework/components/dynamic/registry"
-
-export type WidgetKey =
-  keyof typeof widgetRegistry
+import { resolveWidgetAlias, type WidgetKey } from "./registry"
+import type { FieldSchema } from "./types"
 
 export function resolvePrimitiveWidget(
   field: FieldSchema
 ): WidgetKey {
 
-  console.log(
-    "🧠 resolvePrimitiveWidget",
-    {
-      name: field.name,
-      widget: field.widget,
-      html_type: field.html_type,
-      field,
-    }
-  )
+  switch (field.html_type) {
 
-  /* ========================================
-     html_type priority
-  ======================================== */
+    case "password":
+      return "PasswordInput"
 
-  if (field.html_type === "password") {
-    console.log("🔐 PASSWORD DETECTED")
-    return "PasswordInput"
+    case "number":
+      return "NumberInput"
+
+    case "date":
+      return "DateInput"
+
+    case "datetime-local":
+      return "DateTimeInput"
+
+    case "time":
+      return "TimeInput"
   }
 
-  if (field.html_type === "number") {
-    return "NumberInput"
+  const explicit =
+    resolveWidgetAlias(
+      field.widget
+    )
+
+  if (explicit) {
+    return explicit
   }
-
-  if (field.html_type === "date") {
-    return "DateInput"
-  }
-
-  if (field.html_type === "datetime-local") {
-    return "DateTimeInput"
-  }
-
-  if (field.html_type === "time") {
-    return "TimeInput"
-  }
-
-  /* ========================================
-     explicit widget
-  ======================================== */
-
-  switch (field.widget) {
-
-    case "TextInput":
-    case "Textarea":
-    case "NumberInput":
-    case "Checkbox":
-    case "Select":
-    case "MultiSelect":
-    case "DateInput":
-    case "DateTimeInput":
-    case "TimeInput":
-    case "FileInput":
-    case "PasswordInput":
-    case "RichText":
-    case "InsertVariables":
-      return field.widget
-  }
-
-  /* ========================================
-     entity fallback
-  ======================================== */
 
   if (field.entity) {
-
-    if (
-      field.multiple
-      && field.columns
-    ) {
-      return "Checkbox"
-    }
 
     if (field.multiple) {
       return "MultiSelect"
@@ -92,9 +41,14 @@ export function resolvePrimitiveWidget(
     return "Select"
   }
 
-  /* ========================================
-     default
-  ======================================== */
+  const semantic =
+    resolveWidgetAlias(
+      field.semantic?.type
+    )
+
+  if (semantic) {
+    return semantic
+  }
 
   return "TextInput"
 }

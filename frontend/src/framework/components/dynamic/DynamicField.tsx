@@ -1,13 +1,28 @@
-import { widgetRegistry } from "./registry"
-import type { FieldSchema, Value } from "./types"
-import FallbackWidget from "./widgets/Fallback"
-import { resolveWidget } from "./widgets/resolveWidget"
+import {
+  widgetRegistry,
+} from "./registry"
 
+import type {
+  FieldSchema,
+  Value,
+} from "./types"
+
+import FallbackWidget from "./widgets/Fallback"
+
+import {
+  resolveFieldWidget,
+} from "./resolveFieldWidget"
 
 interface Props {
+
   field: FieldSchema
+
   value: Value
-  onChange: (value: Value) => void
+
+  onChange: (
+    value: Value
+  ) => void
+
   loading?: boolean
 }
 
@@ -22,13 +37,25 @@ export default function DynamicField({
      Widget resolve
   =============================== */
 
-  const widgetKey = resolveWidget(field)
+  const widgetKey =
+    resolveFieldWidget(
+      field,
+      "form",
+      "desktop",
+    )
 
   const Widget =
-    widgetRegistry[widgetKey]
+    widgetRegistry[
+      widgetKey
+    ]?.component
     ?? FallbackWidget
 
-  if (!widgetRegistry[widgetKey]) {
+  if (
+    !widgetRegistry[
+      widgetKey
+    ]
+  ) {
+
     console.warn(
       `[DynamicField] Unknown widget "${widgetKey}"`,
       field

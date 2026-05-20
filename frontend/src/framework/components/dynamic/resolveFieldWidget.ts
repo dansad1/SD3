@@ -7,7 +7,7 @@ import type {
 
 import type {
   WidgetKey,
-} from "./resolvePrimitiveWidget"
+} from "./registry"
 
 import {
   resolvePrimitiveWidget,
@@ -23,14 +23,28 @@ export function resolveFieldWidget(
   platform: Platform,
   interaction?: InteractionMode
 ): WidgetKey {
+
+  /* ========================================
+     interaction
+  ======================================== */
+
   const resolvedInteraction =
     interaction ??
-    (field.readonly ? "readonly" : "editable")
+    (
+      field.readonly
+        ? "readonly"
+        : "editable"
+    )
+
+  /* ========================================
+     semantic layer
+  ======================================== */
 
   const semanticType =
     field.semantic?.type
 
   if (semanticType) {
+
     const semanticWidget =
       resolveSemanticWidget({
         field,
@@ -43,9 +57,13 @@ export function resolveFieldWidget(
       })
 
     if (semanticWidget) {
-      return semanticWidget as WidgetKey
+      return semanticWidget
     }
   }
+
+  /* ========================================
+     primitive layer
+  ======================================== */
 
   return resolvePrimitiveWidget(field)
 }
