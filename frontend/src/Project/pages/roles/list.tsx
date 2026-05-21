@@ -6,7 +6,6 @@ import {
   Section,
   Stack,
   Heading,
-  Text,
   Table,
   Action,
 } from "@/framework"

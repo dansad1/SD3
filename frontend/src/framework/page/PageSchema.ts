@@ -23,32 +23,34 @@ import type {
 } from "../Blocks/Structural/types";
 import type { TableApiBlock } from "../Blocks/Table/types/api";
 import type { LinkBlock } from "../Blocks/Atom/types";
+import type { Page_actionsBlock } from "../Blocks/Atom/types";
+import type { Page_actionsBlock } from "../Blocks/Structural/Page_actions/types";
 
 /**
  * Единый union всех декларативных блоков страницы
  */
 export type ApiPageBlock =
   | ContainerBlock
-      | StackBlock
-      | SectionBlock
-      | SplitBlock
-      | HeadingBlock
-      | TextBlock
-      | DividerBlock
-      | SpacerBlock
-      | ActionBlock
-      | UploadBlock
-      | TableApiBlock
-      | FormApiBlock
-      | BadgeBlock
-      | IfBlock
-      | ForBlock
-      | TabsBlock
-      | ResourceBlock
-      | ChatThreadBlock
-      | ChatListBlock
-      | CustomBlock
-      | DocumentBlock | LinkBlock
+          | StackBlock
+          | SectionBlock
+          | SplitBlock
+          | HeadingBlock
+          | TextBlock
+          | DividerBlock
+          | SpacerBlock
+          | ActionBlock
+          | UploadBlock
+          | TableApiBlock
+          | FormApiBlock
+          | BadgeBlock
+          | IfBlock
+          | ForBlock
+          | TabsBlock
+          | ResourceBlock
+          | ChatThreadBlock
+          | ChatListBlock
+          | CustomBlock
+          | DocumentBlock | LinkBlock | Page_actionsBlock
 
 
 // =====================================================

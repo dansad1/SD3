@@ -51,12 +51,12 @@ export function useActionExecutor() {
         mergedCtx,
       })
 
-      const resolved = resolveAction(target)
+     const resolved = resolveAction({
 
-      console.log("🧩 RUN ACTION RESOLVED", {
-        target,
-        resolved,
-      })
+  action: target,
+
+  target: ctx.target,
+})
 
       const result = await executeResolvedAction({
         page,

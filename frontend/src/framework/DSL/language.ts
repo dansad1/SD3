@@ -175,7 +175,19 @@ export const Structural = {
       tab.content = block
     */
   },
+page_actions: {
+  props: {
 
+    sticky: "boolean" as Primitive,
+
+    align: [
+      "left",
+      "center",
+      "right",
+    ] as const,
+
+  },
+},
 } as const
 /* =========================
    ATOMIC UI
@@ -303,40 +315,87 @@ export const Atom = {
    ========================= */
 
 export const Action = {
+
   action: {
+
     props: {
       label: "string",
       icon: "string",
+      // =====================================
+      // ACTION TYPE
+      // =====================================
 
-      // 🔥 ЯВНОЕ РАЗДЕЛЕНИЕ
       to: "string",
+
       action: "string",
+
+      // 🔥 NEW
+      // explicit runtime target
+
+      target: "string",
+
+      // =====================================
+      // CONTEXT
+      // =====================================
 
       ctx: "object",
 
-      variant: ["primary", "secondary", "ghost", "danger"],
+      // =====================================
+      // UI
+      // =====================================
+
+      variant: [
+
+        "primary",
+
+        "secondary",
+
+        "ghost",
+
+        "danger",
+
+      ],
     },
   },
-
-
-  
 
   upload: {
+
     props: {
-      name: "string" as Primitive,
-      label: "string" as Primitive,
-      multiple: "boolean" as Primitive,
-      upload_action: "string" as Primitive,
-      commit_action: "string" as Primitive,
-      files: "array" as Primitive,
-      ctx: "object" as Primitive,
-      refresh: "array" as Primitive,
-      accept: "string" as Primitive,
-      auto_commit: "boolean" as Primitive,
-      disabled: "boolean" as Primitive,
+
+      name:
+        "string" as Primitive,
+
+      label:
+        "string" as Primitive,
+
+      multiple:
+        "boolean" as Primitive,
+
+      upload_action:
+        "string" as Primitive,
+
+      commit_action:
+        "string" as Primitive,
+
+      files:
+        "array" as Primitive,
+
+      ctx:
+        "object" as Primitive,
+
+      refresh:
+        "array" as Primitive,
+
+      accept:
+        "string" as Primitive,
+
+      auto_commit:
+        "boolean" as Primitive,
+
+      disabled:
+        "boolean" as Primitive,
     },
   },
- 
 
 } as const
 /* =========================
@@ -351,86 +410,165 @@ custom: {
     },
   },
 form: {
+
   modes: {
+
     // =====================================================
     // ENTITY FORM (CRUD)
     // =====================================================
+
     entity: {
+
       entity: "string" as Primitive,
 
-      "mode?": ["create", "edit", "view"] as const,
-      "objectId?": "string" as Primitive,
+      "mode?": [
+        "create",
+        "edit",
+        "view",
+      ] as const,
 
-      "initial?": "object" as Primitive,
+      "objectId?":
+        "string" as Primitive,
 
-      "submit?": {
-        label: "string" as Primitive,
-        action: "string" as Primitive,
+      "initial?":
+        "object" as Primitive,
 
-        redirect: [
-          "string",
-          {
-            to: "string" as Primitive,
-            ctx: "object" as Primitive,
-          },
-        ] as const,
+      // 🔥 IMPORTANT
+      // boolean support
 
-        closeModal: "boolean" as Primitive,
-      },
+      "submit?": [
+
+        "boolean",
+
+        {
+
+          label:
+            "string" as Primitive,
+
+          action:
+            "string" as Primitive,
+
+          redirect: [
+
+            "string",
+
+            {
+
+              to:
+                "string" as Primitive,
+
+              ctx:
+                "object" as Primitive,
+
+            },
+
+          ] as const,
+
+          closeModal:
+            "boolean" as Primitive,
+
+        },
+
+      ] as const,
     },
 
     // =====================================================
     // ACTION FORM
     // =====================================================
+
     action: {
-      schema: "string" as Primitive,
+
+      schema:
+        "string" as Primitive,
+
+      // 🔥 IMPORTANT
+      // boolean support
 
       submit: [
+
+        "boolean",
+
         "string",
+
         {
-          action: "string" as Primitive,
-          label: "string" as Primitive,
+
+          action:
+            "string" as Primitive,
+
+          label:
+            "string" as Primitive,
 
           redirect: [
+
             "string",
+
             {
-              to: "string" as Primitive,
-              ctx: "object" as Primitive,
+
+              to:
+                "string" as Primitive,
+
+              ctx:
+                "object" as Primitive,
+
             },
+
           ] as const,
 
-          closeModal: "boolean" as Primitive,
+          closeModal:
+            "boolean" as Primitive,
+
         },
+
       ] as const,
 
       "redirect?": [
+
         "string",
+
         {
-          to: "string" as Primitive,
-          ctx: "object" as Primitive,
+
+          to:
+            "string" as Primitive,
+
+          ctx:
+            "object" as Primitive,
+
         },
+
       ] as const,
     },
   },
 
   // =====================================================
-  // 🔥 НОВЫЙ LAYOUT (ТОЛЬКО PRESET)
+  // FORM LAYOUT
   // =====================================================
- formLayout: {
-  preset: [
-    "default",
-    "two-columns",
-    "single-column",
-    "wide",
-  ] as const,
 
-  density: [
-    "comfortable", // много воздуха
-    "default",     // стандарт
-    "compact",     // плотнее
-    "dense",       // максимально плотно
-  ] as const,
-},
+  formLayout: {
+
+    preset: [
+
+      "default",
+
+      "two-columns",
+
+      "single-column",
+
+      "wide",
+
+    ] as const,
+
+    density: [
+
+      "comfortable",
+
+      "default",
+
+      "compact",
+
+      "dense",
+
+    ] as const,
+  },
 },
 
 

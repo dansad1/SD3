@@ -10,7 +10,10 @@ type ContainerApi = Extract<ApiPageBlock, { type: "container" }>
 type SectionApi   = Extract<ApiPageBlock, { type: "section" }>
 type StackApi     = Extract<ApiPageBlock, { type: "stack" }>
 type SplitApi     = Extract<ApiPageBlock, { type: "split" }>
-
+type PageActionsApi = Extract<
+  ApiPageBlock,
+  { type: "page_actions" }
+>
 /* ================= GUARDS ================= */
 
 function isApiPageBlockArray(x: unknown): x is ApiPageBlock[] {
@@ -70,4 +73,22 @@ export function normalizeSplit(
     ...structuralCommon(block),
   }
 }
+export function normalizePageActions(
+  block: PageActionsApi
+): PageActionsApi {
 
+  return {
+
+    ...block,
+
+    id: normalizeId(block.id),
+
+    sticky:
+      block.sticky === undefined
+        ? true
+        : Boolean(block.sticky),
+
+    align:
+      block.align ?? "right",
+  }
+}

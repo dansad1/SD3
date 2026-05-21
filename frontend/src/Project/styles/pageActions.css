@@ -1,0 +1,33 @@
+.page-actions {
+  display: flex;
+  gap: 12px;
+
+  width: 100%;
+
+  margin-top: 16px;
+}
+
+.page-actions-left {
+  justify-content: flex-start;
+}
+
+.page-actions-center {
+  justify-content: center;
+}
+
+.page-actions-right {
+  justify-content: flex-end;
+}
+
+.page-actions-sticky {
+
+  position: sticky;
+
+  bottom: 0;
+
+  z-index: 20;
+
+  padding-top: 16px;
+
+  background: var(--surface);
+}

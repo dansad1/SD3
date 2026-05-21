@@ -88,38 +88,104 @@ ${entries
 }
 
 function tsType(spec: unknown): string {
+
+  // =====================================================
+  // UNIONS
+  // =====================================================
+
   if (Array.isArray(spec)) {
+
+    // ---------------------------------------------------
+    // numeric literals
+    // ---------------------------------------------------
+
     if (spec.every(v => typeof v === "number")) {
-      return bindable(spec.join(" | "))
+
+      return bindable(
+        spec.join(" | ")
+      )
     }
+
+    // ---------------------------------------------------
+    // generic unions
+    // ---------------------------------------------------
 
     const union = spec
       .map(v => {
+
+        // -----------------------------------------------
+        // object shape
+        // -----------------------------------------------
+
         if (
+
           typeof v === "object" &&
+
           v !== null &&
+
           !Array.isArray(v)
+
         ) {
+
           return genObjectShape(
             v as Record<string, unknown>,
             true
           )
         }
 
+        // -----------------------------------------------
+        // primitive/literal
+        // -----------------------------------------------
+
         if (typeof v === "string") {
+
+          // primitive keyword
           if (isPrimitiveKeyword(v)) {
-            return tsType(v)
+
+            switch (v) {
+
+              case "string":
+                return "string"
+
+              case "number":
+                return "number"
+
+              case "boolean":
+                return "boolean"
+
+              case "array":
+                return "unknown[]"
+
+              case "object":
+                return "Record<string, unknown>"
+
+              case "any":
+                return "unknown"
+            }
           }
 
+          // literal string
           return `"${v}"`
         }
 
+        // -----------------------------------------------
+        // fallback
+        // -----------------------------------------------
+
         return String(v)
+
       })
       .join(" | ")
 
-    return bindable(`(${union})`)
+    // 🔥 IMPORTANT:
+    // bindable once for whole union
+
+    return `(${union}) | \`$\${string}\``
   }
+
+  // =====================================================
+  // PRIMITIVES
+  // =====================================================
 
   if (spec === "string") {
     return bindable("string")
@@ -145,15 +211,27 @@ function tsType(spec: unknown): string {
     return "unknown"
   }
 
+  // =====================================================
+  // OBJECT SHAPE
+  // =====================================================
+
   if (
+
     typeof spec === "object" &&
+
     spec !== null
+
   ) {
+
     return genObjectShape(
       spec as Record<string, unknown>,
       true
     )
   }
+
+  // =====================================================
+  // FALLBACK
+  // =====================================================
 
   return "unknown"
 }

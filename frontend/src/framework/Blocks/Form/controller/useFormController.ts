@@ -1,12 +1,7 @@
 import {
-  useMemo,
-  useCallback,
   useRef,
   useEffect,
 } from "react"
-
-import { usePageAction }
-  from "../../Action/usePageAction"
 
 import { usePageDirty }
   from "../../hooks/usePageDirty"
@@ -15,9 +10,9 @@ import { useFormRuntime }
   from "../runtime/useFormRuntime"
 
 import type {
-  FormActionConfig,
   FormConfig,
   FormEntityConfig,
+  FormActionConfig,
 } from "../types/FormConfig"
 
 export function useFormController(
@@ -25,7 +20,7 @@ export function useFormController(
 ) {
 
   /* ==================================================== */
-  /* FORM */
+  /* FORM RUNTIME */
   /* ==================================================== */
 
   const form =
@@ -46,25 +41,21 @@ export function useFormController(
   }, [form.submit])
 
   /* ==================================================== */
-  /* ACTION ID */
+  /* FORM ID */
   /* ==================================================== */
 
-  const actionId = useMemo(() => {
+  const formId = (() => {
 
     if (config.formType === "entity") {
 
       const entityConfig =
         config as FormEntityConfig
 
-      const scope =
+      return entityConfig.objectId
 
-        entityConfig.objectId
+        ? `form:${entityConfig.entity}:${entityConfig.objectId}`
 
-          ? `${entityConfig.entity}:${entityConfig.objectId}`
-
-          : `${entityConfig.entity}:create`
-
-      return `form:${scope}`
+        : `form:${entityConfig.entity}:create`
     }
 
     const actionConfig =
@@ -72,120 +63,58 @@ export function useFormController(
 
     return `action-form:${actionConfig.schema}`
 
-  }, [config])
+  })()
 
   /* ==================================================== */
-  /* DIRTY */
+  /* DIRTY STATE */
   /* ==================================================== */
 
   usePageDirty(
-    actionId,
+    formId,
     form.dirty
   )
 
   /* ==================================================== */
-  /* LABEL */
+  /* FORM API */
   /* ==================================================== */
 
-  const label = useMemo(() => {
+  useEffect(() => {
 
-    const submit =
-      config.submit
+   
 
-    if (
+    // ==================================================
+    // REGISTER
+    // ==================================================
 
-      submit &&
+    
 
-      typeof submit === "object" &&
+    // ==================================================
+    // CLEANUP
+    // ==================================================
 
-      "label" in submit &&
-
-      submit.label
-
-    ) {
-
-      return submit.label
-    }
-
-    if (config.formType === "entity") {
-
-      return "Сохранить"
-    }
-
-    return "Отправить"
-
-  }, [config])
-
-  /* ==================================================== */
-  /* RUN */
-  /* ==================================================== */
-
-  const run = useCallback(async () => {
-
-    console.log(
-      "🚀 FORM SUBMIT"
-    )
-
-    return await submitRef.current()
-
-  }, [])
-
-  /* ==================================================== */
-  /* VALIDATE */
-  /* ==================================================== */
-
-  const validate = useCallback(() => {
-
-    return true
-
-  }, [])
-
-  /* ==================================================== */
-  /* ACTION HANDLER */
-  /* ==================================================== */
-
-  const actionHandler = useMemo(() => {
-
-    return {
-
-      id: actionId,
-
-      order: 10,
-
-      label,
-
-      placement: "form" as const,
-
-      validate,
-
-      run,
+    return () => {
 
     }
 
   }, [
 
-    actionId,
+    formId,
 
-    label,
+    form.values,
 
-    validate,
-
-    run,
+    form.dirty,
 
   ])
-
-  /* ==================================================== */
-  /* REGISTER ACTION */
-  /* ==================================================== */
-
-  usePageAction(
-    actionId,
-    actionHandler
-  )
 
   /* ==================================================== */
   /* RETURN */
   /* ==================================================== */
 
-  return form
+  return {
+
+    ...form,
+
+    formId,
+
+  }
 }

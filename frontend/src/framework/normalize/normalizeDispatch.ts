@@ -17,6 +17,7 @@ import { normalizeMatrix } from "../Blocks/Matrix/normalize"
 
 import {
   normalizeContainer,
+  normalizePageActions,
   normalizeSection,
   normalizeSplit,
   normalizeStack,
@@ -89,8 +90,10 @@ chat_list: normalizeChatList,
   chat_thread: normalizeChatThread,
     custom: normalizeCustom,
     document: normalizeDocument,
-    link: normalizeLink
-}
+    link: normalizeLink,
+  page_actions: normalizePageActions,
+
+  }
 
 /**
  * Typed dispatch без bridge-cast.

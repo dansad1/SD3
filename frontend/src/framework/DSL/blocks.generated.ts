@@ -70,6 +70,17 @@ export const Tabs: DSLComponent<TabsDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
+export type Page_actionsDSL = {
+  sticky?: boolean | `$${string}`
+  align?: ("left" | "center" | "right") | `$${string}`
+}
+
+export const Page_actions: DSLComponent<Page_actionsDSL> = (props) =>
+  Block(
+    { __type: "page_actions", ...props },
+    normalizeChildren(props.children)
+  )
+
 export type HeadingDSL = {
   text?: string | `$${string}`
   fallback?: string | `$${string}`
@@ -162,6 +173,7 @@ export type ActionDSL = {
   icon?: string | `$${string}`
   to?: string | `$${string}`
   action?: string | `$${string}`
+  target?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
   variant?: ("primary" | "secondary" | "ghost" | "danger") | `$${string}`
 }
@@ -248,27 +260,27 @@ export type FormDSL =
   mode?: ("create" | "edit" | "view") | `$${string}`
   objectId?: string | `$${string}`
   initial?: Record<string, unknown> | `$${string}`
-  submit?: {
+  submit?: (boolean | {
   label?: string | `$${string}`
   action?: string | `$${string}`
-  redirect?: (string | `$${string}` | {
+  redirect?: (string | {
   to?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
 }) | `$${string}`
   closeModal?: boolean | `$${string}`
-}
+}) | `$${string}`
 } | {
   schema: string | `$${string}`
-  submit: (string | `$${string}` | {
+  submit: (boolean | string | {
   action?: string | `$${string}`
   label?: string | `$${string}`
-  redirect?: (string | `$${string}` | {
+  redirect?: (string | {
   to?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
 }) | `$${string}`
   closeModal?: boolean | `$${string}`
 }) | `$${string}`
-  redirect?: (string | `$${string}` | {
+  redirect?: (string | {
   to?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
 }) | `$${string}`
@@ -292,12 +304,12 @@ export type TableDSL = {
   filter?: Record<string, unknown> | `$${string}`
   searchableFields?: unknown[] | `$${string}`
   selectionActions?: unknown[] | `$${string}`
-  rowClick?: (boolean | `$${string}` | {
+  rowClick?: (boolean | {
   to?: string | `$${string}`
   action?: string | `$${string}`
   params?: Record<string, unknown> | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
-  confirm?: (boolean | `$${string}` | {
+  confirm?: (boolean | {
   message?: string | `$${string}`
 }) | `$${string}`
 }) | `$${string}`
@@ -344,7 +356,7 @@ export type Chat_threadDSL = {
   submit?: {
   action?: string | `$${string}`
   label?: string | `$${string}`
-  redirect?: (string | `$${string}` | {
+  redirect?: (string | {
   to?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
 }) | `$${string}`
