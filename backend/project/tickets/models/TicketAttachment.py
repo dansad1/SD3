@@ -1,31 +1,10 @@
-import uuid
+# backend/project/tickets/models/TicketAttachment.py
 
 from django.db import models
 
-
-def ticket_attachment_upload_path(
-    instance,
-    filename,
-):
-
-    ext = (
-        filename.split(".")[-1]
-        if "." in filename
-        else ""
-    )
-
-    generated = uuid.uuid4().hex
-
-    if ext:
-        generated = (
-            f"{generated}.{ext}"
-        )
-
-    return (
-        f"tickets/"
-        f"{instance.ticket_id}/"
-        f"{generated}"
-    )
+from backend.project.tickets.utils.upload_paths import (
+    ticket_attachment_upload_path,
+)
 
 
 class TicketAttachment(models.Model):
@@ -53,9 +32,7 @@ class TicketAttachment(models.Model):
     )
 
     file = models.FileField(
-        upload_to=(
-            ticket_attachment_upload_path
-        )
+        upload_to=ticket_attachment_upload_path,
     )
 
     original_name = models.CharField(
@@ -77,19 +54,6 @@ class TicketAttachment(models.Model):
 
     class Meta:
 
-        ordering = [
-            "-created_at",
-        ]
-
-        indexes = [
-
-            models.Index(
-                fields=[
-                    "ticket",
-                ]
-            ),
-        ]
-
         verbose_name = (
             "Вложение заявки"
         )
@@ -97,6 +61,10 @@ class TicketAttachment(models.Model):
         verbose_name_plural = (
             "Вложения заявок"
         )
+
+        ordering = [
+            "-created_at"
+        ]
 
     def __str__(self):
 

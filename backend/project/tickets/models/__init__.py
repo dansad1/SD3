@@ -11,3 +11,4 @@ from .TicketAttachment import *
 from .TicketStatusTransition import *
 from .ExecutorGroup import *
 from .Ticket import *
+from .TicketFieldValue import *
