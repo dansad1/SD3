@@ -5,14 +5,24 @@ from backend.generic.models.BaseField import (
 )
 
 
-class CompanyField(
+class TicketField(
     BaseField
 ):
 
     fieldset = models.ForeignKey(
-        "companies.CompanyFieldSet",
+        "tickets.TicketFieldSet",
         on_delete=models.CASCADE,
         related_name="fields",
+    )
+
+    show_in_list = models.BooleanField(
+        default=False,
+    )
+
+    default_expression = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
     )
 
     class Meta:
@@ -28,11 +38,11 @@ class CompanyField(
         )
 
         verbose_name = (
-            "Поле компании"
+            "Поле заявки"
         )
 
         verbose_name_plural = (
-            "Поля компании"
+            "Поля заявки"
         )
 
     def __str__(self):

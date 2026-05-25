@@ -30,7 +30,10 @@ INSTALLED_APPS = [
     "ckeditor",
 
     # local
-"backend.project.users"
+    "backend.project.users",
+    "backend.project.companies",
+    "backend.project.tickets"
+
 ]
 AUTH_USER_MODEL = "users.User"
 # =========================
