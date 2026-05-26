@@ -1,21 +1,14 @@
 /** @jsxImportSource @/framework/DSL/runtime */
 
 import {
-
   page,
-
   Container,
   Section,
   Stack,
-
   Heading,
   Text,
-
   Form,
-
   Action,
-  Page_actions,
-
 } from "@/framework"
 
 const UserFormPage = page(
@@ -40,14 +33,14 @@ const UserFormPage = page(
           />
 
           <Text
-            value="Создание и редактирование пользователя"
-            variant="muted"
-          />
+  value="Создание и редактирование пользователя"
+  variant="muted"
+/>
 
         </Stack>
 
         {/* ===================================== */}
-        {/* NAVIGATION */}
+        {/* ACTIONS */}
         {/* ===================================== */}
 
         <Stack gap="sm">
@@ -74,7 +67,11 @@ const UserFormPage = page(
 
           fieldset="default"
 
-          submit={false}
+          submit={{
+            label: "Сохранить",
+          }}
+
+        
 
           formLayout={{
 
@@ -85,29 +82,6 @@ const UserFormPage = page(
           }}
 
         />
-
-        {/* ===================================== */}
-        {/* PAGE ACTIONS */}
-        {/* ===================================== */}
-
-        <Page_actions
-          sticky
-          align="right"
-        >
-
-          <Action
-
-            label="Сохранить"
-
-            action="form.submit"
-
-            target="form:user:$query.id"
-
-            variant="primary"
-
-          />
-
-        </Page_actions>
 
       </Stack>
 

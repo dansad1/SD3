@@ -15,6 +15,11 @@ def build_fields(ctx):
         runtime_fields
     )
 
+    ctx.field_map = {
+        field.name: field
+        for field in runtime_fields
+    }
+
     allowed = set(
         ctx.entity.list_display
         or []
@@ -64,9 +69,12 @@ def build_fields(ctx):
                 ),
 
             "sortable":
-                not schema.get(
-                    "dynamic",
-                    False,
+                bool(
+                    getattr(
+                        field,
+                        "sortable",
+                        True,
+                    )
                 ),
 
             "dynamic":
@@ -76,6 +84,15 @@ def build_fields(ctx):
                         False,
                     )
                 ),
+
+            "type":
+                field.type,
+
+            "readonly":
+                field.readonly,
+
+            "hidden":
+                field.hidden,
         })
 
     ctx.fields = fields

@@ -23,8 +23,7 @@ import type {
 } from "../Blocks/Structural/types";
 import type { TableApiBlock } from "../Blocks/Table/types/api";
 import type { LinkBlock } from "../Blocks/Atom/types";
-import type { Page_actionsBlock } from "../Blocks/Atom/types";
-import type { Page_actionsBlock } from "../Blocks/Structural/Page_actions/types";
+import type { MenuBlock } from "../Blocks/Structural/Menu/types";
 
 /**
  * Единый union всех декларативных блоков страницы
@@ -50,7 +49,7 @@ export type ApiPageBlock =
           | ChatThreadBlock
           | ChatListBlock
           | CustomBlock
-          | DocumentBlock | LinkBlock | Page_actionsBlock
+          | DocumentBlock | LinkBlock | MenuBlock
 
 
 // =====================================================

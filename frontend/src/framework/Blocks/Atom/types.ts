@@ -74,6 +74,7 @@ export type LinkBlock = BaseBlock & {
     | "muted"
     | "subtle"
     | "danger"
+    | "menu"
 
   underline?:
     | "always"

@@ -17,7 +17,6 @@ import { normalizeMatrix } from "../Blocks/Matrix/normalize"
 
 import {
   normalizeContainer,
-  normalizePageActions,
   normalizeSection,
   normalizeSplit,
   normalizeStack,
@@ -44,6 +43,7 @@ import { normalizeUpload } from "../Blocks/Action/upload/normalize"
 import { normalizeTabs } from "../Blocks/Structural/Tabs/normalize"
 import { normalizeCustom } from "../Blocks/Custom/normalize"
 import { normalizeDocument } from "../Blocks/Document/normalize"
+import { normalizeMenu } from "../Blocks/Structural/Menu/normalize";
 
 /**
  * Строго типизированная карта нормалайзеров.
@@ -91,9 +91,8 @@ chat_list: normalizeChatList,
     custom: normalizeCustom,
     document: normalizeDocument,
     link: normalizeLink,
-  page_actions: normalizePageActions,
-
-  }
+    menu: normalizeMenu
+}
 
 /**
  * Typed dispatch без bridge-cast.

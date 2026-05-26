@@ -1,7 +1,12 @@
 import {
+  useMemo,
+  useCallback,
   useRef,
   useEffect,
 } from "react"
+
+import { usePageAction }
+  from "../../Action/usePageAction"
 
 import { usePageDirty }
   from "../../hooks/usePageDirty"
@@ -10,9 +15,9 @@ import { useFormRuntime }
   from "../runtime/useFormRuntime"
 
 import type {
+  FormActionConfig,
   FormConfig,
   FormEntityConfig,
-  FormActionConfig,
 } from "../types/FormConfig"
 
 export function useFormController(
@@ -20,7 +25,7 @@ export function useFormController(
 ) {
 
   /* ==================================================== */
-  /* FORM RUNTIME */
+  /* FORM */
   /* ==================================================== */
 
   const form =
@@ -41,21 +46,25 @@ export function useFormController(
   }, [form.submit])
 
   /* ==================================================== */
-  /* FORM ID */
+  /* ACTION ID */
   /* ==================================================== */
 
-  const formId = (() => {
+  const actionId = useMemo(() => {
 
     if (config.formType === "entity") {
 
       const entityConfig =
         config as FormEntityConfig
 
-      return entityConfig.objectId
+      const scope =
 
-        ? `form:${entityConfig.entity}:${entityConfig.objectId}`
+        entityConfig.objectId
 
-        : `form:${entityConfig.entity}:create`
+          ? `${entityConfig.entity}:${entityConfig.objectId}`
+
+          : `${entityConfig.entity}:create`
+
+      return `form:${scope}`
     }
 
     const actionConfig =
@@ -63,58 +72,120 @@ export function useFormController(
 
     return `action-form:${actionConfig.schema}`
 
-  })()
+  }, [config])
 
   /* ==================================================== */
-  /* DIRTY STATE */
+  /* DIRTY */
   /* ==================================================== */
 
   usePageDirty(
-    formId,
+    actionId,
     form.dirty
   )
 
   /* ==================================================== */
-  /* FORM API */
+  /* LABEL */
   /* ==================================================== */
 
-  useEffect(() => {
+  const label = useMemo(() => {
 
-   
+    const submit =
+      config.submit
 
-    // ==================================================
-    // REGISTER
-    // ==================================================
+    if (
 
-    
+      submit &&
 
-    // ==================================================
-    // CLEANUP
-    // ==================================================
+      typeof submit === "object" &&
 
-    return () => {
+      "label" in submit &&
+
+      submit.label
+
+    ) {
+
+      return submit.label
+    }
+
+    if (config.formType === "entity") {
+
+      return "Сохранить"
+    }
+
+    return "Отправить"
+
+  }, [config])
+
+  /* ==================================================== */
+  /* RUN */
+  /* ==================================================== */
+
+  const run = useCallback(async () => {
+
+    console.log(
+      "🚀 FORM SUBMIT"
+    )
+
+    return await submitRef.current()
+
+  }, [])
+
+  /* ==================================================== */
+  /* VALIDATE */
+  /* ==================================================== */
+
+  const validate = useCallback(() => {
+
+    return true
+
+  }, [])
+
+  /* ==================================================== */
+  /* ACTION HANDLER */
+  /* ==================================================== */
+
+  const actionHandler = useMemo(() => {
+
+    return {
+
+      id: actionId,
+
+      order: 10,
+
+      label,
+
+      placement: "form" as const,
+
+      validate,
+
+      run,
 
     }
 
   }, [
 
-    formId,
+    actionId,
 
-    form.values,
+    label,
 
-    form.dirty,
+    validate,
+
+    run,
 
   ])
+
+  /* ==================================================== */
+  /* REGISTER ACTION */
+  /* ==================================================== */
+
+  usePageAction(
+    actionId,
+    actionHandler
+  )
 
   /* ==================================================== */
   /* RETURN */
   /* ==================================================== */
 
-  return {
-
-    ...form,
-
-    formId,
-
-  }
+  return form
 }

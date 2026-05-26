@@ -1,6 +1,5 @@
 import type { PageBlock } from "@/framework/page/PageSchema"
 import type { BaseBlock } from "../BlockType"
-import type { PhysicalNode } from "@/framework/physical/types/PhysicalNode"
 
 export type StructuralBlockBase = BaseBlock & {
   blocks: PageBlock[]
@@ -148,18 +147,4 @@ export type ContainerBlock =
     fluid?: boolean
 
     fullHeight?: boolean
-  }
-export type PageActionsBlockType =
-  BaseBlock & {
-
-    type: "page_actions"
-
-    sticky?: boolean
-
-    align?:
-      | "left"
-      | "center"
-      | "right"
-
-    blocks?: PhysicalNode[]
   }

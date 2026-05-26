@@ -13,6 +13,20 @@ export type MenuItem =
     }
 
 export const MENU: MenuItem[] = [
+  {
+    label: "Заявки",
+    to: "/page/ticket:list",
+  },
+
+  {
+    label: "База знаний",
+    to: "/page/knowledge_article:list",
+  },
+
+  {
+    label: "Компании",
+    to: "/page/company:list",
+  },
 
   {
     label: "Пользователи",
@@ -25,8 +39,27 @@ export const MENU: MenuItem[] = [
   },
 
   {
-    label: "Выйти",
-    action: "logout",
+    label: "Настройки",
+    to: "/page/settings:home",
   },
 
+  {
+    label: "CMDB",
+    to: "/page/ci_type:list",
+  },
+
+  {
+    label: "Аналитика",
+    to: "/page/analytics_report:list",
+  },
+
+  {
+    label: "Сервисы",
+    to: "/page/service:list",
+  },
+
+  {
+    label: "Выход",
+    action: "logout",
+  },
 ]

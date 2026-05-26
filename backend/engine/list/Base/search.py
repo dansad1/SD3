@@ -1,30 +1,57 @@
+# =========================================================
+# backend/engine/list/Base/search.py
+# =========================================================
+
 from django.db.models import Q
 
 
 def apply_search(ctx):
-    q = ctx.request.GET.get("search") or ctx.request.GET.get("q")
+
+    q = (
+        ctx.request.GET.get("search")
+        or ctx.request.GET.get("q")
+    )
 
     if not q:
         return
 
     entity = ctx.entity
-    model = entity.model
 
-    fields = getattr(entity, "search_fields", None) or []
+    runtime_fields = (
+        ctx.runtime_fields
+        or []
+    )
 
-    model_fields = {
-        f.name
-        for f in model._meta.get_fields()
-        if hasattr(f, "attname")
-    }
+    searchable = set(
+        getattr(
+            entity,
+            "search_fields",
+            [],
+        ) or []
+    )
 
-    cond = Q()
+    qs = ctx.qs
 
-    for field in fields:
-        if field not in model_fields:
+    # =====================================================
+    # APPLY RUNTIME SEARCH
+    # =====================================================
+
+    for field in runtime_fields:
+
+        # =============================================
+        # NOT SEARCHABLE
+        # =============================================
+
+        if field.name not in searchable:
             continue
 
-        cond |= Q(**{f"{field}__icontains": q})
+        # =============================================
+        # FIELD SEARCH
+        # =============================================
 
-    if cond.children:
-        ctx.qs = ctx.qs.filter(cond)
+        qs = field.apply_search(
+            qs,
+            q,
+        )
+
+    ctx.qs = qs

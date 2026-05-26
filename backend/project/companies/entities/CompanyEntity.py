@@ -1,3 +1,11 @@
+# =========================================================
+# COMPANY ENTITY
+# =========================================================
+
+from django.core.exceptions import (
+    ValidationError
+)
+
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity
 )
@@ -10,6 +18,10 @@ from backend.project.companies.models import (
 
 class CompanyEntity(BaseEntity):
 
+    # =====================================================
+    # BASE
+    # =====================================================
+
     model = Company
 
     entity = "company"
@@ -19,14 +31,23 @@ class CompanyEntity(BaseEntity):
     # =====================================================
 
     list_display = [
+
+        # static
         "id",
         "fieldset",
         "archived",
         "created_at",
+
+        # dynamic
+        "name",
+        "phone",
+        "email",
     ]
 
     search_fields = [
-        "id",
+        "name",
+        "phone",
+        "email",
     ]
 
     filter_fields = [
@@ -70,6 +91,13 @@ class CompanyEntity(BaseEntity):
             "fieldset",
         ]
 
+    def get_prefetch_related(self):
+
+        return [
+            "dynamic_values",
+            "dynamic_values__field",
+        ]
+
     # =====================================================
     # DYNAMIC FIELDS
     # =====================================================
@@ -80,53 +108,21 @@ class CompanyEntity(BaseEntity):
         obj=None,
     ):
 
-        # =============================================
-        # INSTANCE FIELDSET
-        # =============================================
-
-        if obj and obj.fieldset_id:
-
-            return (
-                CompanyField.objects
-                .filter(
-                    fieldset=obj.fieldset,
-                    fieldset__is_active=True,
-                )
-                .order_by(
-                    "order",
-                    "id",
-                )
-            )
-
-        # =============================================
-        # QUERY FIELDSET
-        # =============================================
-
         fieldset = request.GET.get(
             "fieldset"
         )
 
-        if fieldset:
+        # =============================================
+        # DEFAULT / EMPTY
+        # =============================================
 
-            try:
-
-                fieldset = int(
-                    fieldset
-                )
-
-            except (
-                TypeError,
-                ValueError,
-            ):
-
-                return []
+        if (
+            not fieldset
+            or fieldset == "default"
+        ):
 
             return (
                 CompanyField.objects
-                .filter(
-                    fieldset_id=fieldset,
-                    fieldset__is_active=True,
-                )
                 .order_by(
                     "order",
                     "id",
@@ -134,32 +130,61 @@ class CompanyEntity(BaseEntity):
             )
 
         # =============================================
-        # DEFAULT
+        # VALIDATION
         # =============================================
 
-        default_fieldset = (
-            self.model.fieldset.field
-            .model.objects
-            .filter(
-                is_default=True,
-                is_active=True,
-            )
-            .first()
-        )
+        try:
 
-        if not default_fieldset:
+            fieldset_id = int(
+                fieldset
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+
             return []
+
+        # =============================================
+        # RESULT
+        # =============================================
 
         return (
             CompanyField.objects
             .filter(
-                fieldset=default_fieldset
+                fieldset_id=fieldset_id,
+                fieldset__is_active=True,
             )
             .order_by(
                 "order",
                 "id",
             )
         )
+
+    # =====================================================
+    # FIELDS
+    # =====================================================
+
+    def get_fields(
+        self,
+        request,
+        obj=None,
+    ):
+
+        fields = super().get_fields(
+            request=request,
+            obj=obj,
+        )
+
+        fields.extend(
+            self.get_dynamic_fields(
+                request=request,
+                obj=obj,
+            )
+        )
+
+        return fields
 
     # =====================================================
     # OPTIONS
@@ -172,5 +197,108 @@ class CompanyEntity(BaseEntity):
 
         return {
             "value": obj.pk,
-            "label": str(obj),
+
+            "label": (
+                obj.get_value("name")
+                or f"Company #{obj.pk}"
+            ),
         }
+
+    # =====================================================
+    # VALIDATION
+    # =====================================================
+
+    def validate(
+        self,
+        request,
+        payload,
+        instance=None,
+    ):
+
+        errors = {}
+
+        name = payload.get(
+            "name"
+        )
+
+        if not name:
+
+            errors["name"] = [
+                "Название обязательно"
+            ]
+
+        if errors:
+
+            raise ValidationError(
+                errors
+            )
+
+        return payload
+
+    # =====================================================
+    # BEFORE SAVE
+    # =====================================================
+
+    def before_save(
+        self,
+        ctx,
+    ):
+
+        return ctx
+
+    # =====================================================
+    # AFTER SAVE
+    # =====================================================
+
+    def after_save(
+        self,
+        ctx,
+    ):
+
+        return ctx
+
+    # =====================================================
+    # BEFORE DELETE
+    # =====================================================
+
+    def before_delete(
+        self,
+        request,
+        instance,
+    ):
+
+        return None
+
+    # =====================================================
+    # AFTER DELETE
+    # =====================================================
+
+    def after_delete(
+        self,
+        request,
+        instance,
+    ):
+
+        return None
+
+    # =====================================================
+    # SCHEMA
+    # =====================================================
+
+    def customize_field_schema(
+        self,
+        request,
+        schema,
+        field=None,
+    ):
+
+        if schema["name"] in {
+
+            "id",
+            "created_at",
+            "updated_at",
+        }:
+
+            schema["readonly"] = True
+
+        return schema

@@ -5,9 +5,19 @@ from django.core.exceptions import ValidationError
 
 class BaseFieldType:
 
+    # =====================================================
+    # META
+    # =====================================================
+
     code = "base"
 
     label = "Base"
+
+    sortable = True
+
+    searchable = False
+
+    filterable = False
 
     # =====================================================
     # VALIDATE
@@ -18,6 +28,10 @@ class BaseFieldType:
         field,
         value,
     ):
+
+        # =============================================
+        # REQUIRED
+        # =============================================
 
         if (
             field.required
@@ -32,6 +46,10 @@ class BaseFieldType:
                 "Обязательное поле"
             )
 
+        # =============================================
+        # MULTIPLE
+        # =============================================
+
         if (
             field.is_multiple
             and not isinstance(
@@ -43,6 +61,8 @@ class BaseFieldType:
             raise ValidationError(
                 "Ожидался список"
             )
+
+        return value
 
     # =====================================================
     # NORMALIZE
@@ -61,10 +81,11 @@ class BaseFieldType:
     # =====================================================
 
     def serialize(
-            self,
-            field,
-            value,
+        self,
+        field,
+        value,
     ):
+
         return value
 
     # =====================================================
@@ -78,6 +99,37 @@ class BaseFieldType:
     ):
 
         return value
+
+    # =====================================================
+    # VALUE ACCESS
+    # =====================================================
+
+    def get_value(
+        self,
+        field,
+        obj,
+    ):
+
+        return getattr(
+            obj,
+            field.name,
+            None,
+        )
+
+    def set_value(
+        self,
+        field,
+        obj,
+        value,
+    ):
+
+        setattr(
+            obj,
+            field.name,
+            value,
+        )
+
+        return obj
 
     # =====================================================
     # WIDGET
@@ -94,7 +146,7 @@ class BaseFieldType:
         )
 
     # =====================================================
-    # SCHEMA
+    # UI SCHEMA
     # =====================================================
 
     def get_schema(
@@ -103,10 +155,31 @@ class BaseFieldType:
     ):
 
         return {
-            "type": self.code,
-            "widget": self.get_widget(
-                field
-            ),
+
+            # =========================================
+            # TYPE
+            # =========================================
+
+            "type":
+                self.code,
+
+            "widget":
+                self.get_widget(
+                    field
+                ),
+
+            # =========================================
+            # CAPABILITIES
+            # =========================================
+
+            "sortable":
+                self.sortable,
+
+            "searchable":
+                self.searchable,
+
+            "filterable":
+                self.filterable,
         }
 
     # =====================================================
@@ -120,7 +193,15 @@ class BaseFieldType:
         value,
     ):
 
-        return queryset
+        if value in (
+            None,
+            "",
+        ):
+            return queryset
+
+        return queryset.filter(**{
+            field.name: value
+        })
 
     # =====================================================
     # SEARCH
@@ -133,4 +214,36 @@ class BaseFieldType:
         value,
     ):
 
-        return queryset
+        if not value:
+            return queryset
+
+        if not self.searchable:
+            return queryset
+
+        return queryset.filter(**{
+            f"{field.name}__icontains": value
+        })
+
+    # =====================================================
+    # SORT
+    # =====================================================
+
+    def apply_sort(
+        self,
+        queryset,
+        field,
+        direction,
+    ):
+
+        if not self.sortable:
+            return queryset
+
+        key = field.name
+
+        if direction == "desc":
+
+            key = f"-{key}"
+
+        return queryset.order_by(
+            key
+        )

@@ -27,6 +27,7 @@ type ResolvedLinkProps = {
     | "muted"
     | "subtle"
     | "danger"
+    | "menu"
 
   underline?:
     | "always"

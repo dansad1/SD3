@@ -174,7 +174,7 @@ export type ActionContext = {
   /* =========================
      PAGE
   ========================= */
-target?: string
+
   page?: PageContext
 
   /* =========================

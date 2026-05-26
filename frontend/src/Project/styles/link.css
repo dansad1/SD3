@@ -74,7 +74,25 @@
 .ui-link.underline-always {
   text-decoration: underline;
 }
+.ui-link.variant-menu {
+  display: flex;
 
+  align-items: center;
+
+  width: 100%;
+
+  padding: 12px 16px;
+
+  border-radius: 10px;
+
+  text-decoration: none;
+
+  color: inherit;
+}
+
+.ui-link.variant-menu:hover {
+  background: var(--ui-hover);
+}
 .ui-link.underline-hover {
   text-decoration: none;
 }

@@ -70,14 +70,18 @@ export const Tabs: DSLComponent<TabsDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type Page_actionsDSL = {
-  sticky?: boolean | `$${string}`
-  align?: ("left" | "center" | "right") | `$${string}`
+export type MenuDSL = {
+  orientation?: ("vertical" | "horizontal") | `$${string}`
+  variant?: ("default" | "compact" | "cards" | "pills") | `$${string}`
+  align?: ("start" | "center" | "end" | "stretch") | `$${string}`
+  gap?: ("none" | "sm" | "md" | "lg") | `$${string}`
+  divided?: boolean | `$${string}`
+  wrap?: boolean | `$${string}`
 }
 
-export const Page_actions: DSLComponent<Page_actionsDSL> = (props) =>
+export const Menu: DSLComponent<MenuDSL> = (props) =>
   Block(
-    { __type: "page_actions", ...props },
+    { __type: "menu", ...props },
     normalizeChildren(props.children)
   )
 
@@ -144,7 +148,7 @@ export type LinkDSL = {
   external?: boolean | `$${string}`
   disabled?: boolean | `$${string}`
   icon?: string | `$${string}`
-  variant?: ("default" | "muted" | "subtle" | "danger") | `$${string}`
+  variant?: ("default" | "muted" | "subtle" | "danger" | "menu") | `$${string}`
   underline?: ("always" | "hover" | "never") | `$${string}`
   size?: ("sm" | "md" | "lg") | `$${string}`
 }
@@ -173,7 +177,6 @@ export type ActionDSL = {
   icon?: string | `$${string}`
   to?: string | `$${string}`
   action?: string | `$${string}`
-  target?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
   variant?: ("primary" | "secondary" | "ghost" | "danger") | `$${string}`
 }
@@ -260,27 +263,27 @@ export type FormDSL =
   mode?: ("create" | "edit" | "view") | `$${string}`
   objectId?: string | `$${string}`
   initial?: Record<string, unknown> | `$${string}`
-  submit?: (boolean | {
+  submit?: {
   label?: string | `$${string}`
   action?: string | `$${string}`
-  redirect?: (string | {
+  redirect?: (string | `$${string}` | {
   to?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
 }) | `$${string}`
   closeModal?: boolean | `$${string}`
-}) | `$${string}`
+}
 } | {
   schema: string | `$${string}`
-  submit: (boolean | string | {
+  submit: (string | `$${string}` | {
   action?: string | `$${string}`
   label?: string | `$${string}`
-  redirect?: (string | {
+  redirect?: (string | `$${string}` | {
   to?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
 }) | `$${string}`
   closeModal?: boolean | `$${string}`
 }) | `$${string}`
-  redirect?: (string | {
+  redirect?: (string | `$${string}` | {
   to?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
 }) | `$${string}`
@@ -304,12 +307,12 @@ export type TableDSL = {
   filter?: Record<string, unknown> | `$${string}`
   searchableFields?: unknown[] | `$${string}`
   selectionActions?: unknown[] | `$${string}`
-  rowClick?: (boolean | {
+  rowClick?: (boolean | `$${string}` | {
   to?: string | `$${string}`
   action?: string | `$${string}`
   params?: Record<string, unknown> | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
-  confirm?: (boolean | {
+  confirm?: (boolean | `$${string}` | {
   message?: string | `$${string}`
 }) | `$${string}`
 }) | `$${string}`
@@ -356,7 +359,7 @@ export type Chat_threadDSL = {
   submit?: {
   action?: string | `$${string}`
   label?: string | `$${string}`
-  redirect?: (string | {
+  redirect?: (string | `$${string}` | {
   to?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
 }) | `$${string}`

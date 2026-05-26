@@ -1,3 +1,7 @@
+# =========================================================
+# USER ENTITY
+# =========================================================
+
 from django.core.exceptions import (
     ValidationError
 )
@@ -18,6 +22,10 @@ from backend.project.users.models import (
 
 class UserEntity(BaseEntity):
 
+    # =====================================================
+    # BASE
+    # =====================================================
+
     model = User
 
     entity = "user"
@@ -27,13 +35,20 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     list_display = [
+
+        # static
         "login",
         "role",
         "is_active",
+
+        # dynamic
+        "telegram",
+        "department",
     ]
 
     search_fields = [
         "login",
+        "telegram",
     ]
 
     filter_fields = [
@@ -50,11 +65,21 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     capabilities = {
-        "list": "users.view",
-        "view": "users.view",
-        "create": "users.create",
-        "edit": "users.edit",
-        "delete": "users.delete",
+
+        "list":
+            "users.view",
+
+        "view":
+            "users.view",
+
+        "create":
+            "users.create",
+
+        "edit":
+            "users.edit",
+
+        "delete":
+            "users.delete",
     }
 
     # =====================================================
@@ -67,18 +92,21 @@ class UserEntity(BaseEntity):
             "role",
         ]
 
-    # =====================================================
-    # DYNAMIC FIELDS
-    # =====================================================
+    def get_prefetch_related(self):
+
+        return [
+            "dynamic_values",
+            "dynamic_values__field",
+        ]
 
     # =====================================================
     # DYNAMIC FIELDS
     # =====================================================
 
     def get_dynamic_fields(
-            self,
-            request,
-            obj=None,
+        self,
+        request,
+        obj=None,
     ):
 
         fieldset = request.GET.get(
@@ -90,8 +118,8 @@ class UserEntity(BaseEntity):
         # =============================================
 
         if (
-                not fieldset
-                or fieldset == "default"
+            not fieldset
+            or fieldset == "default"
         ):
             return []
 
@@ -106,8 +134,8 @@ class UserEntity(BaseEntity):
             )
 
         except (
-                TypeError,
-                ValueError,
+            TypeError,
+            ValueError,
         ):
 
             return []
@@ -127,6 +155,31 @@ class UserEntity(BaseEntity):
                 "id",
             )
         )
+
+    # =====================================================
+    # FIELDS
+    # =====================================================
+
+    def get_fields(
+        self,
+        request,
+        obj=None,
+    ):
+
+        fields = super().get_fields(
+            request=request,
+            obj=obj,
+        )
+
+        fields.extend(
+            self.get_dynamic_fields(
+                request=request,
+                obj=obj,
+            )
+        )
+
+        return fields
+
     # =====================================================
     # OPTIONS
     # =====================================================
@@ -190,7 +243,7 @@ class UserEntity(BaseEntity):
         return payload
 
     # =====================================================
-    # SAVE
+    # BEFORE SAVE
     # =====================================================
 
     def before_save(
@@ -216,7 +269,7 @@ class UserEntity(BaseEntity):
         return ctx
 
     # =====================================================
-    # DELETE
+    # BEFORE DELETE
     # =====================================================
 
     def before_delete(

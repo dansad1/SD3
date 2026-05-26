@@ -1,20 +1,76 @@
+# =========================================================
+# backend/engine/list/Base/filters.py
+# =========================================================
+
 def apply_filters(ctx):
+
     entity = ctx.entity
-    allowed = set(getattr(entity, "filter_fields", []) or [])
+
+    runtime_fields = (
+        ctx.runtime_fields
+        or []
+    )
+
+    field_map = {
+        field.name: field
+        for field in runtime_fields
+    }
+
+    allowed = set(
+        getattr(
+            entity,
+            "filter_fields",
+            [],
+        ) or []
+    )
 
     if not allowed:
         return
 
-    filters = {}
+    qs = ctx.qs
+
+    # =====================================================
+    # APPLY FILTERS
+    # =====================================================
 
     for key, value in ctx.request.GET.items():
-        if key in {"page", "page_size", "sort", "search", "q"}:
+
+        # =============================================
+        # RESERVED
+        # =============================================
+
+        if key in {
+            "page",
+            "page_size",
+            "sort",
+            "search",
+            "q",
+        }:
             continue
+
+        # =============================================
+        # NOT ALLOWED
+        # =============================================
 
         if key not in allowed:
             continue
 
-        filters[key] = value
+        # =============================================
+        # FIELD
+        # =============================================
 
-    if filters:
-        ctx.qs = ctx.qs.filter(**filters)
+        field = field_map.get(key)
+
+        if not field:
+            continue
+
+        # =============================================
+        # APPLY
+        # =============================================
+
+        qs = field.apply_filter(
+            qs,
+            value,
+        )
+
+    ctx.qs = qs

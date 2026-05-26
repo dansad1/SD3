@@ -39,7 +39,6 @@ type InsertVariablesApi = Extract<
   { type: "insert_variables" }
 >
 
-
 /* ================= NORMALIZERS ================= */
 
 export function normalizeHeading(
