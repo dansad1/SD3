@@ -3,15 +3,15 @@
 # =========================================================
 
 from django.core.exceptions import (
-    ValidationError
+    ValidationError,
 )
 
 from django.contrib.auth.password_validation import (
-    validate_password
+    validate_password,
 )
 
 from backend.engine.entity.Base.BaseEntity import (
-    BaseEntity
+    BaseEntity,
 )
 
 from backend.project.users.models import (
@@ -23,7 +23,7 @@ from backend.project.users.models import (
 class UserEntity(BaseEntity):
 
     # =====================================================
-    # BASE
+    # CORE
     # =====================================================
 
     model = User
@@ -36,29 +36,51 @@ class UserEntity(BaseEntity):
 
     list_display = [
 
-        # static
         "login",
+
         "role",
+
         "is_active",
 
-        # dynamic
+        # dynamic examples
         "telegram",
         "department",
     ]
 
     search_fields = [
+
         "login",
+
         "telegram",
     ]
 
     filter_fields = [
+
         "role",
+
         "is_active",
     ]
 
     ordering = [
+
         "login",
     ]
+
+    # =====================================================
+    # FIELD POLICY
+    # =====================================================
+
+    exclude_fields = {
+
+        # django auth internals
+        "groups",
+        "user_permissions",
+
+        # system
+        "last_login",
+        "created_at",
+        "updated_at",
+    }
 
     # =====================================================
     # ACCESS
@@ -89,13 +111,18 @@ class UserEntity(BaseEntity):
     def get_select_related(self):
 
         return [
+
             "role",
+
+            "fieldset",
         ]
 
     def get_prefetch_related(self):
 
         return [
+
             "dynamic_values",
+
             "dynamic_values__field",
         ]
 
@@ -114,17 +141,18 @@ class UserEntity(BaseEntity):
         )
 
         # =============================================
-        # DEFAULT / EMPTY
+        # DEFAULT
         # =============================================
 
         if (
             not fieldset
             or fieldset == "default"
         ):
+
             return []
 
         # =============================================
-        # VALIDATION
+        # VALIDATE
         # =============================================
 
         try:
@@ -145,40 +173,23 @@ class UserEntity(BaseEntity):
         # =============================================
 
         return (
+
             UserField.objects
+
             .filter(
+
                 fieldset_id=fieldset_id,
+
                 fieldset__is_active=True,
             )
+
             .order_by(
+
                 "order",
+
                 "id",
             )
         )
-
-    # =====================================================
-    # FIELDS
-    # =====================================================
-
-    def get_fields(
-        self,
-        request,
-        obj=None,
-    ):
-
-        fields = super().get_fields(
-            request=request,
-            obj=obj,
-        )
-
-        fields.extend(
-            self.get_dynamic_fields(
-                request=request,
-                obj=obj,
-            )
-        )
-
-        return fields
 
     # =====================================================
     # OPTIONS
@@ -190,8 +201,17 @@ class UserEntity(BaseEntity):
     ):
 
         return {
+
             "value": obj.pk,
-            "label": obj.login,
+
+            "label": (
+
+                obj.get_value(
+                    "full_name"
+                )
+
+                or obj.login
+            ),
         }
 
     # =====================================================
@@ -211,14 +231,23 @@ class UserEntity(BaseEntity):
             "password"
         )
 
+        # =============================================
+        # PASSWORD REQUIRED
+        # =============================================
+
         if (
             not instance
             and not password
         ):
 
             errors["password"] = [
+
                 "Password required"
             ]
+
+        # =============================================
+        # PASSWORD VALIDATION
+        # =============================================
 
         if password:
 
@@ -233,6 +262,10 @@ class UserEntity(BaseEntity):
                 errors["password"] = (
                     list(e.messages)
                 )
+
+        # =============================================
+        # RESULT
+        # =============================================
 
         if errors:
 
@@ -255,12 +288,17 @@ class UserEntity(BaseEntity):
             "password"
         )
 
+        # =============================================
+        # PASSWORD
+        # =============================================
+
         if password:
 
             ctx.instance.set_password(
                 password
             )
 
+            # не сохраняем raw password
             ctx.data.pop(
                 "password",
                 None,
@@ -278,16 +316,22 @@ class UserEntity(BaseEntity):
         instance,
     ):
 
+        # =============================================
+        # SELF DELETE PROTECTION
+        # =============================================
+
         if request.user.pk == instance.pk:
 
             raise ValidationError({
+
                 "detail": [
+
                     "You cannot delete yourself"
                 ]
             })
 
     # =====================================================
-    # SCHEMA
+    # FIELD SCHEMA
     # =====================================================
 
     def customize_field_schema(
@@ -297,10 +341,52 @@ class UserEntity(BaseEntity):
         field=None,
     ):
 
-        if schema["name"] == "password":
+        name = schema.get(
+            "name"
+        )
 
-            schema["writeonly"] = True
+        # =============================================
+        # PASSWORD
+        # =============================================
 
-            schema["widget"] = "password"
+        if name == "password":
+
+            schema.update({
+
+                "writeonly": True,
+
+                "widget": "password",
+            })
+
+        # =============================================
+        # SECURITY
+        # =============================================
+
+        if (
+            not request.user.is_superuser
+        ):
+
+            if name in {
+
+                "is_superuser",
+                "is_staff",
+            }:
+
+                schema["hidden"] = True
+
+        # =============================================
+        # SYSTEM READONLY
+        # =============================================
+
+        if name in {
+
+            "created_at",
+
+            "updated_at",
+
+            "last_login",
+        }:
+
+            schema["readonly"] = True
 
         return schema

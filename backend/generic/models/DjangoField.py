@@ -4,13 +4,9 @@ from backend.engine.fields.base import (
     BaseField,
 )
 
-
-from django.db import models
-
-from backend.engine.fields.base import (
-    BaseField,
+from backend.engine.fields.django_accessor import (
+    DjangoFieldAccessor,
 )
-from backend.engine.fields.django_accessor import DjangoFieldAccessor
 
 
 class DjangoField(BaseField):
@@ -21,6 +17,24 @@ class DjangoField(BaseField):
 
     @property
     def accessor(self):
+
+        # ================================================
+        # FIELD TYPE ACCESSOR
+        # ================================================
+
+        field_type_accessor = getattr(
+            self.field_type,
+            "accessor",
+            None,
+        )
+
+        if field_type_accessor:
+
+            return field_type_accessor
+
+        # ================================================
+        # DEFAULT ACCESSOR
+        # ================================================
 
         return DjangoFieldAccessor()
 
@@ -63,6 +77,19 @@ class DjangoField(BaseField):
     def type(self):
 
         field = self.source
+
+        # =================================================
+        # PASSWORD
+        # =================================================
+
+        if (
+            field.name == "password"
+            and isinstance(
+                field,
+                models.CharField,
+            )
+        ):
+            return "password"
 
         # =================================================
         # RELATION
@@ -266,7 +293,6 @@ class DjangoField(BaseField):
 
         model = remote.model
 
-        # 🔥 lazy import
         from backend.engine.entity.EntityRegistry import (
             entity_registry,
         )

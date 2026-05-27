@@ -50,16 +50,17 @@ class DateTimeFieldType(BaseFieldType):
             )
 
     def serialize(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
 
         if value is None:
             return None
 
-        return value.isoformat()
-
+        return value.strftime(
+            "%Y-%m-%dT%H:%M"
+        )
     def deserialize(
         self,
         field,

@@ -1,7 +1,10 @@
 from backend.engine.fields.base import (
     BaseField,
 )
-from backend.engine.fields.dynamic_accessor import DynamicValueAccessor
+
+from backend.engine.fields.dynamic_accessor import (
+    DynamicValueAccessor,
+)
 
 
 class DynamicField(BaseField):
@@ -13,6 +16,24 @@ class DynamicField(BaseField):
     @property
     def accessor(self):
 
+        # ================================================
+        # FIELD TYPE ACCESSOR
+        # ================================================
+
+        field_type_accessor = getattr(
+            self.field_type,
+            "accessor",
+            None,
+        )
+
+        if field_type_accessor:
+
+            return field_type_accessor
+
+        # ================================================
+        # DEFAULT ACCESSOR
+        # ================================================
+
         return DynamicValueAccessor()
 
     # =====================================================
@@ -22,7 +43,6 @@ class DynamicField(BaseField):
     @property
     def value_model(self):
 
-        # 🔥 overridable
         return getattr(
             self.source,
             "value_model",

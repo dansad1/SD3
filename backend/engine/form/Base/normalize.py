@@ -1,52 +1,48 @@
-from rest_framework.exceptions import ValidationError
-
-from backend.engine.entity.EntityRegistry import entity_registry
+from django.core.exceptions import ValidationError
 
 
-def normalize(
-    self,
-    field,
-    value,
-):
+def normalize(ctx):
 
-    if value in (
-        None,
-        "",
-    ):
-        return None
+    data = ctx.data or {}
 
-    if isinstance(
-        value,
-        dict,
-    ):
+    normalized = {}
 
-        value = (
-            value.get("value")
-            or value.get("id")
-        )
+    for field in ctx.runtime_fields or []:
 
-    entity = entity_registry.get(
-        field.relation_entity
-    )
+        # ============================================
+        # SECURITY
+        # ============================================
 
-    model = entity.model
+        if field.readonly:
+            continue
 
-    if field.is_multiple:
+        name = field.name
 
-        if not isinstance(
-            value,
-            list,
-        ):
-            raise ValidationError(
-                "Expected list"
+        # поле не прислали
+        if name not in data:
+            continue
+
+        value = data.get(name)
+
+        try:
+
+            normalized_value = (
+                field.normalize(value)
             )
 
-        return list(
-            model.objects.filter(
-                pk__in=value
-            )
+        except ValidationError:
+            raise
+
+        except Exception as e:
+
+            raise ValidationError({
+                name: [str(e)]
+            })
+
+        normalized[name] = (
+            normalized_value
         )
 
-    return model.objects.get(
-        pk=value
-    )
+    ctx.data = normalized
+
+    return ctx

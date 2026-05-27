@@ -49,12 +49,19 @@ def save(ctx):
         if not field:
             continue
 
+        # ================================================
+        # POST SAVE FIELDS
+        # ================================================
+
+        if getattr(
+            field,
+            "requires_post_save",
+            False,
+        ):
+            continue
+
         field.set_value(
-
-            field.accessor,
-
             obj,
-
             value,
         )
 
@@ -92,11 +99,7 @@ def save(ctx):
         ):
 
             field.set_value(
-
-                field.accessor,
-
                 obj,
-
                 value,
             )
 
