@@ -13,7 +13,7 @@ class TicketCategoryEntity(
 
     model = TicketCategory
 
-    entity = "ticket-categories"
+    entity = "ticket-category"
 
     # =====================================================
     # UI

@@ -39,10 +39,15 @@ const DepartmentFormPage = page(
             fallback="Новый отдел"
           />
 
-          <Text
-            value="Создание и редактирование отдела"
-            muted={true}
-          />
+             <Text
+  value="Создание и редактирование отдела"
+
+  variant="muted"
+
+  size="md"
+
+  weight="regular"
+/>
 
         </Stack>
 

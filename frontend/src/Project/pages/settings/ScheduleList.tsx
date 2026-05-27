@@ -10,94 +10,131 @@ import {
   Table,
   Action,
 } from "@/framework"
-const ServiceListPage = page(
-  "service:list",
+
+const ScheduleListPage = page(
+
+  "schedule:list",
+
   <Container
     maxWidth="xl"
     padding="lg"
   >
+
     <Section>
+
       <Stack gap="lg">
+
         {/* ================================================= */}
         {/* HEADER */}
         {/* ================================================= */}
+
         <Stack gap="sm">
+
           <Heading
             level={1}
-            text="Сервисы"
+            text="Расписания"
           />
-            <Text
-  value="Список сервисов"
 
-  variant="muted"
+          <Text
+            value="Рабочие расписания сервисов"
+            muted={true}
+          />
 
-  size="md"
-
-  weight="regular"
-/>
         </Stack>
+
         {/* ================================================= */}
         {/* ACTIONS */}
         {/* ================================================= */}
 
-        <Stack gap="sm">
+        <Action
+          label="Создать расписание"
+          to="schedule:form"
+          variant="primary"
+        />
 
-          <Action
-            label="Создать сервис"
-            to="service:form"
-            variant="primary"
-          />
-        </Stack>
         {/* ================================================= */}
         {/* TABLE */}
         {/* ================================================= */}
+
         <Table
-          entity="service"
+
+          entity="schedule"
+
           features={{
+
             toolbar: true,
+
             search: true,
+
             selection: false,
+
             rowClick: true,
+
             rowActions: true,
+
             visibleFields: true,
+
           }}
+
           rowClick={{
-            to: "service:form",
+
+            to: "schedule:form",
+
             ctx: {
               id: "$row.id",
             },
+
           }}
+
           rowActions={[
+
             {
+
               key: "edit",
+
               label: "Редактировать",
+
               variant: "secondary",
-              to: "service:form",
+
+              to: "schedule:form",
+
               ctx: {
                 id: "$row.id",
               },
+
             },
-            
+
             {
 
               key: "delete",
+
               label: "Удалить",
+
               variant: "danger",
+
               action: "entity.delete",
+
               ctx: {
-                entity: "service",
+                entity: "schedule",
                 id: "$row.id",
               },
+
               confirm: {
-                message: "Удалить сервис?",
+                message: "Удалить расписание?",
               },
+
             },
+
           ]}
+
         />
+
       </Stack>
+
     </Section>
+
   </Container>
 
 )
 
-export default ServiceListPage
+export default ScheduleListPage

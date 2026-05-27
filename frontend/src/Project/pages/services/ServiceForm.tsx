@@ -15,34 +15,31 @@ import {
 } from "@/framework"
 
 const ServiceFormPage = page(
-
   "service:form",
-
   <Container
     maxWidth="xl"
     padding="lg"
   >
-
     <Section>
-
       <Stack gap="lg">
-
         {/* ================================================= */}
         {/* HEADER */}
         {/* ================================================= */}
-
         <Stack gap="sm">
-
           <Heading
             level={1}
             text="Сервис: $service.name"
             fallback="Новый сервис"
           />
+             <Text
+  value="Настройка сервисов категорий и маршрутизации"
 
-          <Text
-            value="Настройка сервиса, доступов, категорий и маршрутизации"
-            muted={true}
-          />
+  variant="muted"
+
+  size="md"
+
+  weight="regular"
+/>
 
         </Stack>
 
@@ -71,35 +68,24 @@ const ServiceFormPage = page(
           {/* ============================================= */}
 
           <Section title="Основное">
-
             <Stack gap="lg">
-
               <Form
-
                 entity="service"
-
                 ctx={{
-
                   id: "$query.id",
-
                   parent: "$query.parent",
 
                 }}
-
                 submit={{
-
                   label: "Сохранить",
 
                   redirect: {
                     to: "service:list",
                   },
-
                 }}
 
                 formLayout={{
-
                   preset: "single-column",
-
                   density: "comfortable",
 
                 }}
@@ -113,19 +99,14 @@ const ServiceFormPage = page(
           {/* ============================================= */}
           {/* SUBSERVICES */}
           {/* ============================================= */}
-
           <If when="$query.id">
 
             <Section title="Подсервисы">
-
               <Stack gap="md">
 
                 <Action
-
                   label="Создать подсервис"
-
                   variant="primary"
-
                   to="service:form"
 
                   ctx={{
@@ -135,76 +116,52 @@ const ServiceFormPage = page(
                 />
 
                 <Table
-
                   entity="service"
-
                   filter={{
                     parent: "$query.id",
                   }}
 
                   features={{
-
                     search: false,
-
                     selection: false,
-
                     rowClick: true,
-
                     rowActions: true,
-
                   }}
-
                   rowClick={{
-
                     to: "service:form",
-
                     ctx: {
                       id: "$row.id",
                     },
 
                   }}
-
                   rowActions={[
 
                     {
-
                       key: "edit",
 
                       label: "Редактировать",
-
                       variant: "secondary",
 
                       to: "service:form",
-
                       ctx: {
-                        id: "$row.id",
+                       id: "$row.id",
                       },
 
                     },
-
                     {
-
                       key: "delete",
-
                       label: "Удалить",
-
                       variant: "danger",
-
                       action: "entity.delete",
-
                       ctx: {
                         entity: "service",
                         id: "$row.id",
                       },
-
                       confirm: {
                         message: "Удалить подсервис?",
                       },
-
                     },
-
                   ]}
-
                 />
 
               </Stack>
@@ -311,7 +268,7 @@ const ServiceFormPage = page(
 
               <Table
 
-                entity="ticket_category"
+                entity="ticket-category"
 
                 filter={{
                   services: "$query.id",
@@ -361,7 +318,7 @@ const ServiceFormPage = page(
 
                   variant="primary"
 
-                  to="category_assignment_rule:form"
+                  to="service:autoassign"
 
                   ctx={{
                     service: "$query.id",

@@ -39,10 +39,15 @@ const CompanyFormPage = page(
             fallback="Новая компания"
           />
 
-          <Text
-            value="Создание и редактирование компании"
-            muted={true}
-          />
+            <Text
+  value="Создание и редактирование компании"
+
+  variant="muted"
+
+  size="md"
+
+  weight="regular"
+/>
 
         </Stack>
 
