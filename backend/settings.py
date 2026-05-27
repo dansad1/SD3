@@ -32,7 +32,8 @@ INSTALLED_APPS = [
     # local
     "backend.project.users",
     "backend.project.companies",
-    "backend.project.tickets"
+    "backend.project.tickets",
+"backend.project.services"
 
 ]
 AUTH_USER_MODEL = "users.User"

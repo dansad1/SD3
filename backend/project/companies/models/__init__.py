@@ -4,3 +4,4 @@ from .CompanyFieldValue import *
 from .CompanyFieldSet import *
 from .CompanyListSettings import *
 from .CompanyFieldAccess import *
+from .Department import *

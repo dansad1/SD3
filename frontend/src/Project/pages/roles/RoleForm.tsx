@@ -36,7 +36,7 @@ const RoleFormPage = page(
 
           <Text
             value="Создание и редактирование роли"
-            muted
+            variant="muted"
           />
 
         </Stack>
