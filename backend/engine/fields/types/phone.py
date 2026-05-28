@@ -1,15 +1,15 @@
 # =========================================================
-# backend/dynamic/field_types/number.py
+# backend/dynamic/field_types/phone.py
 # =========================================================
 
-import math
+import phonenumbers
 
 from django.core.exceptions import (
     ValidationError,
 )
 
-from backend.engine.fields.types.base import (
-    BaseFieldType,
+from backend.engine.fields.types.string import (
+    StringFieldType,
 )
 
 from backend.engine.fields.types.registry import (
@@ -18,23 +18,23 @@ from backend.engine.fields.types.registry import (
 
 
 @register_field_type
-class NumberFieldType(BaseFieldType):
+class PhoneFieldType(StringFieldType):
 
-    code = "number"
+    code = "phone"
 
-    label = "Number"
+    label = "Phone"
 
-    sortable = True
+    searchable = True
 
-    searchable = False
+    sortable = False
 
     filterable = True
 
     # =====================================================
-    # LIMITS
+    # DEFAULT REGION
     # =====================================================
 
-    MAX_ABS = 10**15
+    DEFAULT_REGION = "UA"
 
     # =====================================================
     # VALIDATE
@@ -51,10 +51,6 @@ class NumberFieldType(BaseFieldType):
             value,
         )
 
-        # =============================================
-        # EMPTY
-        # =============================================
-
         if value in (
             None,
             "",
@@ -62,29 +58,12 @@ class NumberFieldType(BaseFieldType):
 
             return value
 
-        # =============================================
-        # MULTIPLE
-        # =============================================
-
         if field.is_multiple:
-
-            if not isinstance(
-                value,
-                list,
-            ):
-
-                raise ValidationError(
-                    "Ожидался список чисел"
-                )
 
             return [
                 self.validate_single(v)
                 for v in value
             ]
-
-        # =============================================
-        # SINGLE
-        # =============================================
 
         return self.validate_single(
             value
@@ -99,56 +78,81 @@ class NumberFieldType(BaseFieldType):
         value,
     ):
 
-        # =============================================
-        # BOOL
-        # =============================================
-
-        if isinstance(
+        if not isinstance(
             value,
-            bool,
+            (
+                str,
+                int,
+            ),
         ):
 
             raise ValidationError(
-                "Некорректное число"
+                "Некорректный номер"
             )
 
-        # =============================================
-        # CONVERT
-        # =============================================
+        raw = str(value).strip()
+
+        if not raw:
+
+            raise ValidationError(
+                "Некорректный номер"
+            )
 
         try:
 
-            number = float(value)
+            parsed = (
+                phonenumbers.parse(
+                    raw,
+                    self.DEFAULT_REGION,
+                )
+            )
 
         except Exception:
 
             raise ValidationError(
-                "Некорректное число"
+                "Некорректный номер"
             )
 
         # =============================================
-        # NAN / INF
+        # VALID
         # =============================================
 
-        if not math.isfinite(
-            number
+        if not (
+            phonenumbers
+            .is_possible_number(
+                parsed
+            )
         ):
 
             raise ValidationError(
-                "Некорректное число"
+                "Некорректный номер"
             )
 
-        # =============================================
-        # LIMITS
-        # =============================================
-
-        if abs(number) > self.MAX_ABS:
+        if not (
+            phonenumbers
+            .is_valid_number(
+                parsed
+            )
+        ):
 
             raise ValidationError(
-                "Слишком большое число"
+                "Некорректный номер"
             )
 
-        return number
+        # =============================================
+        # E164
+        # =============================================
+
+        return (
+            phonenumbers.format_number(
+
+                parsed,
+
+                phonenumbers
+                .PhoneNumberFormat
+                .E164,
+            )
+        )
 
     # =====================================================
     # NORMALIZE
@@ -179,45 +183,41 @@ class NumberFieldType(BaseFieldType):
         )
 
     # =====================================================
-    # SERIALIZE
+    # UI
     # =====================================================
 
-    def serialize(
+    def get_widget(
         self,
         field,
-        value,
     ):
 
-        return value
+        return (
+            field.widget
+            or "phone"
+        )
 
-    # =====================================================
-    # FILTER
-    # =====================================================
-
-    def apply_filter(
+    def get_schema(
         self,
-        queryset,
         field,
-        value,
     ):
 
-        if value in (
-            None,
-            "",
-        ):
+        schema = super().get_schema(
+            field
+        )
 
-            return queryset
+        schema.update({
 
-        try:
+            "inputType":
+                "tel",
 
-            value = self.validate_single(
-                value
-            )
+            "autocomplete":
+                "tel",
 
-        except ValidationError:
+            "placeholder":
+                "+780501234567",
 
-            return queryset.none()
-
-        return queryset.filter(**{
-            field.name: value
+            "format":
+                "E.164",
         })
+
+        return schema

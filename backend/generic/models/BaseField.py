@@ -11,6 +11,8 @@ FIELD_TYPES = [
     ("datetime", "DateTime"),
     ("json", "JSON"),
     ("relation", "Relation"),
+    ("email", "Email"),
+    ("phone", "Phone")
 ]
 
 

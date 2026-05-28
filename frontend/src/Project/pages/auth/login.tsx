@@ -14,7 +14,11 @@ const LoginPage = page(
 
   "login",
 
-  {
+   {
+
+    auth: false,
+
+    guestOnly: true,
     chrome: {
       mode: "auth",
       navbar: false,
@@ -84,18 +88,14 @@ const LoginPage = page(
           align="start"
         >
           <Link
-            label="Забыли пароль?"
-            to="/reset-password"
-            variant="muted"
-            underline="hover"
-          />
+  label="Забыли пароль?"
+  to="/page/forgot-password"
+/>
 
-          <Link
-            label="Регистрация"
-            to="/register"
-            variant="muted"
-            underline="hover"
-          />
+<Link
+  label="Регистрация"
+  to="/page/register"
+/>
         </Stack>
       </Stack>
     </Container>

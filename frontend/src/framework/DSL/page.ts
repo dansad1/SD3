@@ -1,21 +1,49 @@
 // src/framework/DSL/page.ts
 
-import type { DSLNode } from "./runtime"
-import { compileDSL } from "./compile"
+import type {
+  DSLNode,
+} from "./runtime"
+
+import {
+  compileDSL,
+} from "./compile"
 
 import type {
   ApiPageSchema,
   PageChrome,
 } from "../page/PageSchema"
 
+/* ===================================================== */
+/* OPTIONS */
+/* ===================================================== */
 
 export interface PageOptions {
 
   title?: string
 
   chrome?: PageChrome
+
+  /*
+    🔐 AUTH REQUIRED
+
+    default:
+    true
+  */
+
+  auth?: boolean
+
+  /*
+    👤 ONLY FOR ANONYMOUS USERS
+
+    login/register/reset-password
+  */
+
+  guestOnly?: boolean
 }
 
+/* ===================================================== */
+/* PAGE */
+/* ===================================================== */
 
 export function page(
 
@@ -29,46 +57,77 @@ export function page(
 
 ): ApiPageSchema {
 
-  // ====================================
-  // RESOLVE SIGNATURE
-  // ====================================
+  /* ==================================== */
+  /* RESOLVE SIGNATURE */
+  /* ==================================== */
 
-  let options: PageOptions = {}
+  let options:
+    PageOptions = {}
 
   let root: DSLNode
 
-  // page(id, root)
-  if (maybeRoot === undefined) {
+  /*
+    page(id, root)
+  */
 
-    root = optionsOrRoot as DSLNode
+  if (
+    maybeRoot === undefined
+  ) {
 
+    root =
+      optionsOrRoot as DSLNode
   }
 
-  // page(id, options, root)
+  /*
+    page(id, options, root)
+  */
+
   else {
 
-    options = optionsOrRoot as PageOptions
+    options =
+      optionsOrRoot as PageOptions
 
     root = maybeRoot
   }
 
-  // ====================================
-  // COMPILE
-  // ====================================
+  /* ==================================== */
+  /* COMPILE */
+  /* ==================================== */
 
-  const blocks = compileDSL(root)
+  const blocks =
+    compileDSL(root)
 
-  // ====================================
-  // SCHEMA
-  // ====================================
+  /* ==================================== */
+  /* SCHEMA */
+  /* ==================================== */
 
   return {
 
     id,
 
-    title: options.title,
+    title:
+      options.title,
 
-    chrome: options.chrome,
+    chrome:
+      options.chrome,
+
+    /*
+      🔐 AUTH
+    */
+
+    auth:
+      options.auth,
+
+    /*
+      👤 GUEST ONLY
+    */
+
+    guestOnly:
+      options.guestOnly,
+
+    /*
+      📦 BLOCKS
+    */
 
     blocks,
   }

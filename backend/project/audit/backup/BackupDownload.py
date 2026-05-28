@@ -1,4 +1,4 @@
-from core.api.engine.action.Base.BaseAction import BaseAction
+from backend.engine.action.Base.BaseAction import BaseAction
 
 
 def get_backup_id(payload, ctx):

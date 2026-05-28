@@ -1,5 +1,10 @@
-from backend.engine.fields.types.registry import register_field_type
-from backend.engine.fields.types.string import StringFieldType
+from backend.engine.fields.types.registry import (
+    register_field_type,
+)
+
+from backend.engine.fields.types.string import (
+    StringFieldType,
+)
 
 
 @register_field_type
@@ -8,6 +13,16 @@ class TextFieldType(StringFieldType):
     code = "text"
 
     label = "Text"
+
+    DEFAULT_MAX_LENGTH = 50000
+
+    ABSOLUTE_MAX_LENGTH = 100000
+
+    sortable = False
+
+    searchable = True
+
+    filterable = False
 
     def get_widget(
         self,
@@ -18,3 +33,21 @@ class TextFieldType(StringFieldType):
             field.widget
             or "textarea"
         )
+
+    def get_schema(
+        self,
+        field,
+    ):
+
+        schema = super().get_schema(
+            field
+        )
+
+        schema.update({
+
+            "multiline": True,
+
+            "rows": 6,
+        })
+
+        return schema

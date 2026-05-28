@@ -21,142 +21,69 @@ class LoginAction(BaseAction):
 
     code = "login"
 
-    # =====================================================
-    # FIELDS
-    # =====================================================
+    permission = None
 
-    def get_fields(
-        self,
-        request,
-        ctx,
-    ):
+    def get_fields(self, request, ctx):
 
         return [
-
             {
                 "name": "login",
-
                 "label": "Логин",
-
                 "type": "string",
-
                 "required": True,
             },
-
             {
                 "name": "password",
-
                 "label": "Пароль",
-
                 "type": "password",
-
                 "required": True,
             },
-
         ]
 
-    # =====================================================
-    # RUN
-    # =====================================================
+    def run(self, request, payload, ctx):
 
-    def run(
-        self,
-        request,
-        payload,
-        ctx,
-    ):
-
-        print(
-            "🔐 LOGIN PAYLOAD",
-            payload
-        )
-
-        login_value = payload.get(
-            "login"
-        )
-
-        password = payload.get(
-            "password"
-        )
+        login_value = payload.get("login")
+        password = payload.get("password")
 
         credentials = {
-
-            User.USERNAME_FIELD:
-                login_value,
-
-            "password":
-                password,
-
+            User.USERNAME_FIELD: login_value,
+            "password": password,
         }
 
-        print(
-            "🔐 LOGIN CREDENTIALS",
-            credentials
-        )
-
         user = authenticate(
-
             request,
-
             **credentials,
-
         )
 
-        print(
-            "👤 AUTH USER",
-            user
-        )
-
-        if not user:
-
+        if not user or not user.is_active:
             raise ValidationError({
-
                 "password": [
                     "Неверный логин или пароль"
                 ]
-
             })
 
-        if not user.is_active:
+        login(request, user)
 
-            raise ValidationError({
-
-                "__all__": [
-                    "Пользователь отключен"
-                ]
-
-            })
-
-        login(
-            request,
-            user,
-        )
-
-        print(
-            "✅ LOGIN SUCCESS",
-            request.user,
-        )
-
-        print(
-            "🪪 SESSION",
-            request.session.session_key
-        )
+        request.session.cycle_key()
 
         return {
-
             "status": "ok",
 
-            "effects": [
+            "user": {
+                "id": user.pk,
+                "login": getattr(
+                    user,
+                    User.USERNAME_FIELD,
+                ),
+            },
 
+            "effects": [
                 {
                     "type": "auth.reload_user",
                 },
-
                 {
                     "type": "navigate",
-
                     "page": "/",
                 },
-
             ],
         }

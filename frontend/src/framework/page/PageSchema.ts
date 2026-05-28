@@ -82,10 +82,10 @@ export interface ApiPageSchema {
   id: string
 
   title?: string
-
   chrome?: PageChrome
-
   blocks: ApiPageBlock[]
+  auth?: boolean
+guestOnly?: boolean
 }
 
 
