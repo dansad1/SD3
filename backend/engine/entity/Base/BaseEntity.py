@@ -26,6 +26,7 @@ from backend.engine.entity.Base.representation import (
     represent,
 )
 from backend.generic.models import DjangoField, DynamicField
+from backend.project.audit.utils.logging import log_entity_event
 
 
 class BaseEntity:
@@ -379,16 +380,79 @@ class BaseEntity:
     # =====================================================
 
     def before_save(
-        self,
-        ctx,
+            self,
+            ctx,
     ):
+
+        instance = getattr(
+            ctx,
+            "instance",
+            None,
+        )
+
+        if instance and instance.pk:
+
+            ctx.before_state = (
+                serialize_instance(
+                    instance
+                )
+            )
+
+        else:
+
+            ctx.before_state = {}
 
         return ctx
 
     def after_save(
-        self,
-        ctx,
+            self,
+            ctx,
     ):
+
+        instance = getattr(
+            ctx,
+            "instance",
+            None,
+        )
+
+        if not instance:
+            return ctx
+
+        after_state = serialize_instance(
+            instance
+        )
+
+        action = (
+            "create"
+            if ctx.mode == "create"
+            else "update"
+        )
+
+        log_entity_event(
+
+            request=ctx.request,
+
+            action=action,
+
+            entity=self.entity,
+
+            instance=instance,
+
+            before=getattr(
+                ctx,
+                "before_state",
+                {},
+            ),
+
+            after=after_state,
+
+            meta={
+
+                "mode": ctx.mode,
+
+                "entity": self.entity,
+            },
+        )
 
         return ctx
 
@@ -397,20 +461,45 @@ class BaseEntity:
     # =====================================================
 
     def before_delete(
-        self,
-        request,
-        instance,
+            self,
+            request,
+            instance,
     ):
 
-        pass
+        instance._audit_before_delete = (
+            serialize_instance(
+                instance
+            )
+        )
 
     def after_delete(
-        self,
-        request,
-        instance,
+            self,
+            request,
+            instance,
     ):
 
-        pass
+        log_entity_event(
+
+            request=request,
+
+            action="delete",
+
+            entity=self.entity,
+
+            instance=instance,
+
+            before=getattr(
+                instance,
+                "_audit_before_delete",
+                {},
+            ),
+
+            after={},
+
+            meta={
+                "entity": self.entity,
+            },
+        )
 
     def perform_delete(
         self,

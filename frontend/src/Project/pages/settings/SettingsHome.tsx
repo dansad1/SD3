@@ -68,7 +68,7 @@ const SettingsHomePage = page(
 
           <Link
             label="Журнал входов"
-            to="/page/login_log:list"
+            to="/page/audit:auth"
             variant="menu"
           />
 
