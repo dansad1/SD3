@@ -7,7 +7,7 @@ import {
   Heading,
   Text,
   Form,
-  Action,
+  Link,
 } from "@/framework"
 
 const ForgotPasswordPage = page(
@@ -73,10 +73,10 @@ const ForgotPasswordPage = page(
 
       />
 
-      <Action
+      <Link
         label="Назад ко входу"
         to="/page/login"
-        variant="ghost"
+        variant="menu"
       />
 
     </Stack>

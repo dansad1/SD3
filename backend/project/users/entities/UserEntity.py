@@ -219,42 +219,32 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     def validate(
-        self,
-        request,
-        payload,
-        instance=None,
+            self,
+            request,
+            payload,
+            instance=None,
     ):
-
         errors = {}
 
         password = payload.get(
             "password"
         )
 
-        # =============================================
-        # PASSWORD REQUIRED
-        # =============================================
-
         if (
-            not instance
-            and not password
+                instance is None
+                and not password
         ):
-
             errors["password"] = [
-
                 "Password required"
             ]
-
-        # =============================================
-        # PASSWORD VALIDATION
-        # =============================================
 
         if password:
 
             try:
 
                 validate_password(
-                    password
+                    password,
+                    user=instance,
                 )
 
             except ValidationError as e:
@@ -263,22 +253,12 @@ class UserEntity(BaseEntity):
                     list(e.messages)
                 )
 
-        # =============================================
-        # RESULT
-        # =============================================
-
         if errors:
-
             raise ValidationError(
                 errors
             )
 
         return payload
-
-    # =====================================================
-    # BEFORE SAVE
-    # =====================================================
-
     def before_save(
         self,
         ctx,

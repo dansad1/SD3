@@ -6,10 +6,43 @@ import type {
 import type { Json } from "@/framework/types/json"
 
 function renderCell(value: Json) {
-  if (value === null || value === undefined) return ""
-  if (React.isValidElement(value)) return value
+  if (value === null || value === undefined) {
+    return ""
+  }
+
+  if (React.isValidElement(value)) {
+    return value
+  }
 
   if (typeof value === "object") {
+
+    // relation / choice
+    if (
+      value &&
+      "label" in value
+    ) {
+      return String(value.label)
+    }
+
+    // multiselect relation
+    if (
+      Array.isArray(value)
+    ) {
+      return value
+        .map((item) => {
+          if (
+            item &&
+            typeof item === "object" &&
+            "label" in item
+          ) {
+            return String(item.label)
+          }
+
+          return String(item)
+        })
+        .join(", ")
+    }
+
     try {
       return JSON.stringify(value)
     } catch {
