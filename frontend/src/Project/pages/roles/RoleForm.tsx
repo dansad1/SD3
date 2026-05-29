@@ -56,7 +56,7 @@ const RoleFormPage = page(
             label: "Сохранить",
 
             redirect: {
-              to: "roles:list",
+              to: "role:list",
             },
 
           }}

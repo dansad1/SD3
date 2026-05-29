@@ -3,7 +3,7 @@
 import {
   page,
   Container,
- Section,
+  Section,
   Stack,
   Heading,
   Text,
@@ -38,7 +38,7 @@ const ScheduleFormPage = page(
 
           <Text
             value="Настройка рабочего расписания"
-            muted={true}
+            variant="muted"
           />
 
         </Stack>
@@ -61,9 +61,7 @@ const ScheduleFormPage = page(
 
           entity="schedule"
 
-          ctx={{
-            id: "$query.id",
-          }}
+          objectId="$query.id"
 
           submit={{
 

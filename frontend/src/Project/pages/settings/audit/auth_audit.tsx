@@ -35,9 +35,9 @@ const AuthAuditPage = page(
           />
 
           <Text
-            value="Входы, выходы и ошибки авторизации"
-            muted
-          />
+  value="Входы, выходы и ошибки авторизации"
+  variant="muted"
+/>
 
         </Stack>
 

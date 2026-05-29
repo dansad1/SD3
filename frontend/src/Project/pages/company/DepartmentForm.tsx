@@ -81,37 +81,33 @@ const DepartmentFormPage = page(
 
               <Form
 
-                entity="department"
+  entity="department"
 
-                ctx={{
-                  id: "$query.id",
-                  company: "$query.company",
-                  parent: "$query.parent",
-                }}
+  objectId="$query.id"
 
-                submit={{
+  submit={{
 
-                  label: "Сохранить",
+    label: "Сохранить",
 
-                  redirect: {
-                    to: "company:form",
+    redirect: {
+      to: "company:form",
 
-                    ctx: {
-                      id: "$form.company",
-                    },
-                  },
+      ctx: {
+        id: "$form.company",
+      },
+    },
 
-                }}
+  }}
 
-                formLayout={{
+  formLayout={{
 
-                  preset: "single-column",
+    preset: "single-column",
 
-                  density: "comfortable",
+    density: "comfortable",
 
-                }}
+  }}
 
-              />
+/>
 
             </Stack>
 

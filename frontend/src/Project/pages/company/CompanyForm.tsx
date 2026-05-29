@@ -79,35 +79,31 @@ const CompanyFormPage = page(
 
             <Stack gap="lg">
 
-              <Form
+             <Form
 
-                entity="company"
+  entity="company"
 
-                ctx={{
-                  id: "$query.id",
-                  fieldset: "$query.fieldset",
-                }}
+  objectId="$query.id"
 
-                submit={{
+  submit={{
 
-                  label: "Сохранить",
+    label: "Сохранить",
 
-                  redirect: {
-                    to: "company:list",
-                  },
+    redirect: {
+      to: "company:list",
+    },
 
-                }}
+  }}
 
-                formLayout={{
+  formLayout={{
 
-                  preset: "single-column",
+    preset: "single-column",
 
-                  density: "comfortable",
+    density: "comfortable",
 
-                }}
+  }}
 
-              />
-
+/>
             </Stack>
 
           </Section>

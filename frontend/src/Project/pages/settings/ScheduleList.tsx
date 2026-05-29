@@ -36,9 +36,9 @@ const ScheduleListPage = page(
           />
 
           <Text
-            value="Рабочие расписания сервисов"
-            muted={true}
-          />
+  value="Рабочие расписания сервисов"
+  variant="muted"
+/>
 
         </Stack>
 

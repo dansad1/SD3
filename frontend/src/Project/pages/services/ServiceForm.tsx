@@ -69,28 +69,31 @@ const ServiceFormPage = page(
 
           <Section title="Основное">
             <Stack gap="lg">
-              <Form
-                entity="service"
-                ctx={{
-                  id: "$query.id",
-                  parent: "$query.parent",
+             <Form
 
-                }}
-                submit={{
-                  label: "Сохранить",
+  entity="service"
 
-                  redirect: {
-                    to: "service:list",
-                  },
-                }}
+  objectId="$query.id"
 
-                formLayout={{
-                  preset: "single-column",
-                  density: "comfortable",
+  submit={{
 
-                }}
+    label: "Сохранить",
 
-              />
+    redirect: {
+      to: "service:list",
+    },
+
+  }}
+
+  formLayout={{
+
+    preset: "single-column",
+
+    density: "comfortable",
+
+  }}
+
+/>
 
             </Stack>
 
