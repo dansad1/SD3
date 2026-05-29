@@ -55,19 +55,14 @@ export function AuthProvider({
   const refresh =
     useCallback(async () => {
 
-      console.log(
-        "🔄 AUTH REFRESH"
-      )
+      
 
       try {
 
         const me =
           await loadMe()
 
-        console.log(
-          "👤 ME RESPONSE",
-          me
-        )
+       
 
         if (!me?.authenticated) {
 

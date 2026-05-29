@@ -17,16 +17,9 @@ export function ToastProvider({
     ToastItem[]
   >([])
 
-  console.log(
-    "[ToastProvider] render",
-    items
-  )
-
+  
+  
   const remove = useCallback((id: string) => {
-    console.log(
-      "[ToastProvider] remove",
-      id
-    )
 
     setItems(prev =>
       prev.filter(item => item.id !== id)
@@ -52,27 +45,18 @@ export function ToastProvider({
         variant,
       }
 
-      console.log(
-        "[ToastProvider] show",
-        item
-      )
+     
 
       setItems(prev => {
         const next = [...prev, item]
 
-        console.log(
-          "[ToastProvider] next items",
-          next
-        )
+        
 
         return next
       })
 
       window.setTimeout(() => {
-        console.log(
-          "[ToastProvider] auto remove",
-          id
-        )
+        
 
         remove(id)
       }, 4000)
@@ -89,10 +73,7 @@ export function ToastProvider({
     [items, show, remove]
   )
 
-  console.log(
-    "[ToastProvider] context value",
-    value
-  )
+  
 
   return (
     <ToastContext.Provider value={value}>

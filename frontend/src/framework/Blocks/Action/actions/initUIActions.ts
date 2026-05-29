@@ -39,8 +39,4 @@ export function initUIActions() {
   },
 })
 
-  console.log(
-    "🖥 UI ACTIONS REGISTERED",
-    actionRegistry.all().map(x => x.id)
-  )
 }

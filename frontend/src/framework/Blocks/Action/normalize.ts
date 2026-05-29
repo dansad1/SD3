@@ -13,12 +13,7 @@ export function normalizeAction(
   const to = block.to
   const action = block.action
 
-  if (to && action) {
-    console.warn(
-      "ActionBlock: both 'to' and 'action' provided, 'to' will be used",
-      block
-    )
-  }
+ 
 
   return {
     ...block,

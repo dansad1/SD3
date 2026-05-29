@@ -4,17 +4,13 @@ export function resolveExpression(
   expr: unknown,
   data: Record<string, unknown>
 ): unknown {
-  console.log("---- resolveExpression ----")
-  console.log("expr:", expr)
-  console.log("ctx:", data)
+  
 
   if (typeof expr !== "string") {
-    console.log("not a string → return as is")
     return expr
   }
 
   if (!expr.startsWith("$")) {
-    console.log("not a DSL expr → return as is")
     return expr
   }
 
@@ -24,13 +20,11 @@ export function resolveExpression(
   if (expr.includes("+") || expr.includes("-")) {
     try {
       const replaced = expr.replace(/\$[a-zA-Z0-9_.]+/g, (match) => {
-        console.log("match:", match)
 
         const path = match.slice(1).split(".")
         let cur: unknown = data
 
         for (const p of path) {
-          console.log("  step:", p, "cur:", cur)
 
           if (
             typeof cur !== "object" ||
@@ -44,7 +38,6 @@ export function resolveExpression(
           cur = (cur as Record<string, unknown>)[p]
         }
 
-        console.log("  ✅ resolved:", cur)
         return String(cur ?? 0)
       })
 

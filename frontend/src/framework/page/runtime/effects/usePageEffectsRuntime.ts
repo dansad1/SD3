@@ -18,10 +18,7 @@ export function usePageEffectsRuntime(
       runEffect: async (
         effect: PageEffect
       ) => {
-        console.log(
-          "[usePageEffectsRuntime] runEffect",
-          effect
-        )
+        
 
         await runEffect(effect, deps)
       },
@@ -29,10 +26,7 @@ export function usePageEffectsRuntime(
       runEffects: async (
         effects?: PageEffect[] | null
       ) => {
-        console.log(
-          "[usePageEffectsRuntime] runEffects",
-          effects
-        )
+        
 
         await runEffects(
           effects ?? [],

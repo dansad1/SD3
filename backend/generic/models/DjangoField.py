@@ -297,9 +297,63 @@ class DjangoField(BaseField):
             entity_registry,
         )
 
+        print(
+            "\n🔥 RELATION LOOKUP"
+        )
+
+        print(
+            "field:",
+            self.name,
+        )
+
+        print(
+            "model:",
+            model,
+        )
+
+        print(
+            "model module:",
+            getattr(
+                model,
+                "__module__",
+                None,
+            ),
+        )
+
+        print(
+            "model name:",
+            getattr(
+                model,
+                "__name__",
+                None,
+            ),
+        )
+
+        print(
+            "registered models:"
+        )
+
+        for m, e in (
+                entity_registry
+                        .storage
+                        .by_model
+                        .items()
+        ):
+            print(
+                "  ",
+                m,
+                "=>",
+                e.entity,
+            )
+
         entity = (
             entity_registry
             .for_model(model)
+        )
+
+        print(
+            "FOUND ENTITY:",
+            entity,
         )
 
         if not entity:

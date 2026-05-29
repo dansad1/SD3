@@ -56,7 +56,6 @@ export function buildBindScope(
     scope.data = {}
   }
 
-  console.log("🔥 BIND SCOPE:", scope)
 
   return scope
 }

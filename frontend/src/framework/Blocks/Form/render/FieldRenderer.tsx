@@ -1,5 +1,4 @@
 import DynamicField from "@/framework/components/dynamic/DynamicField"
-import { OptionIterator } from "@/framework/components/dynamic/OptionIterator"
 
 import type {
   FieldSchema,
@@ -102,12 +101,10 @@ type Props = {
 
   errors?: string[]
 
-  // текущее поле
   onChange: (
     v: Json
   ) => void
 
-  // 🔥 доступ к форме
   setFieldValue: (
     name: string,
     updater: (
@@ -132,19 +129,8 @@ export function FieldRenderer({
 
 }: Props) {
 
-  // ================= ERRORS =================
-
   const error =
     errors[0]
-
-  // ================= OPTIONS =================
-
-  const options =
-    field.choices ?? []
-
-  const isCheckboxList =
-    Boolean(field.multiple) &&
-    options.length > 0
 
   const normalizedValue =
     toValue(value)
@@ -182,114 +168,70 @@ export function FieldRenderer({
             " *"}
 
         </label>
+
       )}
 
       {/* ================= INPUT ================= */}
 
       <div className="form-input">
 
-        {isCheckboxList ? (
+        <DynamicField
 
-          <div className="ui-checkbox-list">
+          field={field}
 
-            <OptionIterator
-              options={options}
-              value={normalizedValue}
-              multiple
-              onChange={(v) =>
-                onChange(v as Json)
-              }
-            >
+          value={
+            normalizedValue
+          }
 
-              {(opt, ctx) => (
+          onChange={(v) => {
 
-                <label
-                  key={opt.value}
-                  className="
-                    ui-checkbox-item
-                  "
-                >
+            // ================= COMMAND =================
 
-                  <input
-                    type="checkbox"
-                    checked={
-                      ctx.checked
-                    }
-                    onChange={
-                      ctx.toggle
-                    }
-                  />
+            if (isCommand(v)) {
 
-                  <span>
-                    {opt.label}
-                  </span>
+              const {
+                targetField,
+                value,
+                mode,
+              } = v
 
-                </label>
-              )}
+              setFieldValue(
+                targetField,
+                (prev) => {
 
-            </OptionIterator>
+                  const prevStr =
+                    typeof prev ===
+                    "string"
+                      ? prev
+                      : ""
 
-          </div>
+                  if (
+                    mode ===
+                    "append"
+                  ) {
 
-        ) : (
+                    return (
+                      prevStr +
+                      value
+                    ) as Json
+                  }
 
-          <DynamicField
+                  return value as Json
+                }
+              )
 
-            field={field}
-
-            value={
-              normalizedValue
+              return
             }
 
-            onChange={(v) => {
+            // ================= NORMAL =================
 
-              // ================= COMMAND =================
+            onChange(
+              toJson(v)
+            )
 
-              if (isCommand(v)) {
+          }}
 
-                const {
-                  targetField,
-                  value,
-                  mode,
-                } = v
-
-                setFieldValue(
-                  targetField,
-                  (prev) => {
-
-                    const prevStr =
-                      typeof prev ===
-                      "string"
-                        ? prev
-                        : ""
-
-                    if (
-                      mode ===
-                      "append"
-                    ) {
-
-                      return (
-                        prevStr +
-                        value
-                      ) as Json
-                    }
-
-                    return value as Json
-                  }
-                )
-
-                return
-              }
-
-              // ================= NORMAL =================
-
-              onChange(
-                toJson(v)
-              )
-            }}
-          />
-
-        )}
+        />
 
       </div>
 
@@ -316,6 +258,7 @@ export function FieldRenderer({
           {field.help_text}
 
         </div>
+
       )}
 
     </div>

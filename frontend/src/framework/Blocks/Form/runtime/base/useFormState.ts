@@ -276,10 +276,7 @@ export function useFormState({
         errors: FieldErrors
       ) => {
 
-        console.log(
-          "🧨 SET FIELD ERRORS",
-          errors
-        )
+      
 
         setFieldErrorsState(errors)
       },

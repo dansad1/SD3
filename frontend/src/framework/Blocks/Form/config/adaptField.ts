@@ -19,7 +19,32 @@ export function adaptField(
   const widget =
     resolveWidget(field)
 
-  return {
+  if (
+    field.name === "permissions"
+  ) {
+
+    console.log(
+      "🔥 ADAPT PERMISSIONS RAW",
+      field
+    )
+
+    console.log(
+      "🔥 ADAPT PERMISSIONS JSON",
+      JSON.stringify(
+        field,
+        null,
+        2
+      )
+    )
+
+    console.log(
+      "🔥 ADAPT PERMISSIONS OPTIONS",
+      field.options?.length ?? 0
+    )
+
+  }
+
+  const result: FieldBlock = {
 
     id,
 
@@ -52,8 +77,8 @@ export function adaptField(
       html_type:
         field.html_type,
 
-      choices:
-        field.choices,
+      options:
+        field.options,
 
       entity:
         field.entity,
@@ -71,4 +96,22 @@ export function adaptField(
         field.readonly,
     },
   }
+
+  if (
+    field.name === "permissions"
+  ) {
+
+    console.log(
+      "🔥 ADAPT RESULT",
+      result.field
+    )
+
+    console.log(
+      "🔥 ADAPT RESULT OPTIONS",
+      result.field.options?.length ?? 0
+    )
+
+  }
+
+  return result
 }

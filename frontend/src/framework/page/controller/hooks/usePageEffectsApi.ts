@@ -26,25 +26,14 @@ export function usePageEffectsApi({
 }: Params) {
   const toast = useToast()
 
-  console.log(
-    "[PageEffectsApi] toast instance",
-    toast
-  )
+
 
   return usePageEffectsRuntime({
     navigate,
     setDataKey,
     emit,
     toast: (message, variant) => {
-      console.log("[PageEffectsApi] toast", {
-        message,
-        variant,
-      })
-
-      console.log(
-        "[PageEffectsApi] toast.show exists",
-        !!toast.show
-      )
+    
 
       toast.show({
         title: message,

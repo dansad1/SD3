@@ -1,46 +1,80 @@
 import { widgetRegistry } from "./registry"
 import type { FieldSchema } from "./types"
 
-export function validateFieldSchema(field: FieldSchema) {
-  if (!field || typeof field !== "object") {
-    throw new Error(`Invalid field schema`)
+export function validateFieldSchema(
+  field: FieldSchema
+) {
+
+  if (
+    !field ||
+    typeof field !== "object"
+  ) {
+    throw new Error(
+      `Invalid field schema`
+    )
   }
 
-  if (!field.name || typeof field.name !== "string") {
-    throw new Error(`Field must have a valid "name"`)
+  if (
+    !field.name ||
+    typeof field.name !== "string"
+  ) {
+    throw new Error(
+      `Field must have a valid "name"`
+    )
   }
 
-  if (!field.widget || typeof field.widget !== "string") {
+  if (
+    !field.widget ||
+    typeof field.widget !== "string"
+  ) {
     throw new Error(
       `Field "${field.name}" has no valid widget`
     )
   }
 
-  if (!widgetRegistry[field.widget]) {
+  if (
+    !widgetRegistry[
+      field.widget
+    ]
+  ) {
     throw new Error(
       `Unknown widget "${field.widget}" in field "${field.name}"`
     )
   }
 
-  if (field.choices && !Array.isArray(field.choices)) {
+  if (
+    field.options &&
+    !Array.isArray(
+      field.options
+    )
+  ) {
     throw new Error(
-      `Invalid choices for field "${field.name}"`
+      `Invalid options for field "${field.name}"`
     )
   }
 
-  if (field.label && typeof field.label !== "string") {
+  if (
+    field.label &&
+    typeof field.label !== "string"
+  ) {
     throw new Error(
       `Invalid label for field "${field.name}"`
     )
   }
 
-  if (field.required && typeof field.required !== "boolean") {
+  if (
+    field.required !== undefined &&
+    typeof field.required !== "boolean"
+  ) {
     throw new Error(
       `Invalid required flag in field "${field.name}"`
     )
   }
 
-  if (field.readonly && typeof field.readonly !== "boolean") {
+  if (
+    field.readonly !== undefined &&
+    typeof field.readonly !== "boolean"
+  ) {
     throw new Error(
       `Invalid readonly flag in field "${field.name}"`
     )
@@ -50,11 +84,19 @@ export function validateFieldSchema(field: FieldSchema) {
      multiple consistency
   =============================== */
 
-  if (field.multiple) {
-    if (!field.choices && !field.entity) {
+  if (
+    field.multiple
+  ) {
+
+    if (
+      !field.options &&
+      !field.entity
+    ) {
+
       console.warn(
-        `Field "${field.name}" is multiple but has no choices or entity`
+        `Field "${field.name}" is multiple but has no options or entity`
       )
+
     }
   }
 
@@ -62,19 +104,29 @@ export function validateFieldSchema(field: FieldSchema) {
      relation consistency
   =============================== */
 
-  if (field.entity && field.choices) {
+  if (
+    field.entity &&
+    field.options
+  ) {
+
     console.warn(
-      `Field "${field.name}" has both entity and choices (entity will be ignored)`
+      `Field "${field.name}" has both entity and options (entity will be ignored)`
     )
+
   }
 
   /* ===============================
      html_type consistency
   =============================== */
 
-  if (field.html_type && typeof field.html_type !== "string") {
+  if (
+    field.html_type &&
+    typeof field.html_type !== "string"
+  ) {
+
     throw new Error(
       `Invalid html_type in field "${field.name}"`
     )
+
   }
 }

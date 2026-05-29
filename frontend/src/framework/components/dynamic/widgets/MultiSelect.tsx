@@ -14,6 +14,8 @@ type RelationObject = {
   label?: string
 }
 
+
+
 /* =========================
    HELPERS
 ========================= */
@@ -22,50 +24,102 @@ function toId(v: unknown): string {
   if (typeof v === "object" && v !== null) {
     const obj = v as RelationObject
     const id = obj.value ?? obj.id
-    return id !== undefined ? String(id) : ""
+
+    return id !== undefined
+      ? String(id)
+      : ""
   }
 
-  if (typeof v === "string" || typeof v === "number") {
+  if (
+    typeof v === "string" ||
+    typeof v === "number"
+  ) {
     return String(v)
   }
 
   return ""
 }
 
-function normalizeArray(v: Value): string[] {
-  if (!Array.isArray(v)) return []
+function normalizeArray(
+  v: Value
+): string[] {
+
+  if (!Array.isArray(v)) {
+    return []
+  }
 
   return v
     .map(toId)
-    .filter(id => id !== "")
+    .filter(Boolean)
 }
 
 /* =========================
    COMPONENT
 ========================= */
 
-export const MultiSelectWidget: WidgetRenderer = (
+export const MultiSelectWidget:
+WidgetRenderer = (
   props
 ) => {
-  const { field, value, onChange, loading } = props
 
-  const normalizedValue = normalizeArray(value)
+  const {
+    field,
+    value,
+    onChange,
+    loading,
+  } = props
+
+  const normalizedValue =
+    normalizeArray(value)
+
+  const options =
+    field.options ?? []
+
+  console.log(
+    "MULTISELECT",
+    {
+      name: field.name,
+      value,
+      normalizedValue,
+      options:
+        options.length,
+    }
+  )
 
   return (
-    <BaseWidget field={field} loading={loading}>
-      {({ disabled }) => (
-        <PopupMultiSelect
-          value={normalizedValue}
-          options={field.choices ?? []}
+    <BaseWidget
+      field={field}
+      loading={loading}
+    >
 
-          // 🔥 КЛЮЧ: храним ТОЛЬКО id
-          onChange={(ids: string[]) => {
+      {({ disabled }) => (
+
+        <PopupMultiSelect
+
+          value={
+            normalizedValue
+          }
+
+          options={
+            options
+          }
+
+          onChange={(
+            ids: string[]
+          ) => {
+
             onChange(ids)
+
           }}
 
-          disabled={disabled}
+          disabled={
+            disabled
+          }
+
         />
+
       )}
+
     </BaseWidget>
   )
 }

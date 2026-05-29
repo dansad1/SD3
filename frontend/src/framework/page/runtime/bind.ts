@@ -10,8 +10,6 @@ export function useBind(
   ctx: PageRuntimeContext,
   pageId: string
 ): ApiPageBlock[] {
-  console.log("CTX REF CHANGED?", ctx)
-  console.log("CTX:", ctx.query)
   return useMemo(() => {
     return traceStep(
       "bind_blocks",

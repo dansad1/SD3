@@ -39,11 +39,7 @@ export function rowActionsFeature<T extends BaseRow>(): TableFeature<T> {
               return
             }
 
-            console.log("🧾 ROW ACTION CLICK", {
-              key,
-              row,
-              action,
-            })
+            
 
             await executeExecutable({
               entity: ctx.entity,

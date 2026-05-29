@@ -109,7 +109,13 @@ export type MatrixPrimitiveWidget =
   | "number"
   | "text"
 
+export type MatrixOption = {
+  value: string | number
+  label: string
+}
+
 export type MatrixCellSchema = {
+
   /**
    * primitive fallback only.
    * domain widgets like "attendance" must not live here.
@@ -126,10 +132,7 @@ export type MatrixCellSchema = {
    */
   presentation?: MatrixPresentationNode
 
-  choices?: {
-    value: string | number
-    label: string
-  }[]
+  options?: MatrixOption[]
 
   readonly?: boolean
 }

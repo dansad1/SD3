@@ -19,9 +19,6 @@ import {
   useEntityLoader,
 } from "./useEntityLoader"
 
-import {
-  useEntityOptionsLoader,
-} from "./useEntityOptionsLoader"
 
 import {
   useEntitySubmit,
@@ -149,7 +146,6 @@ export function useEntityFormRuntime(
      OPTIONS
   ===================================================== */
 
-  useEntityOptionsLoader(state)
 
   /* =====================================================
      REACTIONS

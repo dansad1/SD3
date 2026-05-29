@@ -91,10 +91,6 @@ export function useActionSubmit({
 
       if (result.effects) {
 
-        console.log(
-          "⚡ RUN EFFECTS",
-          result.effects
-        )
 
         // 🔥 CRITICAL
         await page.runEffects(
@@ -153,18 +149,11 @@ export function useActionSubmit({
 
     } catch (e) {
 
-      console.error(
-        "❌ ACTION SUBMIT ERROR",
-        e
-      )
+      
 
       const err =
         parseApiError(e)
 
-      console.log(
-        "🧨 PARSED ERROR",
-        err
-      )
 
       /* ======================================== */
       /* FIELD ERRORS */

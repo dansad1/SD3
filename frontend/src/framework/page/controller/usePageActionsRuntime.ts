@@ -32,12 +32,7 @@ export function usePageActionsRuntime() {
 
   const registerHandler = useCallback(
     (actionId: string, handler: PageActionHandler) => {
-      console.log("➕ REGISTER HANDLER REQUEST", {
-        actionId,
-        handlerId: handler.id,
-        handler,
-        before: actionsRef.current,
-      })
+      
 
       const changed = registerHandlerRuntime(
         actionsRef.current,

@@ -11,6 +11,16 @@ export const SelectWidget: WidgetRenderer = (
     onChange,
   } = props
 
+  const options =
+    field.options ?? []
+
+  const normalizedValue =
+    value &&
+    typeof value === "object" &&
+    "value" in value
+      ? value.value
+      : value
+
   return (
     <BaseWidget {...props}>
 
@@ -20,9 +30,9 @@ export const SelectWidget: WidgetRenderer = (
           className="ui-input ui-native-select"
 
           value={
-            value == null
+            normalizedValue == null
               ? ""
-              : String(value)
+              : String(normalizedValue)
           }
 
           onChange={e => {
@@ -36,11 +46,11 @@ export const SelectWidget: WidgetRenderer = (
             — выбрать —
           </option>
 
-          {field.choices?.map(option => (
+          {options.map(option => (
 
             <option
               key={String(option.value)}
-              value={option.value}
+              value={String(option.value)}
             >
               {option.label}
             </option>

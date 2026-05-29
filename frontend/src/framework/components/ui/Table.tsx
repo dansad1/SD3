@@ -16,7 +16,6 @@ function renderCell(value: Json) {
 
   if (typeof value === "object") {
 
-    // relation / choice
     if (
       value &&
       "label" in value

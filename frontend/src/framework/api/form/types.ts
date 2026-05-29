@@ -112,7 +112,7 @@ export type ApiRenderView = {
 }
 
 /* =========================================================
-   CHOICE
+   option
 ========================================================= */
 
 export type ApiChoice = {
@@ -171,7 +171,7 @@ export type ApiFormField = {
 
   /* options */
 
-  choices?: ApiChoice[]
+  options?: ApiChoice[]
 
   /* relations */
 

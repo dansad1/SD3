@@ -29,7 +29,6 @@ export function compileDSL(node: DSLNode): ApiPageBlock[] {
     blocks: compiledChildren,
   }
 
-  console.log("COMPILED CONTROL", result)
 
   return [result as ApiPageBlock]
 }

@@ -302,11 +302,19 @@ class RelationFieldType(
     # =====================================================
     # SCHEMA
     # =====================================================
+    # =====================================================
+    # SCHEMA
+    # =====================================================
 
     def get_schema(
             self,
             field,
     ):
+
+        print(
+            "🔥 RELATION GET_SCHEMA",
+            field.name,
+        )
 
         schema = super().get_schema(
             field
@@ -318,6 +326,12 @@ class RelationFieldType(
             field.relation_entity
         )
 
+        print(
+            "🔥 RELATION ENTITY",
+            field.name,
+            relation_entity,
+        )
+
         if relation_entity:
 
             try:
@@ -326,34 +340,96 @@ class RelationFieldType(
                     relation_entity
                 )
 
-                queryset = (
-                    entity.model.objects.all()
+                print(
+                    "🔥 ENTITY",
+                    relation_entity,
+                    entity,
                 )
 
-                options = [
+                if entity:
+                    queryset = (
+                        entity.model.objects.all()
+                    )
 
-                    {
-                        "value": obj.pk,
-                        "label": str(obj),
-                    }
+                    print(
+                        "🔥 QUERYSET COUNT",
+                        field.name,
+                        queryset.count(),
+                    )
 
-                    for obj in queryset
-                ]
+                    options = [
 
-            except Exception:
+                        {
+                            "value": obj.pk,
+                            "label": str(obj),
+                        }
+
+                        for obj in queryset
+                    ]
+
+                    print(
+                        "🔥 OPTIONS COUNT",
+                        field.name,
+                        len(options),
+                    )
+
+            except Exception as e:
+
+                print(
+                    "🔥 OPTIONS ERROR",
+                    field.name,
+                    repr(e),
+                )
 
                 options = []
 
         schema.update({
 
-            "relation_entity":
-                relation_entity,
+            # новый контракт
 
-            "multiple":
-                field.is_multiple,
+            "entity":
+                relation_entity,
 
             "options":
                 options,
+
+            # совместимость
+
+            "relation_entity":
+                relation_entity,
+
+            "choices":
+                options,
+
+            "multiple":
+                field.is_multiple,
         })
+
+        print(
+            "🔥 FINAL SCHEMA",
+            field.name,
+            {
+                "entity":
+                    schema.get("entity"),
+
+                "relation_entity":
+                    schema.get(
+                        "relation_entity"
+                    ),
+
+                "multiple":
+                    schema.get(
+                        "multiple"
+                    ),
+
+                "options":
+                    len(
+                        schema.get(
+                            "options",
+                            [],
+                        )
+                    ),
+            }
+        )
 
         return schema

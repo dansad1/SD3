@@ -1,10 +1,24 @@
-export interface FilterField {
-    id: number;
+export interface FilterOption {
+    value: string;
     label: string;
+}
+
+export interface FilterField {
+
+    id: number;
+
+    label: string;
+
     type: string;
-    operators: { value: string; label: string }[];
-    choices?: { value: string; label: string }[];
-    extra?: { has_from?: boolean; has_to?: boolean };
+
+    operators: FilterOption[];
+
+    options?: FilterOption[];
+
+    extra?: {
+        has_from?: boolean;
+        has_to?: boolean;
+    };
 }
 
 export interface SavedFilter {

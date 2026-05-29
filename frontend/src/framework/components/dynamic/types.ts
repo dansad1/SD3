@@ -124,6 +124,7 @@ export type InteractionMode =
 ========================================================= */
 
 export interface FieldSchema {
+
   id: string
   name: string
 
@@ -152,7 +153,10 @@ export interface FieldSchema {
 
   html_type?: string
 
-  choices?: Option[]
+  /**
+   * select/multiselect options
+   */
+  options?: Option[]
 
   entity?: string
   multiple?: boolean
