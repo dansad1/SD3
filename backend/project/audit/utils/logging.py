@@ -1,28 +1,83 @@
-from backend.project.audit.models import EntityJournal
+from datetime import (
+    datetime,
+    date,
+    time,
+)
+
+from decimal import Decimal
+from uuid import UUID
+
+from backend.project.audit.models.EntityJournal import (
+    EntityJournal,
+)
+
+
+# =========================================================
+# JSON SAFE
+# =========================================================
+
+def make_json_safe(value):
+
+    if isinstance(value, dict):
+        return {
+            k: make_json_safe(v)
+            for k, v in value.items()
+        }
+
+    if isinstance(value, (list, tuple, set)):
+        return [
+            make_json_safe(v)
+            for v in value
+        ]
+
+    if isinstance(value, (datetime, date, time)):
+        return value.isoformat()
+
+    if isinstance(value, Decimal):
+        return str(value)
+
+    if isinstance(value, UUID):
+        return str(value)
+
+    if hasattr(value, "pk"):
+        return value.pk
+
+    return value
+
+
+# =========================================================
+# SERIALIZATION
+# =========================================================
+
 def serialize_instance(instance):
 
     if not instance:
         return {}
 
     data = {}
+
     for field in instance._meta.fields:
-        name = field.name
 
         try:
+
             value = getattr(
                 instance,
-                name,
+                field.name,
             )
 
-            if hasattr(value, "pk"):
-                value = value.pk
+            data[field.name] = (
+                make_json_safe(value)
+            )
 
-            data[name] = value
         except Exception:
             pass
 
     return data
 
+
+# =========================================================
+# CHANGES
+# =========================================================
 
 def calculate_changes(
     before,
@@ -30,12 +85,14 @@ def calculate_changes(
 ):
 
     changes = {}
+
     before = before or {}
     after = after or {}
 
     keys = (
         set(before.keys())
-        | set(after.keys())
+        |
+        set(after.keys())
     )
 
     for key in keys:
@@ -53,6 +110,10 @@ def calculate_changes(
     return changes
 
 
+# =========================================================
+# AUDIT LOG
+# =========================================================
+
 def log_entity_event(
     *,
     request,
@@ -69,19 +130,42 @@ def log_entity_event(
         after,
     )
 
+    changes = make_json_safe(
+        changes
+    )
+
+    meta = make_json_safe(
+        meta or {}
+    )
+
     EntityJournal.objects.create(
+
         actor=(
             request.user
             if (
                 request
+                and hasattr(
+                    request,
+                    "user",
+                )
                 and request.user.is_authenticated
             )
             else None
         ),
+
         action=action,
+
         entity=entity,
-        object_id=str(instance.pk),
-        object_repr=str(instance),
+
+        object_id=str(
+            instance.pk
+        ),
+
+        object_repr=str(
+            instance
+        ),
+
         changes=changes,
-        meta=meta or {},
+
+        meta=meta,
     )

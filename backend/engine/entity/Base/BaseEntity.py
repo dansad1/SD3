@@ -26,7 +26,7 @@ from backend.engine.entity.Base.representation import (
     represent,
 )
 from backend.generic.models import DjangoField, DynamicField
-from backend.project.audit.utils.logging import log_entity_event
+from backend.project.audit.utils.logging import log_entity_event, serialize_instance
 
 
 class BaseEntity:

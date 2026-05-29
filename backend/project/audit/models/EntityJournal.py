@@ -42,6 +42,11 @@ class EntityJournal(models.Model):
         blank=True,
     )
 
+    meta = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
     created = models.DateTimeField(
         default=now,
         db_index=True,
