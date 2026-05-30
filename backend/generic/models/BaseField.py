@@ -40,11 +40,6 @@ class BaseField(models.Model):
     # RELATIONS
     # =========================
 
-    relation_entity = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-    )
 
     is_multiple = models.BooleanField(
         default=False,
@@ -65,19 +60,7 @@ class BaseField(models.Model):
         null=True,
     )
 
-    widget = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-    )
 
-    width = models.IntegerField(
-        default=12,
-    )
-
-    order = models.IntegerField(
-        default=0,
-    )
 
     # =========================
     # VALUES
@@ -101,13 +84,7 @@ class BaseField(models.Model):
         default=False,
     )
 
-    readonly = models.BooleanField(
-        default=False,
-    )
 
-    hidden = models.BooleanField(
-        default=False,
-    )
 
     unique = models.BooleanField(
         default=False,

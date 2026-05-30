@@ -13,10 +13,7 @@ class UserField(BaseField):
 
     class Meta:
 
-        ordering = [
-            "order",
-            "id",
-        ]
+
 
         unique_together = (
             "fieldset",

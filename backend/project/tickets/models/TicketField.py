@@ -27,10 +27,6 @@ class TicketField(
 
     class Meta:
 
-        ordering = [
-            "order",
-            "id",
-        ]
 
         unique_together = (
             "fieldset",

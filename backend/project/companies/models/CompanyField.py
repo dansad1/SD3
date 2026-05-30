@@ -17,11 +17,6 @@ class CompanyField(
 
     class Meta:
 
-        ordering = [
-            "order",
-            "id",
-        ]
-
         unique_together = (
             "fieldset",
             "name",
