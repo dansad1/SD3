@@ -47,32 +47,27 @@ type Props = {
 }
 
 export function FormRenderer({
-
   schema,
-
   values,
-
   fieldErrors = {},
-
   formError,
-
   onChange,
-
   actions = [],
 
 }: Props) {
 
-  // =====================================================
-  // BLOCK RENDER
-  // =====================================================
+  const density =
+    schema.layout?.density ??
+    "default"
+console.log("FORM LAYOUT", schema.layout)
+  console.log("FORM DENSITY", density)
+  const preset =
+    schema.layout?.preset ??
+    "default"
 
   const render = (
     block: FormBlock
   ): React.ReactNode => {
-
-    // ===================================================
-    // FIELD
-    // ===================================================
 
     if (block.type === "field") {
 
@@ -117,10 +112,6 @@ export function FormRenderer({
       )
     }
 
-    // ===================================================
-    // LAYOUT
-    // ===================================================
-
     return (
 
       <LayoutRenderer
@@ -131,16 +122,8 @@ export function FormRenderer({
     )
   }
 
-  // =====================================================
-  // GLOBAL ERRORS
-  // =====================================================
-
   const globalErrors =
     fieldErrors.__all__ ?? []
-
-  // =====================================================
-  // FIELD ERRORS
-  // =====================================================
 
   const hasFieldErrors =
     Object.entries(fieldErrors)
@@ -152,10 +135,6 @@ export function FormRenderer({
         )
       })
 
-  // =====================================================
-  // SHOW FORM ERROR
-  // =====================================================
-
   const shouldShowFormError =
     !hasFieldErrors &&
     (
@@ -163,28 +142,25 @@ export function FormRenderer({
       globalErrors.length > 0
     )
 
-  // =====================================================
-  // RENDER
-  // =====================================================
-
   return (
 
-    <form className="form-grid">
-
-      {/* ============================================= */}
-      {/* GLOBAL ERRORS */}
-      {/* ============================================= */}
+    <form
+      className={[
+        "form",
+        "form-grid",
+        `form-layout-${preset}`,
+        `form-density-${density}`,
+      ].join(" ")}
+    >
 
       {shouldShowFormError && (
 
         <div className="form-error">
 
           {formError && (
-
             <div>
               {formError}
             </div>
-
           )}
 
           {globalErrors.map(
@@ -200,31 +176,17 @@ export function FormRenderer({
           )}
 
         </div>
+
       )}
 
-      {/* ============================================= */}
-      {/* BLOCKS */}
-      {/* ============================================= */}
-
       {schema.blocks.map(render)}
-
-      {/* ============================================= */}
-      {/* FORM ACTIONS */}
-      {/* ============================================= */}
-
       {actions.length > 0 && (
-
         <div className="form-actions">
-
           {actions.map(action => (
-
             <ActionBlock
               key={action.id}
-
               label={action.label}
-
               action={action.id}
-
               variant={
                 action.variant ??
                 "primary"

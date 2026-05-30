@@ -1,3 +1,4 @@
+import type { FieldType } from "@/framework/api/form/types"
 import type { FC, CSSProperties } from "react"
 
 /* =========================================================
@@ -132,6 +133,11 @@ export interface FieldSchema {
   help_text?: string
 
   /**
+   * physical data type
+   */
+  type?: FieldType
+
+  /**
    * primitive fallback
    */
   widget?: string
@@ -153,9 +159,6 @@ export interface FieldSchema {
 
   html_type?: string
 
-  /**
-   * select/multiselect options
-   */
   options?: Option[]
 
   entity?: string

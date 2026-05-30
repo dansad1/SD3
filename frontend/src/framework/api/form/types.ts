@@ -131,55 +131,30 @@ export type ApiFormField = {
   id?: string
   name: string
 
+  /* data type */
+
+  type?: FieldType
+
   /* ui */
 
   label?: string
   help_text?: string
 
-  /**
-   * primitive fallback widget
-   *
-   * examples:
-   * - TextInput
-   * - Select
-   * - Checkbox
-   */
-
   widget?: string
-
-  /**
-   * semantic meaning
-   */
 
   semantic?: ApiSemanticField
 
-  /**
-   * render intent
-   */
-
   view?: ApiRenderView
-
-  /**
-   * visual appearance
-   */
 
   presentation?: ApiPresentationNode
 
-  /* html */
-
   html_type?: ApiHtmlType
 
-  /* options */
-
   options?: ApiChoice[]
-
-  /* relations */
 
   entity?: string
   multiple?: boolean
   columns?: number
-
-  /* validation */
 
   required?: boolean
   readonly?: boolean
@@ -218,3 +193,16 @@ export type ApiFormSchema = {
 
   capabilities?: ApiFormCapabilities
 }
+export type FieldType =
+  | "string"
+  | "text"
+  | "number"
+  | "boolean"
+  | "date"
+  | "datetime"
+  | "time"
+  | "choice"
+  | "multichoice"
+  | "relation"
+  | "file"
+  | "json"

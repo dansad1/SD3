@@ -1,8 +1,8 @@
 import type { FormLayoutConfig } from "../types/FormConfig"
 import { runFormLayoutProcessors } from "../Layout/registry"
 
-// важно для регистрации
 import "../Layout/PresetProcessor"
+
 import type { FormSchema } from "../types/types"
 
 export function applyLayoutConfig(
@@ -14,13 +14,23 @@ export function applyLayoutConfig(
     return schema
   }
 
-  const processedBlocks = runFormLayoutProcessors(
-    [...schema.blocks],
-    layout
-  )
+  const processedBlocks =
+    runFormLayoutProcessors(
+      [...schema.blocks],
+      layout
+    )
 
   return {
     ...schema,
+
+    layout: {
+      ...(schema.layout ?? {}),
+
+      preset: layout.preset,
+
+      density: layout.density,
+    },
+
     blocks: processedBlocks,
   }
 }

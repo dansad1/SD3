@@ -39,9 +39,17 @@ export function isSectionBlock(
 
 /* ================= FORM SCHEMA ================= */
 
+import type {
+  FormDensity,
+  FormLayoutPreset,
+} from "./FormConfig"
+
 export type FormSchema = {
   layout?: {
-    preset?: string
+    preset?: FormLayoutPreset
+
+    density?: FormDensity
+
     override?: Record<
       string,
       {
@@ -57,6 +65,6 @@ export type FormSchema = {
   capabilities?: {
     can_edit?: boolean
   }
-    reactions?: Reaction[]
 
+  reactions?: Reaction[]
 }

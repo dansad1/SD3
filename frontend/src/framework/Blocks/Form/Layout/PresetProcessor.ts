@@ -2,16 +2,56 @@ import { registerFormLayoutProcessor } from "./registry"
 import type { FormBlock } from "../types/types"
 import type { FormLayoutConfig } from "../types/FormConfig"
 
-function withSpan(b: FormBlock, span: number): FormBlock {
-  if (b.type !== "field") return b
+function getPresetSpan(
+  preset: string
+): number {
 
-  return {
-    ...b,
-    layout: {
-      ...(b.layout ?? {}),
-      span,
-    },
+  switch (preset) {
+
+    case "single-column":
+      return 12
+
+    case "two-columns":
+      return 6
+
+    case "wide":
+      return 4
+
+    default:
+      return 6
   }
+}
+
+function adjustByType(
+  block: FormBlock,
+  span: number
+): number {
+
+  if (block.type !== "field") {
+    return span
+  }
+
+  const field = block.field
+
+  // textarea всегда широкая
+
+  if (
+    field.widget === "textarea" ||
+    field.type === "text"
+  ) {
+    return 12
+  }
+
+  // чекбоксы компактнее
+
+  if (
+    field.widget === "checkbox" ||
+    field.type === "boolean"
+  ) {
+    return Math.min(span, 3)
+  }
+
+  return span
 }
 
 export function presetProcessor(
@@ -19,21 +59,39 @@ export function presetProcessor(
   layout: FormLayoutConfig
 ): FormBlock[] {
 
-  const preset = layout.preset ?? "default"
+  const preset =
+    layout.preset ?? "default"
 
-  switch (preset) {
-    case "single-column":
-      return blocks.map((b) => withSpan(b, 12))
+  const presetSpan =
+    getPresetSpan(preset)
 
-    case "two-columns":
-      return blocks.map((b) => withSpan(b, 6))
+  return blocks.map(block => {
 
-    case "wide":
-      return blocks.map((b) => withSpan(b, 12))
+    if (block.type !== "field") {
+      return block
+    }
 
-    default:
-      return blocks
-  }
+    // backend победил всех
+    if (block.layout?.span) {
+      return block
+    }
+
+    const finalSpan =
+      adjustByType(
+        block,
+        presetSpan
+      )
+
+    return {
+      ...block,
+      layout: {
+        ...(block.layout ?? {}),
+        span: finalSpan,
+      },
+    }
+  })
 }
 
-registerFormLayoutProcessor(presetProcessor)
+registerFormLayoutProcessor(
+  presetProcessor
+)

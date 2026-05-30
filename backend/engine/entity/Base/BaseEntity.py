@@ -286,12 +286,7 @@ class BaseEntity:
         # SORT
         # =================================================
 
-        fields.sort(
-            key=lambda x: (
-                x.order,
-                x.name,
-            )
-        )
+
 
         return fields
     # =====================================================
