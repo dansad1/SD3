@@ -71,10 +71,7 @@ class BaseField(models.Model):
         null=True,
     )
 
-    choices = models.TextField(
-        blank=True,
-        null=True,
-    )
+
 
     # =========================
     # VALIDATION
@@ -96,15 +93,6 @@ class BaseField(models.Model):
         null=True,
     )
 
-    min_value = models.IntegerField(
-        blank=True,
-        null=True,
-    )
-
-    max_value = models.IntegerField(
-        blank=True,
-        null=True,
-    )
 
     # =========================
     # SYSTEM

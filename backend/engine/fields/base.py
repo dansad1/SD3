@@ -262,30 +262,24 @@ class BaseField:
 
     def get_schema(self):
 
-        schema = self.field_type.get_schema(
-            self
-        )
+        schema = self.field_type.get_schema(self)
 
         schema.update({
-
             "name": self.name,
-
             "label": self.label,
-
             "required": self.required,
-
             "readonly": self.readonly,
-
             "hidden": self.hidden,
-
             "placeholder": self.placeholder,
-
             "help_text": self.help_text,
-
             "width": self.width,
-
             "multiple": self.is_multiple,
         })
+
+        # 🔥 enum support
+        if self.choices:
+            schema["choices"] = self.choices
+            schema["widget"] = "Select"
 
         return schema
 

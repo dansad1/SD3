@@ -124,7 +124,6 @@ class CompanyEntity(BaseEntity):
             return (
                 CompanyField.objects
                 .order_by(
-                    "order",
                     "id",
                 )
             )
@@ -157,7 +156,6 @@ class CompanyEntity(BaseEntity):
                 fieldset__is_active=True,
             )
             .order_by(
-                "order",
                 "id",
             )
         )

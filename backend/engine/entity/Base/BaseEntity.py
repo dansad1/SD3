@@ -72,8 +72,6 @@ class BaseEntity:
 
     system_exclude_fields = {
         "id",
-        "created_at",
-        "updated_at",
         "deleted_at",
     }
 

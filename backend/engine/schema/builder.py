@@ -70,64 +70,62 @@ class EntitySchemaBuilder:
 
         for field in fields:
 
-            # =============================================
-            # NAME
-            # =============================================
-
             if not field.name:
                 continue
-
-            # =============================================
-            # DUPLICATES
-            # =============================================
 
             if field.name in seen:
                 continue
 
             seen.add(field.name)
 
-            # =============================================
-            # HIDDEN
-            # =============================================
-
             if field.hidden:
                 continue
 
-            # =============================================
-            # SCHEMA
-            # =============================================
-
             schema = field.get_schema()
-
-            # =============================================
-            # VIEW MODE
-            # =============================================
-
-            if action == "view":
-
-                schema["readonly"] = True
 
             # =============================================
             # DEBUG
             # =============================================
 
             print(
-                "[FIELD]",
-                field.name,
-                "type=",
-                field.type,
-                "widget=",
-                schema.get("widget"),
+                "\n🔥 FIELD DEBUG"
             )
 
-            # =============================================
-            # RESULT
-            # =============================================
+            print(
+                "name:",
+                field.name,
+            )
+
+            print(
+                "class:",
+                field.__class__.__name__,
+            )
+
+            print(
+                "type:",
+                field.type,
+            )
+
+            print(
+                "choices:",
+                getattr(
+                    field,
+                    "choices",
+                    None,
+                )
+            )
+
+            print(
+                "schema:",
+                schema,
+            )
+
+            if action == "view":
+                schema["readonly"] = True
 
             fields_schema.append(
                 schema
             )
-
 
 
 
