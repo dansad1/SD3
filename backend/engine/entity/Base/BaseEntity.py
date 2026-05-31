@@ -50,7 +50,18 @@ class BaseEntity:
     filter_fields = []
 
     ordering = ["id"]
+    # =====================================================
+    # FORM
+    # =====================================================
 
+    form_sections = None
+
+    def get_form_sections(
+        self,
+        request,
+        obj=None,
+    ):
+        return self.form_sections
     # =====================================================
     # FIELD POLICY
     # =====================================================

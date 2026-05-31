@@ -58,30 +58,23 @@ const UserFormPage = page(
         {/* ===================================== */}
 
         <Form
+  entity="user"
 
-          entity="user"
+  objectId="$query.id"
 
-          ctx={{
-            id: "$query.id",
-          }}
+  submit={{
+    label: "Сохранить",
 
-          fieldset="default"
+    redirect: {
+      to: "user:list",
+    },
+  }}
 
-          submit={{
-            label: "Сохранить",
-          }}
-
-        
-
-          formLayout={{
-
-            preset: "single-column",
-
-            density: "comfortable",
-
-          }}
-
-        />
+  formLayout={{
+    preset: "single-column",
+    density: "comfortable",
+  }}
+/>
 
       </Stack>
 

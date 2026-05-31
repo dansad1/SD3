@@ -62,29 +62,24 @@ const UserFieldFormPage = page(
         {/* FORM */}
         {/* ===================================== */}
 
-        <Form
+      <Form
+  entity="user-fields"
 
-          entity="user-fields"
+  objectId="$query.id"
 
-          ctx={{
-            id: "$query.id",
-          }}
+  submit={{
+    label: "Сохранить",
 
-          fieldset="default"
+    redirect: {
+      to: "user-fields:list",
+    },
+  }}
 
-          submit={{
-            label: "Сохранить",
-          }}
-
-          formLayout={{
-
-            preset: "two-columns",
-
-            density: "comfortable",
-
-          }}
-
-        />
+  formLayout={{
+    preset: "two-columns",
+    density: "comfortable",
+  }}
+/>
 
       </Stack>
 

@@ -1,5 +1,10 @@
-from backend.engine.entity.Base.BaseEntity import BaseEntity
-from backend.project.users.models import UserField
+from backend.engine.entity.Base.BaseEntity import (
+    BaseEntity,
+)
+
+from backend.project.users.models import (
+    UserField,
+)
 
 
 class UserFieldEntity(BaseEntity):
@@ -7,6 +12,56 @@ class UserFieldEntity(BaseEntity):
     model = UserField
 
     entity = "user-fields"
+
+    # =====================================================
+    # FORM
+    # =====================================================
+
+    form_sections = [
+
+        (
+            "Основное",
+            [
+                "fieldset",
+                "name",
+                "label",
+                "field_type",
+            ],
+        ),
+
+        (
+            "UI",
+            [
+                "placeholder",
+                "help_text",
+                "default_value",
+                "choices",
+            ],
+        ),
+
+        (
+            "Валидация",
+            [
+                "required",
+                "unique",
+                "regex",
+                "min_value",
+                "max_value",
+            ],
+        ),
+
+        (
+            "Системное",
+            [
+                "is_multiple",
+                "is_system",
+            ],
+        ),
+    ]
+
+    # =====================================================
+    # LIST
+    # =====================================================
 
     list_display = [
         "fieldset",
@@ -29,11 +84,10 @@ class UserFieldEntity(BaseEntity):
         "field_type",
     ]
 
-    ordering = [
-        "fieldset",
-        "order",
-        "id",
-    ]
+
+    # =====================================================
+    # PERMISSIONS
+    # =====================================================
 
     capabilities = {
         "list": "user_fields.view",
@@ -42,6 +96,10 @@ class UserFieldEntity(BaseEntity):
         "edit": "user_fields.edit",
         "delete": "user_fields.delete",
     }
+
+    # =====================================================
+    # QUERYSET
+    # =====================================================
 
     def get_select_related(self):
 

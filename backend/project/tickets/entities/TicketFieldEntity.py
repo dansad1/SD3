@@ -1,12 +1,3 @@
-from backend.engine.entity.Base.BaseEntity import (
-    BaseEntity,
-)
-
-from backend.project.tickets.models import (
-    TicketField,
-)
-
-
 class TicketFieldEntity(
     BaseEntity
 ):
@@ -14,6 +5,64 @@ class TicketFieldEntity(
     model = TicketField
 
     entity = "ticket-fields"
+
+    # =====================================================
+    # FORM
+    # =====================================================
+
+    form_sections = [
+
+        {
+            "title": "Основное",
+
+            "fields": [
+                "fieldset",
+                "name",
+                "label",
+                "field_type",
+            ],
+        },
+
+        {
+            "title": "UI",
+
+            "fields": [
+                "placeholder",
+                "help_text",
+                "default_value",
+                "choices",
+            ],
+        },
+
+        {
+            "title": "Валидация",
+
+            "fields": [
+                "required",
+                "unique",
+                "regex",
+                "min_value",
+                "max_value",
+            ],
+        },
+
+        {
+            "title": "Отображение",
+
+            "fields": [
+                "show_in_list",
+            ],
+        },
+
+        {
+            "title": "Системное",
+
+            "fields": [
+                "is_multiple",
+                "is_system",
+            ],
+        },
+    ]
 
     # =====================================================
     # UI
