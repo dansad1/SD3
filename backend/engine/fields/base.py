@@ -2,7 +2,6 @@
 # backend/dynamic/fields/base.py
 # =========================================================
 
-
 class BaseField:
     """
     Runtime field abstraction.
@@ -12,7 +11,6 @@ class BaseField:
     """
 
     def __init__(self, source):
-
         self.source = source
 
     # =====================================================
@@ -33,7 +31,6 @@ class BaseField:
 
     @property
     def label(self):
-
         return getattr(
             self.source,
             "label",
@@ -42,7 +39,6 @@ class BaseField:
 
     @property
     def required(self):
-
         return getattr(
             self.source,
             "required",
@@ -51,7 +47,6 @@ class BaseField:
 
     @property
     def readonly(self):
-
         return getattr(
             self.source,
             "readonly",
@@ -60,7 +55,6 @@ class BaseField:
 
     @property
     def hidden(self):
-
         return getattr(
             self.source,
             "hidden",
@@ -69,7 +63,6 @@ class BaseField:
 
     @property
     def unique(self):
-
         return getattr(
             self.source,
             "unique",
@@ -78,7 +71,6 @@ class BaseField:
 
     @property
     def is_multiple(self):
-
         return getattr(
             self.source,
             "is_multiple",
@@ -91,7 +83,6 @@ class BaseField:
 
     @property
     def placeholder(self):
-
         return getattr(
             self.source,
             "placeholder",
@@ -100,7 +91,6 @@ class BaseField:
 
     @property
     def help_text(self):
-
         return getattr(
             self.source,
             "help_text",
@@ -109,7 +99,6 @@ class BaseField:
 
     @property
     def widget(self):
-
         return getattr(
             self.source,
             "widget",
@@ -118,7 +107,6 @@ class BaseField:
 
     @property
     def width(self):
-
         return getattr(
             self.source,
             "width",
@@ -127,7 +115,6 @@ class BaseField:
 
     @property
     def order(self):
-
         return getattr(
             self.source,
             "order",
@@ -140,7 +127,6 @@ class BaseField:
 
     @property
     def regex(self):
-
         return getattr(
             self.source,
             "regex",
@@ -149,7 +135,6 @@ class BaseField:
 
     @property
     def min_value(self):
-
         return getattr(
             self.source,
             "min_value",
@@ -158,7 +143,6 @@ class BaseField:
 
     @property
     def max_value(self):
-
         return getattr(
             self.source,
             "max_value",
@@ -171,7 +155,6 @@ class BaseField:
 
     @property
     def relation_entity(self):
-
         return getattr(
             self.source,
             "relation_entity",
@@ -184,7 +167,6 @@ class BaseField:
 
     @property
     def default_value(self):
-
         return getattr(
             self.source,
             "default_value",
@@ -192,15 +174,15 @@ class BaseField:
         )
 
     # =====================================================
-    # CHOICES
+    # OPTIONS
     # =====================================================
 
     @property
-    def choices(self):
+    def options(self):
 
         value = getattr(
             self.source,
-            "choices",
+            "options",
             None,
         )
 
@@ -215,6 +197,7 @@ class BaseField:
 
     @property
     def field_type(self):
+
         from backend.engine.fields.types.registry import (
             get_field_type,
         )
@@ -241,14 +224,13 @@ class BaseField:
             value,
         )
 
-    def serialize(
-            self,
-            value,
-    ):
+    def serialize(self, value):
+
         return self.field_type.serialize(
             self,
             value,
         )
+
     def deserialize(self, value):
 
         return self.field_type.deserialize(
@@ -262,7 +244,9 @@ class BaseField:
 
     def get_schema(self):
 
-        schema = self.field_type.get_schema(self)
+        schema = self.field_type.get_schema(
+            self
+        )
 
         schema.update({
             "name": self.name,
@@ -276,13 +260,18 @@ class BaseField:
             "multiple": self.is_multiple,
         })
 
-        # 🔥 enum support
+        # enum/select support
+
         if self.choices:
-            schema["choices"] = self.choices
-            schema["widget"] = "Select"
+            schema["options"] = (
+                self.choices
+            )
+
+            schema["widget"] = (
+                "Select"
+            )
 
         return schema
-
     # =====================================================
     # FILTER / SEARCH
     # =====================================================

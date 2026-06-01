@@ -364,6 +364,9 @@ class DjangoField(BaseField):
     # =====================================================
     # CHOICES
     # =====================================================
+    # =====================================================
+    # CHOICES
+    # =====================================================
 
     @property
     def choices(self):
@@ -378,11 +381,9 @@ class DjangoField(BaseField):
             return []
 
         return [
-
             {
                 "value": value,
-                "label": label,
+                "label": str(label),
             }
-
             for value, label in choices
         ]

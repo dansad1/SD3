@@ -134,7 +134,6 @@ class DepartmentEntity(BaseEntity):
             )
 
             .order_by(
-                "order",
                 "id",
             )
 

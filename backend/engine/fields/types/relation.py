@@ -398,8 +398,6 @@ class RelationFieldType(
             "relation_entity":
                 relation_entity,
 
-            "choices":
-                options,
 
             "multiple":
                 field.is_multiple,

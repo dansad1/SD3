@@ -1,3 +1,7 @@
+from backend.engine.entity.Base.BaseEntity import BaseEntity
+from backend.project.tickets.models import TicketField
+
+
 class TicketFieldEntity(
     BaseEntity
 ):

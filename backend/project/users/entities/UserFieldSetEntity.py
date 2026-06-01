@@ -15,7 +15,6 @@ class UserFieldSetEntity(BaseEntity):
         "name",
         "is_active",
         "is_default",
-        "order",
     ]
 
     search_fields = [

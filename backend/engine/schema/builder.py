@@ -87,38 +87,6 @@ class EntitySchemaBuilder:
             # DEBUG
             # =============================================
 
-            print(
-                "\n🔥 FIELD DEBUG"
-            )
-
-            print(
-                "name:",
-                field.name,
-            )
-
-            print(
-                "class:",
-                field.__class__.__name__,
-            )
-
-            print(
-                "type:",
-                field.type,
-            )
-
-            print(
-                "choices:",
-                getattr(
-                    field,
-                    "choices",
-                    None,
-                )
-            )
-
-            print(
-                "schema:",
-                schema,
-            )
 
             if action == "view":
                 schema["readonly"] = True
