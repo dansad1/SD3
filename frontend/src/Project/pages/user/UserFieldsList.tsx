@@ -54,7 +54,7 @@ const UserFieldsListPage = page(
           }}
 
           rowClick={{
-            to: "user_field:form",
+            to: "userfield:form",
             ctx: {
               id: "$row.id",
             },
@@ -65,7 +65,7 @@ const UserFieldsListPage = page(
               key: "edit",
               label: "Редактировать",
               variant: "secondary",
-              to: "user_field:form",
+              to: "userfield:form",
               ctx: {
                 id: "$row.id",
               },

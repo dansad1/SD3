@@ -70,8 +70,6 @@ class UserFieldEntity(BaseEntity):
         "field_type",
         "required",
         "readonly",
-        "hidden",
-        "order",
     ]
 
     search_fields = [

@@ -187,23 +187,8 @@ class DynamicField(BaseField):
 
     @property
     def choices(self):
-
-        model_field = (
-            self.source._meta.get_field(
-                self.name
-            )
-        )
-
-        if getattr(model_field, "choices", None):
-            return [
-                {
-                    "value": value,
-                    "label": label,
-                }
-                for value, label in model_field.choices
-            ]
-
-        return (
-                self.source.choices
-                or []
-        )
+        return getattr(
+            self.source,
+            "choices",
+            [],
+        ) or []

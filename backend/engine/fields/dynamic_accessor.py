@@ -6,7 +6,13 @@ from django.contrib.contenttypes.models import (
     ContentType,
 )
 
-from backend.engine.fields.value import BaseValueAccessor
+from backend.engine.fields.value import (
+    BaseValueAccessor,
+)
+
+from backend.generic.models.DynamicValue import (
+    DynamicValue,
+)
 
 
 class DynamicValueAccessor(
@@ -28,12 +34,15 @@ class DynamicValueAccessor(
         )
 
         value = (
+
             DynamicValue.objects
+
             .filter(
                 content_type=content_type,
                 object_id=obj.pk,
                 field_name=field.name,
             )
+
             .first()
         )
 
@@ -69,7 +78,9 @@ class DynamicValueAccessor(
 
             defaults={
                 "value":
-                    field.serialize(value)
+                    field.serialize(
+                        value
+                    )
             }
         )
 

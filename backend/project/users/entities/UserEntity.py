@@ -1,7 +1,3 @@
-# =========================================================
-# USER ENTITY
-# =========================================================
-
 from django.core.exceptions import (
     ValidationError,
 )
@@ -14,6 +10,11 @@ from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
 
+from backend.generic.models import (
+    DynamicField,
+    DjangoField,
+)
+
 from backend.project.users.models import (
     User,
     UserField,
@@ -21,10 +22,6 @@ from backend.project.users.models import (
 
 
 class UserEntity(BaseEntity):
-
-    # =====================================================
-    # CORE
-    # =====================================================
 
     model = User
 
@@ -42,8 +39,8 @@ class UserEntity(BaseEntity):
 
         "is_active",
 
-        # dynamic examples
         "telegram",
+
         "department",
     ]
 
@@ -72,13 +69,14 @@ class UserEntity(BaseEntity):
 
     exclude_fields = {
 
-        # django auth internals
         "groups",
+
         "user_permissions",
 
-        # system
         "last_login",
+
         "created_at",
+
         "updated_at",
     }
 
@@ -127,6 +125,70 @@ class UserEntity(BaseEntity):
         ]
 
     # =====================================================
+    # FIELDS
+    # =====================================================
+
+    def get_fields(
+        self,
+        request,
+        obj=None,
+    ):
+
+        fields = []
+
+        # =================================================
+        # STATIC DJANGO FIELDS
+        # =================================================
+
+        for field in self.model._meta.get_fields():
+
+            name = getattr(
+                field,
+                "name",
+                None,
+            )
+
+            if not name:
+                continue
+
+            if not self.include_model_field(
+                field
+            ):
+                continue
+
+            fields.append(
+                DjangoField(field)
+            )
+
+        # =================================================
+        # DYNAMIC FIELDS
+        # =================================================
+
+        existing_names = {
+
+            field.name
+
+            for field in fields
+        }
+
+        for field in self.get_dynamic_fields(
+            request,
+            obj=obj,
+        ):
+
+            if (
+                field.name
+                in existing_names
+            ):
+                continue
+
+            fields.append(
+                DynamicField(field)
+            )
+
+        return fields
+
+    # =====================================================
     # DYNAMIC FIELDS
     # =====================================================
 
@@ -136,57 +198,13 @@ class UserEntity(BaseEntity):
         obj=None,
     ):
 
-        fieldset = request.GET.get(
-            "fieldset"
-        )
-
-        # =============================================
-        # DEFAULT
-        # =============================================
-
-        if (
-            not fieldset
-            or fieldset == "default"
-        ):
-
-            return []
-
-        # =============================================
-        # VALIDATE
-        # =============================================
-
-        try:
-
-            fieldset_id = int(
-                fieldset
-            )
-
-        except (
-            TypeError,
-            ValueError,
-        ):
-
-            return []
-
-        # =============================================
-        # RESULT
-        # =============================================
-
         return (
 
             UserField.objects
 
-            .filter(
-
-                fieldset_id=fieldset_id,
-
-                fieldset__is_active=True,
-            )
+            .all()
 
             .order_by(
-
-                "order",
-
                 "id",
             )
         )
@@ -219,11 +237,12 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     def validate(
-            self,
-            request,
-            payload,
-            instance=None,
+        self,
+        request,
+        payload,
+        instance=None,
     ):
+
         errors = {}
 
         password = payload.get(
@@ -231,9 +250,10 @@ class UserEntity(BaseEntity):
         )
 
         if (
-                instance is None
-                and not password
+            instance is None
+            and not password
         ):
+
             errors["password"] = [
                 "Password required"
             ]
@@ -250,15 +270,23 @@ class UserEntity(BaseEntity):
             except ValidationError as e:
 
                 errors["password"] = (
-                    list(e.messages)
+                    list(
+                        e.messages
+                    )
                 )
 
         if errors:
+
             raise ValidationError(
                 errors
             )
 
         return payload
+
+    # =====================================================
+    # BEFORE SAVE
+    # =====================================================
+
     def before_save(
         self,
         ctx,
@@ -268,17 +296,12 @@ class UserEntity(BaseEntity):
             "password"
         )
 
-        # =============================================
-        # PASSWORD
-        # =============================================
-
         if password:
 
             ctx.instance.set_password(
                 password
             )
 
-            # не сохраняем raw password
             ctx.data.pop(
                 "password",
                 None,
@@ -296,11 +319,10 @@ class UserEntity(BaseEntity):
         instance,
     ):
 
-        # =============================================
-        # SELF DELETE PROTECTION
-        # =============================================
-
-        if request.user.pk == instance.pk:
+        if (
+            request.user.pk
+            == instance.pk
+        ):
 
             raise ValidationError({
 
@@ -325,10 +347,6 @@ class UserEntity(BaseEntity):
             "name"
         )
 
-        # =============================================
-        # PASSWORD
-        # =============================================
-
         if name == "password":
 
             schema.update({
@@ -338,10 +356,6 @@ class UserEntity(BaseEntity):
                 "widget": "password",
             })
 
-        # =============================================
-        # SECURITY
-        # =============================================
-
         if (
             not request.user.is_superuser
         ):
@@ -349,14 +363,11 @@ class UserEntity(BaseEntity):
             if name in {
 
                 "is_superuser",
+
                 "is_staff",
             }:
 
                 schema["hidden"] = True
-
-        # =============================================
-        # SYSTEM READONLY
-        # =============================================
 
         if name in {
 
