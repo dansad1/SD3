@@ -132,29 +132,13 @@ export interface FieldSchema {
   label?: string
   help_text?: string
 
-  /**
-   * physical data type
-   */
   type?: FieldType
-
-  /**
-   * primitive fallback
-   */
   widget?: string
 
-  /**
-   * what it is
-   */
   semantic?: SemanticField
 
-  /**
-   * how it should be represented
-   */
   view?: RenderView
 
-  /**
-   * visual appearance only
-   */
   presentation?: PresentationNode
 
   html_type?: string
@@ -167,6 +151,13 @@ export interface FieldSchema {
 
   required?: boolean
   readonly?: boolean
+
+  ui?: {
+    section?: string | {
+      key: string
+      title?: string
+    }
+  }
 }
 
 /* =========================================================

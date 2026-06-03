@@ -1,39 +1,49 @@
 import { registerFormLayoutProcessor } from "./registry"
+import { mapBlocks } from "./walk"
+
 import type { FormBlock } from "../types/types"
 import type { FormLayoutConfig } from "../types/FormConfig"
-
-function withSize(b: FormBlock, size: string): FormBlock {
-  if (b.type !== "field") return b
-
-  return {
-    ...b,
-    props: {
-      ...(b.props ?? {}),
-      size,
-    },
-  }
-}
 
 export function densityProcessor(
   blocks: FormBlock[],
   layout: FormLayoutConfig
 ): FormBlock[] {
 
-  const density = layout.density ?? "default"
+  const density =
+    layout.density ?? "default"
 
-  switch (density) {
-    case "compact":
-      return blocks.map((b) => withSize(b, "sm"))
+  return mapBlocks(
+    blocks,
+    (block): FormBlock => {
 
-    case "dense":
-      return blocks.map((b) => withSize(b, "xs"))
+      if (block.type !== "field") {
+        return block
+      }
 
-    case "comfortable":
-      return blocks.map((b) => withSize(b, "md"))
+      return {
+        ...block,
 
-    default:
-      return blocks
-  }
+        field: {
+          ...block.field,
+
+          view: {
+            ...(block.field.view ?? {}),
+
+            density:
+              density === "comfortable"
+                ? "comfortable"
+                : density === "compact"
+                ? "compact"
+                : density === "dense"
+                ? "compact"
+                : "normal",
+          },
+        },
+      }
+    }
+  )
 }
 
-registerFormLayoutProcessor(densityProcessor)
+registerFormLayoutProcessor(
+  densityProcessor
+)

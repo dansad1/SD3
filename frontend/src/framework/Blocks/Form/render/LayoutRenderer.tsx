@@ -1,25 +1,61 @@
-import { isSectionBlock, type FormBlock } from "../types/types"
+import {
+  isSectionBlock,
+  isStackBlock,
+  isTabsBlock,
+  type FormBlock,
+} from "../types/types"
+
+import {
+  FormSectionRenderer,
+} from "./FormSectionRenderer"
+
+import {
+  FormStackRenderer,
+} from "./FormStackRenderer"
+
+import {
+  FormTabsRenderer,
+} from "./FormTabsRenderer"
+
+type Props = {
+  block: FormBlock
+
+  render: (
+    block: FormBlock
+  ) => React.ReactNode
+}
 
 export function LayoutRenderer({
   block,
   render,
-}: {
-  block: FormBlock
-  render: (b: FormBlock) => React.ReactNode
-}) {
+}: Props) {
+
   if (isSectionBlock(block)) {
     return (
-      <div
-        className="form-section form-grid"
-        style={{ gridColumn: "span 12" }}
-        key={block.id}
-      >
-        {block.title && <h3>{block.title}</h3>}
-
-        {block.children.map(render)}
-      </div>
+      <FormSectionRenderer
+        block={block}
+        render={render}
+      />
     )
   }
+
+  if (isStackBlock(block)) {
+    return (
+      <FormStackRenderer
+        block={block}
+        render={render}
+      />
+    )
+  }
+
+  if (isTabsBlock(block)) {
+  return (
+    <FormTabsRenderer
+      block={block}
+      render={render}
+    />
+  )
+}
 
   return null
 }

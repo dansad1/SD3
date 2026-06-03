@@ -5,22 +5,33 @@ import type {
 import type {
   FormSchema,
 } from "../types/types"
-import { adaptField } from "./adaptField"
 
-
+import {
+  adaptField,
+} from "./adaptField"
 
 export function adaptFormSchema(
   api: ApiFormSchema
 ): FormSchema {
 
+  const blocks =
+    api.fields.map(
+      adaptField
+    )
+
   return {
 
-    blocks:
-      api.fields.map(
-        adaptField
+    fields:
+      blocks.map(
+        block => block.field
       ),
+
+    blocks,
 
     initial:
       api.initial ?? {},
+
+    capabilities:
+      api.capabilities ?? {},
   }
 }

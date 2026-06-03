@@ -24,7 +24,12 @@ export type FormDensity =
 
 export type FormLayoutConfig = {
   preset?: FormLayoutPreset
+
   density?: FormDensity
+
+  groups?:
+    | "sections"
+    | "tabs"
 }
 
 /* ================= CONFIG ================= */

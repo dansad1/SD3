@@ -455,12 +455,18 @@ form: {
   ] as const,
 
   density: [
-    "comfortable", // много воздуха
-    "default",     // стандарт
-    "compact",     // плотнее
-    "dense",       // максимально плотно
+    "comfortable",
+    "default",
+    "compact",
+    "dense",
   ] as const,
-},
+
+  groups: [
+    "sections",
+    "tabs",
+    "accordion",
+  ] as const,
+}
 },
 
 

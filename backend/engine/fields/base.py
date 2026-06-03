@@ -1,6 +1,3 @@
-# =========================================================
-# backend/dynamic/fields/base.py
-# =========================================================
 
 class BaseField:
     """
@@ -122,6 +119,26 @@ class BaseField:
         )
 
     # =====================================================
+    # SECTIONS
+    # =====================================================
+
+    @property
+    def section(self):
+        return getattr(
+            self.source,
+            "section",
+            None,
+        )
+
+    @property
+    def section_title(self):
+        return getattr(
+            self.source,
+            "section_title",
+            None,
+        )
+
+    # =====================================================
     # VALIDATION
     # =====================================================
 
@@ -210,28 +227,40 @@ class BaseField:
     # BEHAVIOR
     # =====================================================
 
-    def validate(self, value):
+    def validate(
+        self,
+        value,
+    ):
 
         return self.field_type.validate(
             self,
             value,
         )
 
-    def normalize(self, value):
+    def normalize(
+        self,
+        value,
+    ):
 
         return self.field_type.normalize(
             self,
             value,
         )
 
-    def serialize(self, value):
+    def serialize(
+        self,
+        value,
+    ):
 
         return self.field_type.serialize(
             self,
             value,
         )
 
-    def deserialize(self, value):
+    def deserialize(
+        self,
+        value,
+    ):
 
         return self.field_type.deserialize(
             self,
@@ -249,18 +278,49 @@ class BaseField:
         )
 
         schema.update({
-            "name": self.name,
-            "label": self.label,
-            "required": self.required,
-            "readonly": self.readonly,
-            "hidden": self.hidden,
-            "placeholder": self.placeholder,
-            "help_text": self.help_text,
-            "width": self.width,
-            "multiple": self.is_multiple,
+
+            "name":
+                self.name,
+
+            "label":
+                self.label,
+
+            "required":
+                self.required,
+
+            "readonly":
+                self.readonly,
+
+            "hidden":
+                self.hidden,
+
+            "placeholder":
+                self.placeholder,
+
+            "help_text":
+                self.help_text,
+
+            "width":
+                self.width,
+
+            "multiple":
+                self.is_multiple,
         })
 
-        # enum/select support
+        # =============================================
+        # SECTION SUPPORT
+        # =============================================
+
+        if self.section:
+            schema["ui"] = {
+
+                "section":
+                    self.section,
+            }
+
+        # =============================================
+        # ENUM / CHOICES
+        # =============================================
 
         if self.choices:
             schema["options"] = (
@@ -272,6 +332,7 @@ class BaseField:
             )
 
         return schema
+
     # =====================================================
     # FILTER / SEARCH
     # =====================================================

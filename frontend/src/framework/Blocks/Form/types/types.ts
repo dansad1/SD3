@@ -1,70 +1,143 @@
-import type { FieldSchema } from "@/framework/components/dynamic/types"
 import type { Json } from "@/framework/types/json"
-import type { Reaction } from "../runtime/reactions/types"
+import type { FieldSchema } from "@/framework/components/dynamic/types"
 
-/* ================= BASE ================= */
+export type FormLayoutPreset =
+  | "default"
+  | "two-columns"
+  | "single-column"
+  | "wide"
 
-export type BaseBlock<TProps = unknown> = {
-  id: string
+export type FormDensity =
+  | "comfortable"
+  | "default"
+  | "compact"
+  | "dense"
 
-  layout?: {
-    span?: number
-  }
+export type FormGroupMode =
+  | "sections"
+  | "tabs"
 
-  props?: TProps
+export type FormLayout = {
+  preset?: FormLayoutPreset
+
+  density?: FormDensity
+
+  groups?: FormGroupMode
 }
 
-export type FieldBlock = BaseBlock & {
+export type FormBlockLayout = {
+  span?: 1 | 2 | 3 | 4 | 6 | 12
+  order?: number
+  hidden?: boolean
+}
+
+export type FormFieldBlock = {
+  id: string
   type: "field"
   field: FieldSchema
+  layout?: FormBlockLayout
 }
 
-export type SectionBlock = BaseBlock & {
+export type FormSectionBlock = {
+  id: string
   type: "section"
   title?: string
+  description?: string
+  layout?: FormBlockLayout
   children: FormBlock[]
 }
 
-/* ================= UNION ================= */
+export type FormStackBlock = {
+  id: string
+  type: "stack"
+  gap?: "none" | "sm" | "md" | "lg"
+  layout?: FormBlockLayout
+  children: FormBlock[]
+}
+
+export type FormTabsBlock = {
+  id: string
+  type: "tabs"
+  variant?: "line" | "pills" | "segmented"
+  layout?: FormBlockLayout
+  children: FormBlock[]
+}
 
 export type FormBlock =
-  | FieldBlock
-  | SectionBlock
+  | FormFieldBlock
+  | FormSectionBlock
+  | FormStackBlock
+  | FormTabsBlock
+
+export type ApiFormFieldBlock = {
+  id?: string
+  type: "field"
+  field: string
+  layout?: FormBlockLayout
+}
+
+export type ApiFormSectionBlock = {
+  id?: string
+  type: "section"
+  key?: string
+  title?: string
+  description?: string
+  layout?: FormBlockLayout
+  children?: ApiFormBlock[]
+}
+
+export type ApiFormStackBlock = {
+  id?: string
+  type: "stack"
+  gap?: "none" | "sm" | "md" | "lg"
+  layout?: FormBlockLayout
+  children?: ApiFormBlock[]
+}
+
+export type ApiFormTabsBlock = {
+  id?: string
+  type: "tabs"
+  variant?: "line" | "pills" | "segmented"
+  layout?: FormBlockLayout
+  children?: ApiFormBlock[]
+}
+
+export type ApiFormBlock =
+  | ApiFormFieldBlock
+  | ApiFormSectionBlock
+  | ApiFormStackBlock
+  | ApiFormTabsBlock
+
+export type FormSchema = {
+  entity?: string
+  model?: string
+  fields: FieldSchema[]
+  blocks?: ApiFormBlock[] | FormBlock[]
+  initial?: Record<string, Json>
+  layout?: FormLayout
+  capabilities?: Record<string, boolean>
+}
+
+export function isFieldBlock(
+  block: FormBlock
+): block is FormFieldBlock {
+  return block.type === "field"
+}
 
 export function isSectionBlock(
   block: FormBlock
-): block is SectionBlock {
+): block is FormSectionBlock {
   return block.type === "section"
 }
 
-/* ================= FORM SCHEMA ================= */
+export function isStackBlock(
+  block: FormBlock
+): block is FormStackBlock {
+  return block.type === "stack"
+}
 
-import type {
-  FormDensity,
-  FormLayoutPreset,
-} from "./FormConfig"
-
-export type FormSchema = {
-  layout?: {
-    preset?: FormLayoutPreset
-
-    density?: FormDensity
-
-    override?: Record<
-      string,
-      {
-        span?: number
-      }
-    >
-  }
-
-  blocks: FormBlock[]
-
-  initial?: Record<string, Json>
-
-  capabilities?: {
-    can_edit?: boolean
-  }
-
-  reactions?: Reaction[]
+export function isTabsBlock(
+  block: FormBlock
+): block is FormTabsBlock {
+  return block.type === "tabs"
 }

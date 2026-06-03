@@ -52,7 +52,7 @@ const UserFieldFormPage = page(
 
           <Action
             label="Назад к списку"
-            to="user_field:list"
+            to="userfield:list"
             variant="secondary"
           />
 
@@ -71,7 +71,7 @@ const UserFieldFormPage = page(
     label: "Сохранить",
 
     redirect: {
-      to: "user-fields:list",
+      to: "userfields:list",
     },
   }}
 

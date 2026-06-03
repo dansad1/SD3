@@ -1,10 +1,20 @@
 import { registerFormLayoutProcessor } from "./registry"
+import { mapBlocks } from "./walk"
+
 import type { FormBlock } from "../types/types"
 import type { FormLayoutConfig } from "../types/FormConfig"
 
+type Span =
+  | 1
+  | 2
+  | 3
+  | 4
+  | 6
+  | 12
+
 function getPresetSpan(
   preset: string
-): number {
+): Span {
 
   switch (preset) {
 
@@ -24,16 +34,14 @@ function getPresetSpan(
 
 function adjustByType(
   block: FormBlock,
-  span: number
-): number {
+  span: Span
+): Span {
 
   if (block.type !== "field") {
     return span
   }
 
   const field = block.field
-
-  // textarea всегда широкая
 
   if (
     field.widget === "textarea" ||
@@ -42,13 +50,13 @@ function adjustByType(
     return 12
   }
 
-  // чекбоксы компактнее
-
   if (
     field.widget === "checkbox" ||
     field.type === "boolean"
   ) {
-    return Math.min(span, 3)
+    return span <= 3
+      ? span
+      : 3
   }
 
   return span
@@ -65,31 +73,39 @@ export function presetProcessor(
   const presetSpan =
     getPresetSpan(preset)
 
-  return blocks.map(block => {
+  return mapBlocks(
+    blocks,
+    (
+      block: FormBlock
+    ): FormBlock => {
 
-    if (block.type !== "field") {
-      return block
+      if (
+        block.type !== "field"
+      ) {
+        return block
+      }
+
+      // backend задал span
+      if (
+        block.layout?.span
+      ) {
+        return block
+      }
+
+      return {
+        ...block,
+
+        layout: {
+          ...(block.layout ?? {}),
+
+          span: adjustByType(
+            block,
+            presetSpan
+          ),
+        },
+      }
     }
-
-    // backend победил всех
-    if (block.layout?.span) {
-      return block
-    }
-
-    const finalSpan =
-      adjustByType(
-        block,
-        presetSpan
-      )
-
-    return {
-      ...block,
-      layout: {
-        ...(block.layout ?? {}),
-        span: finalSpan,
-      },
-    }
-  })
+  )
 }
 
 registerFormLayoutProcessor(

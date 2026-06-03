@@ -3,48 +3,32 @@ import type {
 } from "@/framework/api/form/types"
 
 import type {
-  FieldBlock,
-} from "../types/types"
-import { resolveWidget } from "@/framework/components/dynamic/widgets/resolveWidget"
+  FieldSchema,
+} from "@/framework/components/dynamic/types"
 
+import type {
+  FormFieldBlock,
+} from "../types/types"
+
+import {
+  resolveWidget,
+} from "@/framework/components/dynamic/widgets/resolveWidget"
 
 export function adaptField(
   field: ApiFormField
-): FieldBlock {
+): FormFieldBlock {
 
   const id =
-    field.id ||
+    field.id ??
     field.name
 
   const widget =
-    resolveWidget(field)
+    resolveWidget({
+      ...field,
+      id,
+    } as FieldSchema)
 
-  if (
-    field.name === "permissions"
-  ) {
-
-    console.log(
-      "🔥 ADAPT PERMISSIONS RAW",
-      field
-    )
-
-    console.log(
-      "🔥 ADAPT PERMISSIONS JSON",
-      JSON.stringify(
-        field,
-        null,
-        2
-      )
-    )
-
-    console.log(
-      "🔥 ADAPT PERMISSIONS OPTIONS",
-      field.options?.length ?? 0
-    )
-
-  }
-
-  const result: FieldBlock = {
+  return {
 
     id,
 
@@ -52,66 +36,32 @@ export function adaptField(
 
     field: {
 
+      ...field,
+
       id,
-
-      name:
-        field.name,
-
-      label:
-        field.label,
-
-      help_text:
-        field.help_text,
 
       widget,
 
-      semantic:
-        field.semantic,
-
-      view:
-        field.view,
-
-      presentation:
-        field.presentation,
-
-      html_type:
-        field.html_type,
-
-      options:
-        field.options,
-
-      entity:
-        field.entity,
-
-      multiple:
-        field.multiple,
-
-      columns:
-        field.columns,
-
-      required:
-        field.required,
-
-      readonly:
-        field.readonly,
-    },
-  }
-
-  if (
-    field.name === "permissions"
-  ) {
-
-    console.log(
-      "🔥 ADAPT RESULT",
-      result.field
-    )
-
-    console.log(
-      "🔥 ADAPT RESULT OPTIONS",
-      result.field.options?.length ?? 0
-    )
+    } as FieldSchema,
 
   }
+}
+export function adaptFieldSchema(
+  field: ApiFormField
+): FieldSchema {
 
-  return result
+  const id =
+    field.id ??
+    field.name
+
+  const schema: FieldSchema = {
+    ...field,
+    id,
+    widget: "",
+  } as FieldSchema
+
+  schema.widget =
+    resolveWidget(schema)
+
+  return schema
 }

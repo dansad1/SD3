@@ -176,6 +176,11 @@ class BaseField(models.Model):
     # =====================================================
     # META
     # =====================================================
-
+    section = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        db_index=True,
+    )
     class Meta:
         abstract = True

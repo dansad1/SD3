@@ -73,9 +73,10 @@ const UserFormPage = page(
   formLayout={{
     preset: "single-column",
     density: "comfortable",
+
+    groups: "tabs",
   }}
 />
-
       </Stack>
 
     </Section>

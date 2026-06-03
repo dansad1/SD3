@@ -291,6 +291,7 @@ export type FormDSL =
   formLayout?: {
   preset?: ("default" | "two-columns" | "single-column" | "wide") | `$${string}`
   density?: ("comfortable" | "default" | "compact" | "dense") | `$${string}`
+  groups?: ("sections" | "tabs" | "accordion") | `$${string}`
 }
 }) & { children?: unknown }
 

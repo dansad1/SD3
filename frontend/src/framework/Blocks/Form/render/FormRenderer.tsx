@@ -1,15 +1,10 @@
-// src/framework/Blocks/Form/render/FormRenderer.tsx
-
 import type {
   FormBlock,
   FormSchema,
 } from "../types/types"
 
-import { FieldRenderer }
-  from "./FieldRenderer"
-
-import { LayoutRenderer }
-  from "./LayoutRenderer"
+import { FieldRenderer } from "./FieldRenderer"
+import { LayoutRenderer } from "./LayoutRenderer"
 
 import type { Json }
   from "@/framework/types/json"
@@ -23,18 +18,13 @@ import {
 } from "@/framework/Blocks/Action/ActionBlock"
 
 type Props = {
+  schema: FormSchema & {
+    blocks: FormBlock[]
+  }
 
-  schema: FormSchema
+  values: Record<string, Json>
 
-  values: Record<
-    string,
-    Json
-  >
-
-  fieldErrors?: Record<
-    string,
-    string[]
-  >
+  fieldErrors?: Record<string, string[]>
 
   formError?: string | null
 
@@ -53,67 +43,70 @@ export function FormRenderer({
   formError,
   onChange,
   actions = [],
-
 }: Props) {
 
   const density =
     schema.layout?.density ??
     "default"
-console.log("FORM LAYOUT", schema.layout)
-  console.log("FORM DENSITY", density)
+
   const preset =
     schema.layout?.preset ??
     "default"
+
+  const setFieldValue = (
+    name: string,
+    updater: (
+      prev: Json
+    ) => Json
+  ) => {
+    onChange(
+      name,
+      updater(values[name])
+    )
+  }
 
   const render = (
     block: FormBlock
   ): React.ReactNode => {
 
+    if (block.layout?.hidden) {
+      return null
+    }
+
     if (block.type === "field") {
-
       return (
-
         <div
           key={block.id}
           className="form-grid-item"
           style={{
             gridColumn:
-              `span ${
-                block.layout?.span ?? 12
-              }`,
+              `span ${block.layout?.span ?? 12}`,
+            order: block.layout?.order,
           }}
         >
-
           <FieldRenderer
-
             field={block.field}
-
-            value={
-              values[
-                block.field.name
-              ]
-            }
-
+            value={values[block.field.name]}
             errors={
               fieldErrors[
                 block.field.name
               ] ?? []
             }
-
             onChange={(v) =>
               onChange(
                 block.field.name,
-                v,
+                v
               )
             }
+            setFieldValue={
+              setFieldValue
+            }
           />
-
         </div>
       )
     }
 
     return (
-
       <LayoutRenderer
         key={block.id}
         block={block}
@@ -127,13 +120,10 @@ console.log("FORM LAYOUT", schema.layout)
 
   const hasFieldErrors =
     Object.entries(fieldErrors)
-      .some(([key, value]) => {
-
-        return (
-          key !== "__all__" &&
-          value.length > 0
-        )
-      })
+      .some(([key, value]) =>
+        key !== "__all__" &&
+        value.length > 0
+      )
 
   const shouldShowFormError =
     !hasFieldErrors &&
@@ -143,7 +133,6 @@ console.log("FORM LAYOUT", schema.layout)
     )
 
   return (
-
     <form
       className={[
         "form",
@@ -152,34 +141,24 @@ console.log("FORM LAYOUT", schema.layout)
         `form-density-${density}`,
       ].join(" ")}
     >
-
       {shouldShowFormError && (
-
         <div className="form-error">
-
           {formError && (
-            <div>
-              {formError}
-            </div>
+            <div>{formError}</div>
           )}
 
           {globalErrors.map(
-            (
-              error,
-              index
-            ) => (
-
+            (error, index) => (
               <div key={index}>
                 {error}
               </div>
             )
           )}
-
         </div>
-
       )}
 
       {schema.blocks.map(render)}
+
       {actions.length > 0 && (
         <div className="form-actions">
           {actions.map(action => (
@@ -192,13 +171,9 @@ console.log("FORM LAYOUT", schema.layout)
                 "primary"
               }
             />
-
           ))}
-
         </div>
-
       )}
-
     </form>
   )
 }

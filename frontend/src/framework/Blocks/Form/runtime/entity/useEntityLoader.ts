@@ -71,15 +71,10 @@ type Params = {
 export function useEntityLoader({
 
   entity,
-
   mode,
-
   objectId,
-
   initial,
-
   state,
-
   onCapabilities,
 
 }: Params) {
@@ -114,37 +109,27 @@ export function useEntityLoader({
       objectId !== null
 
         ? "edit"
-
         : "create"
 
     const safeObjectId =
-
       objectId === null ||
       objectId === undefined
-
         ? undefined
 
         : objectId
-
     /* =====================================================
        EXEC
        ===================================================== */
-
     const exec = async () => {
-
       state.setLoading(true)
-
       state.setFormError(null)
-
       state.setFieldErrors({})
 
       const resolvedInitial = initial
-
         ? resolveWithContext(
             toPlainSnapshot(initial),
             runtime
           )
-
         : undefined
 
       console.log(
@@ -156,35 +141,26 @@ export function useEntityLoader({
         "🔥 RESOLVED INITIAL:",
         resolvedInitial
       )
-
       /* ===================================================
          API
          =================================================== */
 
       const api =
         await loadFormSchema(
-
           entity,
-
           apiMode,
-
           safeObjectId,
-
           query
         )
-
       if (cancelled) {
         return
       }
-
       /* ===================================================
          CAPABILITIES
          =================================================== */
-
       onCapabilities?.(
         api.capabilities
       )
-
       console.log(
         "🛡 FORM CAPABILITIES:",
         api.capabilities
@@ -193,7 +169,6 @@ export function useEntityLoader({
       /* ===================================================
          SCHEMA
          =================================================== */
-
       const ui =
         adaptFormSchema(api)
 
@@ -204,9 +179,7 @@ export function useEntityLoader({
          =================================================== */
 
       const finalInitial = {
-
         ...(resolvedInitial ?? {}),
-
         ...(ui.initial ?? {}),
       }
 
@@ -231,31 +204,20 @@ export function useEntityLoader({
        ===================================================== */
 
     const run = async () => {
-
       const trace =
         traceRuntime.current()
-
       try {
-
         if (trace) {
-
           await trace.step(
-
             "entity_form_load",
-
             exec,
-
             {
               entity,
-
               mode,
-
               objectId:
                 safeObjectId,
-
               queryKeys:
                 Object.keys(query),
-
               initialKeys:
                 initial
                   ? Object.keys(initial)
@@ -264,33 +226,25 @@ export function useEntityLoader({
           )
 
         } else {
-
           await exec()
         }
-
       } catch (e) {
-
         const err =
           parseApiError(e)
-
         if (!cancelled) {
-
           state.setFormError(
             err.message
           )
         }
-
       } finally {
 
         if (!cancelled) {
-
           state.setLoading(false)
         }
       }
     }
 
     run()
-
     return () => {
       cancelled = true
     }
@@ -298,13 +252,9 @@ export function useEntityLoader({
   }, [
 
     entity,
-
     mode,
-
     objectId,
-
     queryKey,
-
     initialKey,
   ])
 }
