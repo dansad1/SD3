@@ -15,7 +15,10 @@ const TicketTypeFormPage = page(
 
   "ticket_type:form",
 
-  <Container padding="lg">
+  <Container
+    maxWidth="xl"
+    padding="lg"
+  >
 
     <Section>
 
@@ -29,12 +32,15 @@ const TicketTypeFormPage = page(
 
           <Heading
             level={1}
-            text="📂 Тип заявки"
+            text="📂 Тип заявки: $ticket-type.name"
+            fallback="Новый тип заявки"
           />
 
           <Text
             value="Создание и редактирование типа заявки"
             variant="muted"
+            size="md"
+            weight="regular"
           />
 
         </Stack>
@@ -46,7 +52,7 @@ const TicketTypeFormPage = page(
         <Stack gap="sm">
 
           <Action
-            label="Назад к списку"
+            label="← Назад к списку"
             to="ticket_type:list"
             variant="secondary"
           />
@@ -59,16 +65,18 @@ const TicketTypeFormPage = page(
 
         <Form
 
-          entity="ticket-types"
+          entity="ticket-type"
 
-          ctx={{
-            id: "$query.id",
-          }}
-
-          fieldset="default"
+          objectId="$query.id"
 
           submit={{
+
             label: "Сохранить",
+
+            redirect: {
+              to: "ticket_type:list",
+            },
+
           }}
 
           formLayout={{
@@ -86,6 +94,7 @@ const TicketTypeFormPage = page(
     </Section>
 
   </Container>
+
 )
 
 export default TicketTypeFormPage

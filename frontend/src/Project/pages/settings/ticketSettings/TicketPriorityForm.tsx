@@ -15,7 +15,10 @@ const TicketPriorityFormPage = page(
 
   "ticket_priority:form",
 
-  <Container padding="lg">
+  <Container
+    maxWidth="xl"
+    padding="lg"
+  >
 
     <Section>
 
@@ -27,14 +30,17 @@ const TicketPriorityFormPage = page(
 
         <Stack gap="sm">
 
-          <Heading
-            level={1}
-            text="⚠️ Приоритет заявки"
-          />
+         <Heading
+  level={1}
+  text="⚠️ Приоритет заявки: $ticket_priorities.name"
+  fallback="Новый приоритет заявки"
+/>
 
           <Text
             value="Создание и редактирование приоритета заявки"
             variant="muted"
+            size="md"
+            weight="regular"
           />
 
         </Stack>
@@ -46,7 +52,7 @@ const TicketPriorityFormPage = page(
         <Stack gap="sm">
 
           <Action
-            label="Назад к списку"
+            label="← Назад к списку"
             to="ticket_priority:list"
             variant="secondary"
           />
@@ -59,16 +65,18 @@ const TicketPriorityFormPage = page(
 
         <Form
 
-          entity="ticket-priorities"
+          entity="ticket_priorities"
 
-          ctx={{
-            id: "$query.id",
-          }}
-
-          fieldset="default"
+          objectId="$query.id"
 
           submit={{
+
             label: "Сохранить",
+
+            redirect: {
+              to: "ticket_priority:list",
+            },
+
           }}
 
           formLayout={{
@@ -86,6 +94,7 @@ const TicketPriorityFormPage = page(
     </Section>
 
   </Container>
+
 )
 
 export default TicketPriorityFormPage

@@ -65,7 +65,7 @@ const TicketStatusListPage = page(
 
         <Table
 
-          entity="ticket-statuses"
+          entity="ticket_statuses"
 
           fieldset="default"
 

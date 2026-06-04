@@ -26,11 +26,11 @@ const UserFormPage = page(
         {/* ===================================== */}
 
         <Stack gap="sm">
-
-          <Heading
-            level={1}
-            text="Пользователь"
-          />
+<Heading
+  level={1}
+  text="Пользователь: $user.login"
+  fallback="Новый пользователь"
+/>
 
           <Text
   value="Создание и редактирование пользователя"

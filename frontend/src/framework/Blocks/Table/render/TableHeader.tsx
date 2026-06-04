@@ -34,75 +34,69 @@ export function TableHeader<T extends BaseRow>({
   const hasSelection = Boolean(selection)
   const hasRowActions = Boolean(rowActions?.length)
 
-  return (
-    <thead>
-      <tr>
-        {hasSelection && selection && (
-          <th style={{ width: 44 }}>
-            <input
-              type="checkbox"
-              checked={selection.isAllSelected}
-              onChange={() =>
-                selection.toggleAll()
-              }
-            />
-          </th>
-        )}
+ return (
+  <thead>
+    <tr>
+      {hasSelection && selection && (
+        <th style={{ width: 44 }}>
+          <input
+            type="checkbox"
+            checked={selection.isAllSelected}
+            onChange={() =>
+              selection.toggleAll()
+            }
+          />
+        </th>
+      )}
 
-        {fields.map((col) => {
-          const sortable =
-            enableSorting &&
-            Boolean(sort) &&
-            Boolean(col.sortable)
+      {fields.map((col) => {
+        const sortable =
+          enableSorting &&
+          Boolean(sort) &&
+          Boolean(col.sortable)
 
-          const direction =
-            getSortDirection(
-              sort,
-              col.key
-            )
-
-          return (
-            <th
-              key={col.key}
-              className={[
-                sortable
-                  ? "sortable"
-                  : "",
-                direction
-                  ? "active-sort"
-                  : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={() =>
-                sortable &&
-                sort &&
-                sort.set(col.key)
-              }
-            >
-              <span className="th-content">
-                {col.label}
-
-                {sortable && (
-                  <span className="sort-indicator">
-                    {direction === "asc"
-                      ? "▲"
-                      : direction === "desc"
-                      ? "▼"
-                      : "↕"}
-                  </span>
-                )}
-              </span>
-            </th>
+        const direction =
+          getSortDirection(
+            sort,
+            col.key
           )
-        })}
 
-        {hasRowActions && (
-          <th style={{ width: 160 }}>
-            Действия
+        return (
+          <th
+            key={col.key}
+            className={[
+              sortable && "sortable",
+              direction && "active-sort",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={() => {
+              if (sortable) {
+                sort?.set(col.key)
+              }
+            }}
+          >
+            <span className="th-content">
+  {col.label}
+
+  {direction && (
+    <span className="sort-indicator">
+      {direction === "asc"
+        ? "▲"
+        : "▼"}
+    </span>
+  )}
+</span>
           </th>
-        )}
-      </tr>
-    </thead>
-  )
+        )
+      })}
+
+      {hasRowActions && (
+        <th style={{ width: 160 }}>
+          Действия
+        </th>
+      )}
+    </tr>
+  </thead>
+)
 }

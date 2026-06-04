@@ -13,7 +13,7 @@ class TicketStatusEntity(
 
     model = TicketStatus
 
-    entity = "ticket-statuses"
+    entity = "ticket_statuses"
 
     list_display = [
 

@@ -1,83 +1,48 @@
-# =========================================================
-# backend/engine/list/Base/sort.py
-# =========================================================
-
 def apply_sort(ctx):
 
-    raw = ctx.request.GET.get(
-        "sort"
-    )
+    raw = ctx.request.GET.get("sort")
 
-    if (
-        not raw
-        or ":" not in raw
-    ):
+    if not raw:
         return
 
-    # =====================================================
-    # PARSE
-    # =====================================================
+    if raw.startswith("-"):
+        key = raw[1:]
+        direction = "desc"
+    else:
+        key = raw
+        direction = "asc"
 
-    key, direction = raw.split(
-        ":",
-        1,
+    field = (
+        (ctx.field_map or {})
+        .get(key)
     )
 
-    if direction not in {
-        "asc",
-        "desc",
-    }:
-        return
+    if field:
 
-    # =====================================================
-    # LIST DISPLAY VALIDATION
-    # =====================================================
+        custom_sort = getattr(
+            field.field_type,
+            "apply_sort",
+            None,
+        )
 
-    allowed = set(
-        ctx.entity.list_display
-        or []
+        if callable(custom_sort):
+
+            qs = custom_sort(
+                ctx.qs,
+                field,
+                direction,
+            )
+
+            if qs is not None:
+                ctx.qs = qs
+                return
+
+    order_key = (
+        key
+        if direction == "asc"
+        else f"-{key}"
     )
 
-    if (
-        allowed
-        and key not in allowed
-    ):
-        return
-
-    # =====================================================
-    # FIELD MAP
-    # =====================================================
-
-    field_map = (
-        ctx.field_map
-        or {}
+    ctx.qs = ctx.qs.order_by(
+        order_key
     )
-
-    field = field_map.get(key)
-
-    if not field:
-        return
-
-    # =====================================================
-    # SORTABLE VALIDATION
-    # =====================================================
-
-    if not getattr(
-        field,
-        "sortable",
-        True,
-    ):
-        return
-
-    # =====================================================
-    # APPLY FIELD SORT
-    # =====================================================
-
-    qs = field.field_type.apply_sort(
-        ctx.qs,
-        field,
-        direction,
-    )
-
-    if qs is not None:
-        ctx.qs = qs

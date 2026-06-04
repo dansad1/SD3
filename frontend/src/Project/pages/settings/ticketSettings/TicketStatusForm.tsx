@@ -15,7 +15,10 @@ const TicketStatusFormPage = page(
 
   "ticket_status:form",
 
-  <Container padding="lg">
+  <Container
+    maxWidth="xl"
+    padding="lg"
+  >
 
     <Section>
 
@@ -29,12 +32,15 @@ const TicketStatusFormPage = page(
 
           <Heading
             level={1}
-            text="📊 Статус заявки"
+            text="📊 Статус заявки: $ticket_statuses.name"
+            fallback="Новый статус заявки"
           />
 
           <Text
             value="Создание и редактирование статуса заявки"
             variant="muted"
+            size="md"
+            weight="regular"
           />
 
         </Stack>
@@ -46,7 +52,7 @@ const TicketStatusFormPage = page(
         <Stack gap="sm">
 
           <Action
-            label="Назад к списку"
+            label="← Назад к списку"
             to="ticket_status:list"
             variant="secondary"
           />
@@ -59,16 +65,18 @@ const TicketStatusFormPage = page(
 
         <Form
 
-          entity="ticket-statuses"
+          entity="ticket_statuses"
 
-          ctx={{
-            id: "$query.id",
-          }}
-
-          fieldset="default"
+          objectId="$query.id"
 
           submit={{
+
             label: "Сохранить",
+
+            redirect: {
+              to: "ticket_status:list",
+            },
+
           }}
 
           formLayout={{
@@ -86,6 +94,7 @@ const TicketStatusFormPage = page(
     </Section>
 
   </Container>
+
 )
 
 export default TicketStatusFormPage

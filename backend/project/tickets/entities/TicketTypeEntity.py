@@ -13,7 +13,7 @@ class TicketTypeEntity(
 
     model = TicketType
 
-    entity = "ticket-types"
+    entity = "ticket-type"
 
     list_display = [
         "name",

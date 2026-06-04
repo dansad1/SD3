@@ -15,7 +15,10 @@ const CompanyFieldFormPage = page(
 
   "company_field:form",
 
-  <Container padding="lg">
+  <Container
+    maxWidth="xl"
+    padding="lg"
+  >
 
     <Section>
 
@@ -29,13 +32,16 @@ const CompanyFieldFormPage = page(
 
           <Heading
             level={1}
-            text="Поле компании"
+            text="Поле компании: $company_field.name"
+            fallback="Новое поле компании"
           />
 
-        <Text
-  value="Создание и редактирование поля компании"
-  variant="muted"
-/>
+          <Text
+            value="Создание и редактирование поля компании"
+            variant="muted"
+            size="md"
+            weight="regular"
+          />
 
         </Stack>
 
@@ -46,7 +52,7 @@ const CompanyFieldFormPage = page(
         <Stack gap="sm">
 
           <Action
-            label="Назад к списку"
+            label="← Назад к списку"
             to="company_field:list"
             variant="secondary"
           />
@@ -61,14 +67,16 @@ const CompanyFieldFormPage = page(
 
           entity="company-fields"
 
-          ctx={{
-            id: "$query.id",
-          }}
-
-          fieldset="default"
+          objectId="$query.id"
 
           submit={{
+
             label: "Сохранить",
+
+            redirect: {
+              to: "company_field:list",
+            },
+
           }}
 
           formLayout={{
@@ -86,6 +94,7 @@ const CompanyFieldFormPage = page(
     </Section>
 
   </Container>
+
 )
 
 export default CompanyFieldFormPage

@@ -30,9 +30,10 @@ const RoleFormPage = page(
         <Stack gap="sm">
 
           <Heading
-            level={1}
-            text="Роль"
-          />
+  level={1}
+  text="Роль: $roles.name"
+  fallback="Новая роль"
+/>
 
           <Text
             value="Создание и редактирование роли"

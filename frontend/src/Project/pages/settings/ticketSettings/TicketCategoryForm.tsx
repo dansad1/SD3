@@ -15,7 +15,10 @@ const TicketCategoryFormPage = page(
 
   "ticket_category:form",
 
-  <Container padding="lg">
+  <Container
+    maxWidth="xl"
+    padding="lg"
+  >
 
     <Section>
 
@@ -29,12 +32,15 @@ const TicketCategoryFormPage = page(
 
           <Heading
             level={1}
-            text="📂 Категория заявки"
+            text="📂 Категория заявки: $ticket_category.name"
+            fallback="Новая категория заявки"
           />
 
           <Text
             value="Создание и редактирование категории заявки"
             variant="muted"
+            size="md"
+            weight="regular"
           />
 
         </Stack>
@@ -46,7 +52,7 @@ const TicketCategoryFormPage = page(
         <Stack gap="sm">
 
           <Action
-            label="Назад к списку"
+            label="← Назад к списку"
             to="ticket_category:list"
             variant="secondary"
           />
@@ -61,14 +67,16 @@ const TicketCategoryFormPage = page(
 
           entity="ticket-categories"
 
-          ctx={{
-            id: "$query.id",
-          }}
-
-          fieldset="default"
+          objectId="$query.id"
 
           submit={{
+
             label: "Сохранить",
+
+            redirect: {
+              to: "ticket_category:list",
+            },
+
           }}
 
           formLayout={{
@@ -86,6 +94,7 @@ const TicketCategoryFormPage = page(
     </Section>
 
   </Container>
+
 )
 
 export default TicketCategoryFormPage

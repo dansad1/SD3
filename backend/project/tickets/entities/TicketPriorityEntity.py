@@ -13,7 +13,7 @@ class TicketPriorityEntity(
 
     model = TicketPriority
 
-    entity = "ticket-priorities"
+    entity = "ticket_priorities"
 
     list_display = [
         "name",

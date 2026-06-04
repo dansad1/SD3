@@ -65,7 +65,7 @@ const TicketPriorityListPage = page(
 
         <Table
 
-          entity="ticket-priorities"
+          entity="ticket_priorities"
 
           fieldset="default"
 
