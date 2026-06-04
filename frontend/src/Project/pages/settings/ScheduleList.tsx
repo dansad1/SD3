@@ -59,19 +59,12 @@ const ScheduleListPage = page(
         <Table
 
           entity="schedule"
-
           features={{
-
             toolbar: true,
-
             search: true,
-
             selection: false,
-
             rowClick: true,
-
             rowActions: true,
-
             visibleFields: true,
 
           }}

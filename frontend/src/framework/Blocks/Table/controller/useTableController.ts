@@ -24,14 +24,45 @@ export function useTableController<T extends BaseRow>(
   const pageApi = usePageApi()
 
   const query = useTableQueryRuntime()
-  const { runAction, isRunning } = useActionExecutor()
+
+  const { runAction, isRunning } =
+    useActionExecutor()
 
   const [visibleFieldsOpen, setVisibleFieldsOpen] =
     useState(false)
 
+  const sort = {
+    key: query.sort?.startsWith("-")
+      ? query.sort.slice(1)
+      : query.sort ?? "",
+
+    direction: (
+      query.sort?.startsWith("-")
+        ? "desc"
+        : "asc"
+    ) as "asc" | "desc",
+
+    set: (key: string) => {
+      const current = query.sort
+
+      if (current === key) {
+        query.setSort(`-${key}`)
+        return
+      }
+
+      if (current === `-${key}`) {
+        query.setSort(key)
+        return
+      }
+
+      query.setSort(key)
+    },
+  }
+
   // IMPORTANT:
   // row-level expressions must stay unresolved here
   // because $row.* is unavailable on page runtime level
+
   const resolvedBlock = useResolvedRuntimeProps({
     ...block,
 
@@ -45,19 +76,29 @@ export function useTableController<T extends BaseRow>(
 
   const baseCtx: TableFeatureContext<T> = {
     block: resolvedBlock,
-    entity: resolvedBlock.entity ?? "",
-    fieldset: resolvedBlock.fieldset ?? "default",
+
+    entity:
+      resolvedBlock.entity ?? "",
+
+    fieldset:
+      resolvedBlock.fieldset ?? "default",
 
     query,
 
     listParams: {
       page: query.page,
+
+      sort: query.sort,
+
       ...(resolvedBlock.filter ?? {}),
     },
 
     pageApi,
 
-    ctrl: {},
+    ctrl: {
+      sort,
+    },
+
     toolbar: {},
 
     actions: {
@@ -68,56 +109,79 @@ export function useTableController<T extends BaseRow>(
     modals: {
       visibleFields: {
         isOpen: visibleFieldsOpen,
-        open: () => setVisibleFieldsOpen(true),
-        close: () => setVisibleFieldsOpen(false),
+
+        open: () =>
+          setVisibleFieldsOpen(true),
+
+        close: () =>
+          setVisibleFieldsOpen(false),
       },
     },
   }
 
-  const features = collectTableFeatures<T>(
-    resolvedBlock
-  )
+  const features =
+    collectTableFeatures<T>(
+      resolvedBlock
+    )
 
-  const ctxBefore = applyTableFeatures(
-    baseCtx,
-    features,
-    "beforeList"
-  )
+  const ctxBefore =
+    applyTableFeatures(
+      baseCtx,
+      features,
+      "beforeList"
+    )
 
-  const resolvedParams = useResolvedRuntimeProps(
-    ctxBefore.listParams
-  )
+  const resolvedParams =
+    useResolvedRuntimeProps(
+      ctxBefore.listParams
+    )
 
-  const entityList = useTableDataRuntime<T>(
-    resolvedBlock.entity ?? "__disabled__",
-    resolvedParams,
-    {
-      enabled:
-        !isInlineMode &&
-        !!resolvedBlock.entity,
-    }
-  )
+  const entityList =
+    useTableDataRuntime<T>(
+      resolvedBlock.entity ??
+        "__disabled__",
 
-  const inlineList = useTableData<T>(
-    {
-      entity: resolvedBlock.entity,
-      data: resolvedBlock.data,
-    },
-    resolvedParams
-  )
+      resolvedParams,
 
-  const list = isInlineMode
-    ? inlineList
-    : entityList
+      {
+        enabled:
+          !isInlineMode &&
+          !!resolvedBlock.entity,
+      }
+    )
 
-  const ctxAfter = applyTableFeatures(
-    {
-      ...ctxBefore,
-      list,
-    },
-    features,
-    "afterList"
-  )
+  const inlineList =
+    useTableData<T>(
+      {
+        entity:
+          resolvedBlock.entity,
+
+        data:
+          resolvedBlock.data,
+      },
+
+      resolvedParams
+    )
+
+  const list =
+    isInlineMode
+      ? inlineList
+      : entityList
+
+  const ctxAfter =
+    applyTableFeatures(
+      {
+        ...ctxBefore,
+        list,
+      },
+      features,
+      "afterList"
+    )
+
+  ctxAfter.ctrl = {
+    ...ctxAfter.ctrl,
+    sort,
+  }
 
   return ctxAfter
 }

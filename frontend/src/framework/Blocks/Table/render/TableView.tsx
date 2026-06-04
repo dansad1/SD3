@@ -1,6 +1,6 @@
 // src/framework/Blocks/Table/render/TableView.tsx
 
-import Table from "@/framework/components/ui/Table"
+import Table from "@/framework/Blocks/Table/render/Table"
 import VisibleFieldsModal from "@/framework/components/modals/VisibleFieldsModal/VisibleFieldsModal"
 import { BlockToolbar } from "@/framework/components/ToolBars/ListToolbar"
 

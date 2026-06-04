@@ -324,6 +324,7 @@ export type TableDSL = {
   selection?: boolean | `$${string}`
   rowClick?: boolean | `$${string}`
   rowActions?: boolean | `$${string}`
+  sorting?: boolean | `$${string}`
   visibleFields?: boolean | `$${string}`
 }
   toolbar?: {

@@ -44,6 +44,8 @@ export type TableListData<T extends BaseRow> = {
 
   loading: boolean
 
+  error?: string | null
+
   page: {
     page: number
     pages: number

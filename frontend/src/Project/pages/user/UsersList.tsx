@@ -75,6 +75,7 @@ const UsersListPage = page(
             selection: true,
             rowClick: true,
             rowActions: true,
+            sorting: true
           }}
 
           /*

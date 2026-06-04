@@ -509,6 +509,8 @@ table: {
     selection: "boolean" as Primitive,
     rowClick: "boolean" as Primitive,
     rowActions: "boolean" as Primitive,
+    sorting: "boolean" as Primitive,
+
     visibleFields: "boolean" as Primitive,
   },
 

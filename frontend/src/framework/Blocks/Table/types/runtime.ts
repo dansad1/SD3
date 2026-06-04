@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import type { Json } from "@/framework/types/json"
+import type { ApiPageBlock } from "@/framework/page/PageSchema"
 
 /* ================= BASE ROW ================= */
 
@@ -18,8 +19,19 @@ export type TableCapabilities = {
 
 /* ================= FIELD META ================= */
 
+export type TableField = {
+  key: string
+  label: string
+
+  sortable?: boolean
+  hidden?: boolean
+
+  view?: ApiPageBlock
+}
+
 export interface ListFieldMeta {
   key: string
+
   label: ReactNode
 
   width?: number | string
@@ -28,7 +40,10 @@ export interface ListFieldMeta {
   clickable?: boolean
 
   onClick?: () => void
+
+  cell?: ApiPageBlock
 }
+
 
 /* ================= ROW ACTION ================= */
 
