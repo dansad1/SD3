@@ -169,7 +169,6 @@ export const Structural = {
 
     
   },
-// language.ts
 
 menu: {
   props: {
@@ -204,6 +203,29 @@ menu: {
 
     wrap: "boolean" as Primitive,
   },
+},
+accordion: {
+  props: {
+    multiple: "boolean" as Primitive,
+
+    defaultOpen: [
+      "string",
+      "array",
+    ] as const,
+  },
+
+  items: [
+    {
+      key: "string" as Primitive,
+
+      title: [
+        "string",
+        "block",
+      ] as const,
+
+      blocks: "array" as Primitive,
+    },
+  ] as const,
 },
 } as const
 /* =========================

@@ -85,6 +85,17 @@ export const Menu: DSLComponent<MenuDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
+export type AccordionDSL = {
+  multiple?: boolean | `$${string}`
+  defaultOpen?: (string | `$${string}` | unknown[] | `$${string}`) | `$${string}`
+}
+
+export const Accordion: DSLComponent<AccordionDSL> = (props) =>
+  Block(
+    { __type: "accordion", ...props },
+    normalizeChildren(props.children)
+  )
+
 export type HeadingDSL = {
   text?: string | `$${string}`
   fallback?: string | `$${string}`
