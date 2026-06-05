@@ -6,9 +6,9 @@ import {
   Section,
   Stack,
   Heading,
-  Text,
   Table,
   Action,
+  If,
 } from "@/framework"
 
 const RoleListPage = page(
@@ -21,10 +21,6 @@ const RoleListPage = page(
 
       <Stack gap="lg">
 
-        {/* ================================= */}
-        {/* HEADER                            */}
-        {/* ================================= */}
-
         <Stack gap="sm">
 
           <Heading
@@ -34,17 +30,19 @@ const RoleListPage = page(
 
         </Stack>
 
-        {/* ================================= */}
-        {/* CONTENT                           */}
-        {/* ================================= */}
-
         <Stack gap="md">
 
-          <Action
-            label="Добавить роль"
-            to="roles:form"
-            variant="primary"
-          />
+          <If
+            when="${can['role.create']}"
+          >
+
+            <Action
+              label="Добавить роль"
+              to="roles:form"
+              variant="primary"
+            />
+
+          </If>
 
           <Table
 

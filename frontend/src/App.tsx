@@ -7,21 +7,38 @@ import { TraceDevtools } from "@/framework/trace/Devtools"
 
 import { ToastProvider } from "@/framework/page/runtime/effects/handlers/toast/ToastProvider"
 import { ToastViewport } from "@/framework/page/runtime/effects/handlers/toast/ToastViewport"
+import { AuthCapabilitiesBoundary } from "./framework/security/AuthCapabilitiesBoundary"
+
+
 
 export default function App() {
+
   return (
+
     <FrameworkErrorBoundary>
+
       <TraceDevtools />
 
       <AuthProvider>
-        <ToastProvider>
-          <SurfaceRoot>
-            <AppRoutes />
-          </SurfaceRoot>
 
-          <ToastViewport />
-        </ToastProvider>
+        <AuthCapabilitiesBoundary>
+
+          <ToastProvider>
+
+            <SurfaceRoot>
+
+              <AppRoutes />
+
+            </SurfaceRoot>
+
+            <ToastViewport />
+
+          </ToastProvider>
+
+        </AuthCapabilitiesBoundary>
+
       </AuthProvider>
+
     </FrameworkErrorBoundary>
   )
 }

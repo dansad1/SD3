@@ -2,6 +2,7 @@
 
 import type { Me } from "../auth/auth"
 import type { ActionDescriptor } from "../Blocks/Action/types"
+import type { BlockCapabilities } from "../Blocks/BlockType"
 
 export type BindValue = {
   bind: string
@@ -45,6 +46,12 @@ export type PageRuntimeContext = {
   user?: Me | null
 
   me?: Me | null
+
+  // =====================================================
+  // CAPABILITIES
+  // =====================================================
+
+  can: BlockCapabilities
 }
 
 export type BindScope = {

@@ -135,8 +135,8 @@ class BaseEntity:
             raise PermissionDenied
 
     def get_capabilities_for_user(
-        self,
-        request,
+            self,
+            request,
     ):
 
         return {
@@ -146,15 +146,11 @@ class BaseEntity:
                 action,
             )
 
-            for action in [
-                "list",
-                "view",
-                "create",
-                "edit",
-                "delete",
-            ]
+            for action in (
+                    self.capabilities
+                    or {}
+            ).keys()
         }
-
     # =====================================================
     # QUERYSET
     # =====================================================

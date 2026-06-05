@@ -5,6 +5,9 @@ export type Me = {
   username?: string
   email?: string
   role?: string | null // 👈 ДОБАВЬ
-
+capabilities: Record<
+    string,
+    boolean
+  >
   permissions: string[] // 👈 лучше сделать обязательным
 }
