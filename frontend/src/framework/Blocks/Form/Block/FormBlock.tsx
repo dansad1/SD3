@@ -135,6 +135,11 @@ export function FormBlock({
       "form"
     )
 
+  const inlineActions =
+    config.formType === "action"
+      ? formActions
+      : []
+
   // =====================================================
   // SYNC FORM VALUES → PAGE RUNTIME
   // =====================================================
@@ -223,7 +228,7 @@ export function FormBlock({
             }
 
             actions={
-              formActions
+              inlineActions
             }
           />
 

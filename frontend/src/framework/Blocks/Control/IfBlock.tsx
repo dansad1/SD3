@@ -1,15 +1,23 @@
-import { usePageApi } from "@/framework/page/context/usePageApi"
-import { BlockRenderer } from "../Registry/BlockRenderer"
+import { usePageApi }
+  from "@/framework/page/context/usePageApi"
 
-import type { IfBlock as IfBlockType } from "./types"
+import { BlockRenderer }
+  from "../Registry/BlockRenderer"
 
-import { resolvePath } from "@/framework/bind/expression/resolvePath"
-import { evalExpression } from "@/framework/bind/expression/evalExpression"
+import type { IfBlock as IfBlockType }
+  from "./types"
+
+import { resolvePath }
+  from "@/framework/bind/expression/resolvePath"
+
+import { evalExpression }
+  from "@/framework/bind/expression/evalExpression"
 
 function resolveCondition(
   when: unknown,
   scope: Record<string, unknown>
 ): boolean {
+
   if (typeof when === "boolean") {
     return when
   }
@@ -20,12 +28,22 @@ function resolveCondition(
 
   const expr = when.trim()
 
-  if (!expr) return false
+  if (!expr) {
+    return false
+  }
 
-  if (expr === "true") return true
-  if (expr === "false") return false
+  if (expr === "true") {
+    return true
+  }
 
-  if (expr.startsWith("${") && expr.endsWith("}")) {
+  if (expr === "false") {
+    return false
+  }
+
+  if (
+    expr.startsWith("${") &&
+    expr.endsWith("}")
+  ) {
     return !!evalExpression(
       expr.slice(2, -1),
       scope
@@ -49,25 +67,41 @@ function resolveCondition(
   return !!expr
 }
 
-export function IfBlock({ block }: { block: IfBlockType }) {
-  const page = usePageApi()
-  const data = page.getData() as Record<string, unknown>
+export function IfBlock({
+  block,
+}: {
+  block: IfBlockType
+}) {
 
-  const condition = resolveCondition(
-    block.when,
-    data
-  )
+  const page =
+    usePageApi()
 
-  if (!condition) return null
+  const scope =
+    page.getRuntimeContext()
+
+  const condition =
+    resolveCondition(
+      block.when,
+      scope as Record<string, unknown>
+    )
+
+  if (!condition) {
+    return null
+  }
 
   return (
-  <>
-    {(block.blocks ?? []).map((child, index) => (
-      <BlockRenderer
-        key={child.id ?? `if-child-${index}`}
-        block={child}
-      />
-    ))}
-  </>
-)
+    <>
+      {(block.blocks ?? []).map(
+        (child, index) => (
+          <BlockRenderer
+            key={
+              child.id ??
+              `if-child-${index}`
+            }
+            block={child}
+          />
+        )
+      )}
+    </>
+  )
 }

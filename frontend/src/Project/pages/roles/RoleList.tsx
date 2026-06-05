@@ -32,18 +32,15 @@ const RoleListPage = page(
 
         <Stack gap="md">
 
-          <If
-            when="${can['role.create']}"
-          >
+          <If when="$can.role.create">
 
-            <Action
-              label="Добавить роль"
-              to="roles:form"
-              variant="primary"
-            />
+  <Action
+    label="Добавить роль"
+    to="role:form"
+    variant="primary"
+  />
 
-          </If>
-
+</If>
           <Table
 
             entity="roles"

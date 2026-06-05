@@ -14,6 +14,7 @@ export async function loadMe(): Promise<Me> {
     return {
       authenticated: false,
       permissions: [],
+      capabilities: {},
     }
   }
 
@@ -28,5 +29,8 @@ export async function loadMe(): Promise<Me> {
     role: data.user?.role,
 
     permissions: data.permissions ?? [],
+
+    capabilities:
+      data.capabilities ?? {},
   }
 }

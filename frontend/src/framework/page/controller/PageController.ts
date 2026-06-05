@@ -42,11 +42,6 @@ import { usePageNavigation }
 
 
 export function usePageController() {
-
-  // =====================================================
-  // RUNTIMES
-  // =====================================================
-
   const actionsRuntime =
     usePageActionsRuntime()
 
@@ -67,10 +62,6 @@ export function usePageController() {
     query,
   } = usePageRouterRuntime()
 
-  // =====================================================
-  // ACTIONS
-  // =====================================================
-
   const {
     registerHandler,
     unregisterHandler,
@@ -78,82 +69,45 @@ export function usePageController() {
     actions,
   } = actionsRuntime
 
-  // =====================================================
-  // AUTH
-  // =====================================================
-
   const auth =
     useContext(AuthContext)
 
   const user =
     auth?.me ?? null
 
-  // =====================================================
-  // RUNTIME CONTEXT
-  // =====================================================
-
   const runtimeContext = useMemo(() => {
-
     return buildPageRuntimeContext(
-
       params,
-
       query,
-
       {
         ...dataStore.data,
-
         ...dataStore.runtimeData,
       },
-
       actions,
-
       user,
     )
-
   }, [
-
     params,
     query,
-
     dataStore.data,
     dataStore.runtimeData,
-
     actions,
-
     user,
   ])
 
-  /*
-    navigationRuntime НЕ должен зависеть
-    от page data иначе можно поймать
-    infinite loop при form sync
-  */
-
   const navigationContext = useMemo(() => {
-
     return buildPageRuntimeContext(
-
       params,
-
       query,
-
       {},
-
       [],
-
       user,
     )
-
   }, [
     params,
     query,
     user,
   ])
-
-  // =====================================================
-  // NAVIGATION
-  // =====================================================
 
   const navigationRuntime =
     usePageNavigation(
@@ -164,10 +118,6 @@ export function usePageController() {
     navigate,
   } = navigationRuntime
 
-  // =====================================================
-  // DIRTY
-  // =====================================================
-
   const {
     setDirty,
     unregisterDirty,
@@ -175,40 +125,21 @@ export function usePageController() {
     pageDirty,
   } = dirtyRuntime
 
-  // =====================================================
-  // DATA
-  // =====================================================
-
   const {
     setDataKey,
     getData,
     setRuntimeData,
   } = dataStore
 
-  // =====================================================
-  // EFFECTS
-  // =====================================================
-
   const effectsRuntime =
     usePageEffectsApi({
-
       navigate,
-
       setDataKey,
-
       emit: eventBus.emit,
     })
 
-  // =====================================================
-  // API
-  // =====================================================
-
   const api: PageApi = useMemo(
     () => ({
-
-      // ===============================================
-      // ACTIONS
-      // ===============================================
 
       registerHandler,
 
@@ -218,15 +149,7 @@ export function usePageController() {
 
       navigate,
 
-      // ===============================================
-      // LOADING
-      // ===============================================
-
       loading,
-
-      // ===============================================
-      // DIRTY
-      // ===============================================
 
       setDirty,
 
@@ -234,19 +157,14 @@ export function usePageController() {
 
       getPageDirty,
 
-      // ===============================================
-      // DATA
-      // ===============================================
-
       setDataKey,
 
       getData,
 
-      setRuntimeData,
+      getRuntimeContext: () =>
+        runtimeContext,
 
-      // ===============================================
-      // EFFECTS
-      // ===============================================
+      setRuntimeData,
 
       runEffect:
         effectsRuntime.runEffect,
@@ -254,130 +172,77 @@ export function usePageController() {
       runEffects:
         effectsRuntime.runEffects,
 
-      // ===============================================
-      // EVENTS
-      // ===============================================
-
       emit:
         eventBus.emit,
 
       on:
         eventBus.on,
 
-      // ===============================================
-      // ROUTER
-      // ===============================================
-
       query,
 
       params,
 
-      getQuery: () => query,
+      getQuery: () =>
+        query,
 
-      getParams: () => params,
+      getParams: () =>
+        params,
 
     }),
     [
-
       registerHandler,
-
       unregisterHandler,
-
       run,
-
       navigate,
-
       loading,
-
       setDirty,
-
       unregisterDirty,
-
       getPageDirty,
-
       setDataKey,
-
       getData,
-
+      runtimeContext,
       setRuntimeData,
-
       effectsRuntime.runEffect,
-
       effectsRuntime.runEffects,
-
       eventBus.emit,
-
       eventBus.on,
-
       query,
-
       params,
     ]
   )
 
-  // =====================================================
-  // DEBUG
-  // =====================================================
-
   usePageDebug({
-
     runtimeContext,
-
     actions,
-
     registerHandler,
-
     unregisterHandler,
-
     run,
-
     pageDirty,
-
     setDirty,
-
     unregisterDirty,
-
     getPageDirty,
-
     data:
       dataStore.data,
-
     setDataKey,
-
     getData,
-
     start:
       loading.start,
-
     finish:
       loading.finish,
-
     isRunning:
       loading.isRunning,
-
     emit:
       eventBus.emit,
-
     on:
       eventBus.on,
-
     effectsRuntime,
-
     api,
   })
 
-  // =====================================================
-  // RETURN
-  // =====================================================
-
   return {
-
     api,
-
     actions,
-
     pageDirty,
-
     runtimeContext,
   }
 }

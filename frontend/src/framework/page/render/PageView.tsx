@@ -18,7 +18,6 @@ import { PageFooter }
 import { useActionExecutor }
   from "@/framework/Blocks/Action/executor/useActionExecutor"
 
-
 export function PageView({
 
   schema,
@@ -34,6 +33,7 @@ export function PageView({
   physicalTree: PhysicalNode | null
 
   actions: ActionDescriptor[]
+
 }) {
 
   // =====================================================
@@ -97,30 +97,30 @@ export function PageView({
   // =====================================================
 
   const content = (
-    <>
+  <>
 
-      {schema.title && (
-        <h1>{schema.title}</h1>
-      )}
+    {schema.title && (
+      <h1>{schema.title}</h1>
+    )}
 
-      {physicalTree && (
-        <PhysicalRenderer
-          node={physicalTree}
+    {physicalTree && (
+      <PhysicalRenderer
+        node={physicalTree}
+      />
+    )}
+
+    {showFooter &&
+      pageReady &&
+      actions.length > 0 && (
+
+        <PageFooter
+          actions={actions}
+          run={runAction}
         />
-      )}
+    )}
 
-      {showFooter &&
-        pageReady &&
-        actions.length > 0 && (
-
-          <PageFooter
-            actions={actions}
-            run={runAction}
-          />
-      )}
-
-    </>
-  )
+  </>
+)
 
   // =====================================================
   // RENDER
@@ -143,5 +143,6 @@ export function PageView({
       )}
 
     </div>
+
   )
 }

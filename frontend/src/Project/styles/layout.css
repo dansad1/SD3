@@ -103,17 +103,12 @@
    ========================================================= */
 
 .page-footer {
-
   display: flex;
-
   justify-content: flex-end;
+  gap: 8px;
 
-  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
 
-  margin-top: 24px;
-
-  padding-top: 16px;
-
-  border-top:
-    1px solid var(--border-subtle);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
