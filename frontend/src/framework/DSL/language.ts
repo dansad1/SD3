@@ -504,6 +504,11 @@ table: {
     searchableFields: "array" as Primitive,
     selectionActions: "array" as Primitive,
 
+    rowVariant: [
+      "default",
+      "accordion",
+    ] as const,
+
     rowClick: [
       "boolean",
       {

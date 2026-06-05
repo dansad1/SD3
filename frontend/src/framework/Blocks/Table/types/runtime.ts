@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import type { Json } from "@/framework/types/json"
 import type { ApiPageBlock } from "@/framework/page/PageSchema"
+import type { TableRowVariant } from "./api"
 
 /* ================= BASE ROW ================= */
 
@@ -95,4 +96,5 @@ export interface TableCtrlBase<T extends BaseRow> {
   onRowAction?: (key: string, row: T) => void
   onRowClick?: (row: T) => void
   onToolbarAction?: (key: string) => void
+  rowVariant?: TableRowVariant
 }

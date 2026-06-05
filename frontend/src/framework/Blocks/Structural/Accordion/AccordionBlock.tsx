@@ -1,8 +1,28 @@
-import type { AccordionBlock } from "./types"
-import { useAccordionController } from "./useAccordionController"
-import { AccordionView } from "./AccordionView"
+import { AccordionView }
+  from "./AccordionView"
 
-export function AccordionBlock({ block }: { block: AccordionBlock }) {
-  const vm = useAccordionController(block)
-  return <AccordionView {...vm} />
+import type {
+  AccordionBlock,
+} from "./types"
+
+import {
+  useAccordionController,
+} from "./useAccordionController"
+
+export function AccordionBlock({
+  block,
+}: {
+  block: AccordionBlock
+}) {
+
+  const ctrl =
+    useAccordionController(
+      block
+    )
+
+  return (
+    <AccordionView
+      ctrl={ctrl}
+    />
+  )
 }

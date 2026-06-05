@@ -25,11 +25,15 @@ export function useTableController<T extends BaseRow>(
 
   const query = useTableQueryRuntime()
 
-  const { runAction, isRunning } =
-    useActionExecutor()
+  const {
+    runAction,
+    isRunning,
+  } = useActionExecutor()
 
-  const [visibleFieldsOpen, setVisibleFieldsOpen] =
-    useState(false)
+  const [
+    visibleFieldsOpen,
+    setVisibleFieldsOpen,
+  ] = useState(false)
 
   const sort = {
     key: query.sort?.startsWith("-")
@@ -43,14 +47,17 @@ export function useTableController<T extends BaseRow>(
     ) as "asc" | "desc",
 
     set: (key: string) => {
-      const current = query.sort
+      const current =
+        query.sort
 
       if (current === key) {
         query.setSort(`-${key}`)
         return
       }
 
-      if (current === `-${key}`) {
+      if (
+        current === `-${key}`
+      ) {
         query.setSort(key)
         return
       }
@@ -59,29 +66,37 @@ export function useTableController<T extends BaseRow>(
     },
   }
 
-  // IMPORTANT:
-  // row-level expressions must stay unresolved here
-  // because $row.* is unavailable on page runtime level
+  const resolvedBlock =
+    useResolvedRuntimeProps({
+      ...block,
 
-  const resolvedBlock = useResolvedRuntimeProps({
-    ...block,
+      rowClick:
+        block.rowClick,
 
-    rowClick: block.rowClick,
-    rowActions: block.rowActions,
-    bulkActions: block.bulkActions,
-  }) as TableApiBlock
+      rowActions:
+        block.rowActions,
+
+      bulkActions:
+        block.bulkActions,
+    }) as TableApiBlock
 
   const isInlineMode =
-    resolvedBlock.data !== undefined
+    resolvedBlock.data !==
+    undefined
 
-  const baseCtx: TableFeatureContext<T> = {
-    block: resolvedBlock,
+  const baseCtx:
+    TableFeatureContext<T> = {
+
+    block:
+      resolvedBlock,
 
     entity:
-      resolvedBlock.entity ?? "",
+      resolvedBlock.entity ??
+      "",
 
     fieldset:
-      resolvedBlock.fieldset ?? "default",
+      resolvedBlock.fieldset ??
+      "default",
 
     query,
 
@@ -90,13 +105,19 @@ export function useTableController<T extends BaseRow>(
 
       sort: query.sort,
 
-      ...(resolvedBlock.filter ?? {}),
+      ...(resolvedBlock.filter ??
+        {}),
     },
 
     pageApi,
 
     ctrl: {
+
       sort,
+
+      rowVariant:
+        resolvedBlock.rowVariant,
+
     },
 
     toolbar: {},
@@ -108,13 +129,19 @@ export function useTableController<T extends BaseRow>(
 
     modals: {
       visibleFields: {
-        isOpen: visibleFieldsOpen,
+
+        isOpen:
+          visibleFieldsOpen,
 
         open: () =>
-          setVisibleFieldsOpen(true),
+          setVisibleFieldsOpen(
+            true
+          ),
 
         close: () =>
-          setVisibleFieldsOpen(false),
+          setVisibleFieldsOpen(
+            false
+          ),
       },
     },
   }
@@ -180,7 +207,11 @@ export function useTableController<T extends BaseRow>(
 
   ctxAfter.ctrl = {
     ...ctxAfter.ctrl,
+
     sort,
+
+    rowVariant:
+      resolvedBlock.rowVariant,
   }
 
   return ctxAfter

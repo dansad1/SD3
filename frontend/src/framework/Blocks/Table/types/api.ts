@@ -61,16 +61,15 @@ export type TableApiRowAction = {
 export type TableApiBlock = BaseBlock & {
   type: "table"
 
-  /** CRUD режим */
   entity?: string
 
   fieldset?: string
 
-  /** 🔥 кастомный источник данных */
   data?: unknown
 
-  /** фильтры */
   filter?: Record<string, unknown>
+
+  rowVariant?: TableRowVariant
 
   features?: {
     toolbar?: boolean
@@ -79,6 +78,7 @@ export type TableApiBlock = BaseBlock & {
     rowClick?: boolean
     rowActions?: boolean
     visibleFields?: boolean
+    sorting?: boolean
   }
 
   toolbar?: {
@@ -97,3 +97,6 @@ export type TableApiBlock = BaseBlock & {
 
   to?: string
 }
+export type TableRowVariant =
+  | "default"
+  | "accordion"

@@ -2,11 +2,14 @@ import type {
   TableCtrlBase,
   BaseRow,
 } from "@/framework/Blocks/Table/types/runtime"
-import { DefaultTableRow } from "./DefaultTableRow"
+
+import { DefaultTableRow }
+  from "./DefaultTableRow"
+import { AccordionTableRow } from "./AccordionTableRow"
 
 
 export function TableRow<
-  T extends BaseRow,
+  T extends BaseRow
 >({
   row,
   ctrl,
@@ -14,10 +17,27 @@ export function TableRow<
   row: T
   ctrl: TableCtrlBase<T>
 }) {
-  return (
-    <DefaultTableRow
-      row={row}
-      ctrl={ctrl}
-    />
-  )
+
+  switch (
+    ctrl.rowVariant
+  ) {
+
+    case "accordion":
+
+      return (
+        <AccordionTableRow
+          row={row}
+          ctrl={ctrl}
+        />
+      )
+
+    default:
+
+      return (
+        <DefaultTableRow
+          row={row}
+          ctrl={ctrl}
+        />
+      )
+  }
 }

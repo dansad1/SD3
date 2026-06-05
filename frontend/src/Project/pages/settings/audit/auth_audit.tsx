@@ -23,10 +23,6 @@ const AuthAuditPage = page(
 
       <Stack gap="lg">
 
-        {/* ===================================== */}
-        {/* HEADER */}
-        {/* ===================================== */}
-
         <Stack gap="sm">
 
           <Heading
@@ -35,19 +31,17 @@ const AuthAuditPage = page(
           />
 
           <Text
-  value="Входы, выходы и ошибки авторизации"
-  variant="muted"
-/>
+            value="Входы, выходы и ошибки авторизации"
+            variant="muted"
+          />
 
         </Stack>
-
-        {/* ===================================== */}
-        {/* TABLE */}
-        {/* ===================================== */}
 
         <Table
 
           entity="auth-journal"
+
+          rowVariant="accordion"
 
           features={{
 
@@ -62,6 +56,8 @@ const AuthAuditPage = page(
             rowActions: false,
 
             visibleFields: true,
+
+            sorting: true,
           }}
 
         />

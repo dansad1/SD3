@@ -319,6 +319,7 @@ export type TableDSL = {
   filter?: Record<string, unknown> | `$${string}`
   searchableFields?: unknown[] | `$${string}`
   selectionActions?: unknown[] | `$${string}`
+  rowVariant?: ("default" | "accordion") | `$${string}`
   rowClick?: (boolean | `$${string}` | {
   to?: string | `$${string}`
   action?: string | `$${string}`
