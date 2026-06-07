@@ -5,7 +5,23 @@ import { normalizeChildren } from "./runtime/children"
 import type { DSLComponent } from "./runtime/types"
 
 export type Bind<T> = T | `$${string}`
-export type ContainerDSL = {
+
+export type LayoutDSL = {
+  layout?: {
+    order?: number | `$${string}`
+    span?: 1 | 2 | 3 | 4 | 6 | 12 | `$${string}`
+    hidden?: boolean | `$${string}`
+    area?:
+      | "main"
+      | "sidebar-left"
+      | "sidebar-right"
+      | "overlay"
+      | `$${string}`
+  }
+}
+export type ContainerDSL =
+  LayoutDSL &
+  {
   maxWidth?: ("xs" | "sm" | "md" | "lg" | "xl" | "full") | `$${string}`
   align?: ("left" | "center" | "right") | `$${string}`
   padding?: ("none" | "sm" | "md" | "lg" | "xl") | `$${string}`
@@ -19,7 +35,9 @@ export const Container: DSLComponent<ContainerDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type StackDSL = {
+export type StackDSL =
+  LayoutDSL &
+  {
   gap?: ("none" | "sm" | "md" | "lg" | "xl") | `$${string}`
   align?: ("start" | "center" | "end" | "stretch") | `$${string}`
   variant?: ("default" | "card") | `$${string}`
@@ -35,7 +53,9 @@ export const Stack: DSLComponent<StackDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type SplitDSL = {
+export type SplitDSL =
+  LayoutDSL &
+  {
   ratio?: string | `$${string}`
   gap?: ("none" | "sm" | "md" | "lg") | `$${string}`
   responsive?: boolean | `$${string}`
@@ -47,7 +67,9 @@ export const Split: DSLComponent<SplitDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type SectionDSL = {
+export type SectionDSL =
+  LayoutDSL &
+  {
   title?: string | `$${string}`
   description?: string | `$${string}`
 }
@@ -58,7 +80,9 @@ export const Section: DSLComponent<SectionDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type TabsDSL = {
+export type TabsDSL =
+  LayoutDSL &
+  {
   variant?: ("line" | "pills" | "segmented") | `$${string}`
   align?: ("start" | "center" | "end") | `$${string}`
   lazy?: boolean | `$${string}`
@@ -70,7 +94,9 @@ export const Tabs: DSLComponent<TabsDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type MenuDSL = {
+export type MenuDSL =
+  LayoutDSL &
+  {
   orientation?: ("vertical" | "horizontal") | `$${string}`
   variant?: ("default" | "compact" | "cards" | "pills") | `$${string}`
   align?: ("start" | "center" | "end" | "stretch") | `$${string}`
@@ -85,7 +111,9 @@ export const Menu: DSLComponent<MenuDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type AccordionDSL = {
+export type AccordionDSL =
+  LayoutDSL &
+  {
   multiple?: boolean | `$${string}`
   defaultOpen?: (string | `$${string}` | unknown[] | `$${string}`) | `$${string}`
 }
@@ -96,7 +124,9 @@ export const Accordion: DSLComponent<AccordionDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type HeadingDSL = {
+export type HeadingDSL =
+  LayoutDSL &
+  {
   text?: string | `$${string}`
   fallback?: string | `$${string}`
   level?: 1 | 2 | 3 | 4 | `$${string}`
@@ -108,7 +138,9 @@ export const Heading: DSLComponent<HeadingDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type TextDSL = {
+export type TextDSL =
+  LayoutDSL &
+  {
   value?: string | `$${string}`
   variant?: ("default" | "muted" | "subtle" | "danger" | "success") | `$${string}`
   size?: ("sm" | "md" | "lg" | "xl") | `$${string}`
@@ -123,7 +155,9 @@ export const Text: DSLComponent<TextDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type DividerDSL = Record<string, never>
+export type DividerDSL =
+  LayoutDSL &
+  Record<string, never>
 
 export const Divider: DSLComponent<DividerDSL> = (props) =>
   Block(
@@ -131,7 +165,9 @@ export const Divider: DSLComponent<DividerDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type SpacerDSL = {
+export type SpacerDSL =
+  LayoutDSL &
+  {
   size?: number | `$${string}`
 }
 
@@ -141,7 +177,9 @@ export const Spacer: DSLComponent<SpacerDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type BadgeDSL = {
+export type BadgeDSL =
+  LayoutDSL &
+  {
   label?: string | `$${string}`
   color?: ("default" | "success" | "warning" | "danger") | `$${string}`
   size?: ("sm" | "md" | "lg") | `$${string}`
@@ -153,7 +191,9 @@ export const Badge: DSLComponent<BadgeDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type LinkDSL = {
+export type LinkDSL =
+  LayoutDSL &
+  {
   label?: string | `$${string}`
   to?: string | `$${string}`
   external?: boolean | `$${string}`
@@ -170,7 +210,9 @@ export const Link: DSLComponent<LinkDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type Insert_variablesDSL = {
+export type Insert_variablesDSL =
+  LayoutDSL &
+  {
   source?: string | `$${string}`
   targetField?: string | `$${string}`
   title?: string | `$${string}`
@@ -183,7 +225,9 @@ export const Insert_variables: DSLComponent<Insert_variablesDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type ActionDSL = {
+export type ActionDSL =
+  LayoutDSL &
+  {
   label?: string | `$${string}`
   icon?: string | `$${string}`
   to?: string | `$${string}`
@@ -198,7 +242,9 @@ export const Action: DSLComponent<ActionDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type UploadDSL = {
+export type UploadDSL =
+  LayoutDSL &
+  {
   name?: string | `$${string}`
   label?: string | `$${string}`
   multiple?: boolean | `$${string}`
@@ -243,7 +289,9 @@ export const For: DSLComponent<ForDSL> = (props) => ({
   children: normalizeChildren(props.children),
 })
 
-export type ResourceDSL = {
+export type ResourceDSL =
+  LayoutDSL &
+  {
   source?: string | `$${string}`
   params?: Record<string, unknown> | `$${string}`
   assign?: string | `$${string}`
@@ -257,7 +305,9 @@ export const Resource: DSLComponent<ResourceDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type CustomDSL = {
+export type CustomDSL =
+  LayoutDSL &
+  {
   component?: string | `$${string}`
   props?: Record<string, unknown> | `$${string}`
 }
@@ -269,6 +319,7 @@ export const Custom: DSLComponent<CustomDSL> = (props) =>
   )
 
 export type FormDSL =
+  LayoutDSL &
   (({
   entity: string | `$${string}`
   mode?: ("create" | "edit" | "view") | `$${string}`
@@ -304,15 +355,17 @@ export type FormDSL =
   density?: ("comfortable" | "default" | "compact" | "dense") | `$${string}`
   groups?: ("sections" | "tabs" | "accordion") | `$${string}`
 }
-}) & { children?: unknown }
-
+}) &
+  { children?: unknown }
 export const Form: DSLComponent<FormDSL> = (props) =>
   Block(
     { __type: "form", ...props },
     normalizeChildren(props.children)
   )
 
-export type TableDSL = {
+export type TableDSL =
+  LayoutDSL &
+  {
   entity?: string | `$${string}`
   fieldset?: string | `$${string}`
   data?: unknown
@@ -352,7 +405,9 @@ export const Table: DSLComponent<TableDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type MatrixDSL = {
+export type MatrixDSL =
+  LayoutDSL &
+  {
   source?: string | `$${string}`
   params?: Record<string, unknown> | `$${string}`
 }
@@ -363,7 +418,9 @@ export const Matrix: DSLComponent<MatrixDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type Chat_threadDSL = {
+export type Chat_threadDSL =
+  LayoutDSL &
+  {
   thread?: unknown
   participants?: unknown[] | `$${string}`
   messages?: unknown[] | `$${string}`
@@ -398,7 +455,9 @@ export const Chat_thread: DSLComponent<Chat_threadDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type Chat_listDSL = {
+export type Chat_listDSL =
+  LayoutDSL &
+  {
   data?: unknown[] | `$${string}`
   selectedId?: string | `$${string}`
   to?: string | `$${string}`
@@ -414,7 +473,9 @@ export const Chat_list: DSLComponent<Chat_listDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
-export type DocumentDSL = {
+export type DocumentDSL =
+  LayoutDSL &
+  {
   openAction?: string | `$${string}`
   saveAction?: string | `$${string}`
   objectId?: string | `$${string}`

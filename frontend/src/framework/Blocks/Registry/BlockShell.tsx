@@ -1,6 +1,7 @@
 // src/framework/BlockShell.tsx
 
-import type { BlockLayout } from "./BlockType"
+import type { BlockLayout } from "../BlockType"
+
 
 
 

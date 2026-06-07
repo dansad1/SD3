@@ -1,9 +1,7 @@
-// src/framework/physical/PhysicalNode.ts
+// src/framework/physical/types/PhysicalNode.ts
 
 import type { BlockLayout } from "../../Blocks/BlockType"
 import type { PageBlock } from "../../page/PageSchema"
-
-
 
 export type PhysicalNode =
   | PhysicalLayoutNode
@@ -13,6 +11,7 @@ export type PhysicalLayoutNode = {
   kind: "layout"
   id: string
   block: PageBlock
+  layout: Required<BlockLayout>
   children: PhysicalNode[]
 }
 
@@ -22,6 +21,7 @@ export type PhysicalGridItemNode = {
   block: PageBlock
   layout: Required<BlockLayout>
 }
+
 export type PhysicalBlock = {
   id: string
   content: PageBlock

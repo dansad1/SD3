@@ -227,7 +227,9 @@ function genSimpleBlock(
   const propsType = genObjectShape(props)
 
   return `
-export type ${Fn}DSL = ${propsType}
+export type ${Fn}DSL =
+  LayoutDSL &
+  ${propsType}
 
 export const ${Fn}: DSLComponent<${Fn}DSL> = (props) =>
   Block(
@@ -285,8 +287,9 @@ function genContentBlock(
 
     return `
 export type ${Fn}DSL =
-  ((${union})${sharedType}) & { children?: unknown }
-
+  LayoutDSL &
+  ((${union})${sharedType}) &
+  { children?: unknown }
 export const ${Fn}: DSLComponent<${Fn}DSL> = (props) =>
   Block(
     { __type: "${name}", ...props },
@@ -313,6 +316,20 @@ import { normalizeChildren } from "./runtime/children"
 import type { DSLComponent } from "./runtime/types"
 
 export type Bind<T> = T | \`$\${string}\`
+
+export type LayoutDSL = {
+  layout?: {
+    order?: number | \`$\${string}\`
+    span?: 1 | 2 | 3 | 4 | 6 | 12 | \`$\${string}\`
+    hidden?: boolean | \`$\${string}\`
+    area?:
+      | "main"
+      | "sidebar-left"
+      | "sidebar-right"
+      | "overlay"
+      | \`$\${string}\`
+  }
+}
 `.trim()
 
 /* =========================================================

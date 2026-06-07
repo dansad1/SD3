@@ -1,8 +1,5 @@
 // src/framework/page/render/PageView.tsx
 
-import { PhysicalRenderer }
-  from "@/framework/physical/build/PhysicalRenderer"
-
 import type { ActionDescriptor }
   from "@/framework/Blocks/Action/types"
 
@@ -17,6 +14,7 @@ import { PageFooter }
 
 import { useActionExecutor }
   from "@/framework/Blocks/Action/executor/useActionExecutor"
+import { PageAreaLayout } from "./PageAreaLayout"
 
 export function PageView({
 
@@ -103,11 +101,11 @@ export function PageView({
       <h1>{schema.title}</h1>
     )}
 
-    {physicalTree && (
-      <PhysicalRenderer
-        node={physicalTree}
-      />
-    )}
+    {physicalTree?.kind === "layout" && (
+  <PageAreaLayout
+    root={physicalTree}
+  />
+)}
 
     {showFooter &&
       pageReady &&

@@ -1,7 +1,15 @@
-import type { PageBlock } from "@/framework/page/PageSchema"
-import { buildNode } from "./buildNode"
-import type { PhysicalNode } from "../types/PhysicalNode"
-import type { Area } from "@/framework/Blocks/BlockType"
+import type { PageBlock }
+  from "@/framework/page/PageSchema"
+
+import type { Area }
+  from "@/framework/Blocks/BlockType"
+
+import { buildNode }
+  from "./buildNode"
+
+import type {
+  PhysicalNode,
+} from "../types/PhysicalNode"
 
 export function buildPhysicalTree(
   blocks: PageBlock[],
@@ -15,10 +23,25 @@ export function buildPhysicalTree(
 
   return {
     kind: "layout",
+
     id: "root",
+
     block: rootBlock,
+
+    layout: {
+      area,
+      span: 12,
+      order: 0,
+      hidden: false,
+    },
+
     children: blocks.map((block, i) =>
-      buildNode(block, i, area)
+      buildNode(
+        block,
+        i,
+        area,
+        String(i)
+      )
     ),
   }
 }

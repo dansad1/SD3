@@ -41,6 +41,10 @@ export function BlockRenderer({
   }
 
   const nested =
+
+  children ??
+
+  (
     "blocks" in block &&
     Array.isArray(block.blocks)
       ? block.blocks.map((child, i) => (
@@ -52,8 +56,8 @@ export function BlockRenderer({
             block={child}
           />
         ))
-      : children
-
+      : null
+  )
   return (
     <CapabilityBoundary
       capabilities={block.capabilities}
