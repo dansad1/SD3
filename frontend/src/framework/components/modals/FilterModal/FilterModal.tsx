@@ -30,17 +30,24 @@ export function useFilterRuntime(
 
   /* ---------- helpers ---------- */
 
-  const buildEmptyValues = useCallback((fields: FieldSchema[]) => {
-    const v: Record<string, Value> = {}
+  const buildEmptyValues = useCallback(
+    (fields: FieldSchema[]) => {
+      const v: Record<string, Value> = {}
 
-    for (const f of fields) {
-      if (f.multiple) v[f.name] = []
-      else if (f.field_type === "bool") v[f.name] = false
-      else v[f.name] = ""
-    }
+      for (const f of fields) {
+        if (f.multiple) {
+          v[f.name] = []
+        } else if (f.type === "boolean") {
+          v[f.name] = false
+        } else {
+          v[f.name] = ""
+        }
+      }
 
-    return v
-  }, [])
+      return v
+    },
+    []
+  )
 
   const applyQueryToValues = useCallback(
     (
@@ -52,16 +59,21 @@ export function useFilterRuntime(
       for (const f of fields) {
         const key = `field_${f.id}`
         const raw = query[key]
-        if (raw === undefined) continue
+
+        if (raw === undefined) {
+          continue
+        }
 
         if (f.multiple) {
           v[f.name] = Array.isArray(raw)
             ? raw
             : String(raw).split(",")
-        } else if (f.field_type === "bool") {
+        } else if (f.type === "boolean") {
           v[f.name] = raw === "1"
         } else {
-          v[f.name] = Array.isArray(raw) ? raw[0] : raw
+          v[f.name] = Array.isArray(raw)
+            ? raw[0]
+            : raw
         }
       }
 
@@ -70,7 +82,7 @@ export function useFilterRuntime(
     [buildEmptyValues]
   )
 
-  /* ---------- load ---------- */
+  /* ---------- load meta ---------- */
 
   useEffect(() => {
     let canceled = false
@@ -82,28 +94,45 @@ export function useFilterRuntime(
         `/${entity}/filter/meta/?fieldset=${fieldset}`
       )
 
-      if (canceled) return
+      if (canceled) {
+        return
+      }
 
       data.fields.forEach(validateFieldSchema)
 
       setFields(data.fields)
       setSavedFilters(data.saved_filters ?? [])
-      setValues(applyQueryToValues(data.fields, initialQuery))
+
+      setValues(
+        applyQueryToValues(
+          data.fields,
+          initialQuery
+        )
+      )
 
       setLoading(false)
     }
 
-    load()
+    void load()
+
     return () => {
       canceled = true
     }
-  }, [entity, fieldset, initialQuery, applyQueryToValues])
+  }, [
+    entity,
+    fieldset,
+    initialQuery,
+    applyQueryToValues,
+  ])
 
-  /* ---------- actions ---------- */
+  /* ---------- public actions ---------- */
 
   const setFieldValue = useCallback(
     (name: string, value: Value) => {
-      setValues(prev => ({ ...prev, [name]: value }))
+      setValues(prev => ({
+        ...prev,
+        [name]: value,
+      }))
     },
     []
   )
@@ -117,7 +146,10 @@ export function useFilterRuntime(
 
       if (Array.isArray(val) && val.length) {
         q[key] = val.join(",")
-      } else if (typeof val === "string" && val.trim()) {
+      } else if (
+        typeof val === "string" &&
+        val.trim()
+      ) {
         q[key] = val
       } else if (typeof val === "boolean") {
         q[key] = val ? "1" : "0"
@@ -127,32 +159,7 @@ export function useFilterRuntime(
     return q
   }, [fields, values])
 
-  const applySavedFilter = useCallback(
-    (sf: SavedFilter) => {
-      setValues(applyQueryToValues(fields, sf.query))
-    },
-    [fields, applyQueryToValues]
-  )
-
-  const deleteSavedFilter = useCallback(
-    async (id: number) => {
-      if (!confirm("Удалить сохранённый фильтр?")) return
-
-      const form = new FormData()
-      form.append("id", String(id))
-
-      await api.post(`/${entity}/filter/delete/`, form)
-
-      const refreshed = await api.get<{ filters: SavedFilter[] }>(
-        `/${entity}/filter/saved/`
-      )
-
-      setSavedFilters(refreshed.filters)
-    },
-    [entity]
-  )
-
-  /* ---------- public api ---------- */
+  /* ---------- export ---------- */
 
   return {
     loading,
@@ -162,11 +169,9 @@ export function useFilterRuntime(
 
     setFieldValue,
     setValues,
+    setSavedFilters,
 
     buildEmptyValues,
     buildQuery,
-
-    applySavedFilter,
-    deleteSavedFilter,
   }
 }

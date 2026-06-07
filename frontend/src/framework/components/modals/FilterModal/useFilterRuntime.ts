@@ -3,7 +3,6 @@ import type { FieldSchema, Value } from "../../dynamic/types"
 import { api } from "@/framework/api/client"
 import { validateFieldSchema } from "../../dynamic/validateSchema"
 
-
 /* ---------- types ---------- */
 
 export interface SavedFilter {
@@ -15,6 +14,15 @@ export interface SavedFilter {
 interface FilterMetaResponse {
   fields: FieldSchema[]
   saved_filters: SavedFilter[]
+}
+
+/* ---------- helpers ---------- */
+
+function isBooleanField(field: FieldSchema): boolean {
+  return (
+    field.widget === "checkbox" ||
+    field.html_type === "checkbox"
+  )
 }
 
 /* ---------- hook ---------- */
@@ -29,19 +37,26 @@ export function useFilterRuntime(
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([])
   const [values, setValues] = useState<Record<string, Value>>({})
 
-  /* ---------- helpers (STABLE) ---------- */
+  /* ---------- helpers ---------- */
 
-  const buildEmptyValues = useCallback((fields: FieldSchema[]) => {
-    const v: Record<string, Value> = {}
+  const buildEmptyValues = useCallback(
+    (fields: FieldSchema[]) => {
+      const v: Record<string, Value> = {}
 
-    for (const f of fields) {
-      if (f.multiple) v[f.name] = []
-      else if (f.field_type === "bool") v[f.name] = false
-      else v[f.name] = ""
-    }
+      for (const f of fields) {
+        if (f.multiple) {
+          v[f.name] = []
+        } else if (isBooleanField(f)) {
+          v[f.name] = false
+        } else {
+          v[f.name] = ""
+        }
+      }
 
-    return v
-  }, [])
+      return v
+    },
+    []
+  )
 
   const applyQueryToValues = useCallback(
     (
@@ -53,16 +68,28 @@ export function useFilterRuntime(
       for (const f of fields) {
         const key = `field_${f.id}`
         const raw = query[key]
-        if (raw === undefined) continue
+
+        if (raw === undefined) {
+          continue
+        }
 
         if (f.multiple) {
           v[f.name] = Array.isArray(raw)
             ? raw
             : String(raw).split(",")
-        } else if (f.field_type === "bool") {
-          v[f.name] = raw === "1"
+        } else if (isBooleanField(f)) {
+          const value = Array.isArray(raw)
+            ? raw[0]
+            : raw
+
+          v[f.name] =
+            value === "1" ||
+            value === "true" ||
+            value === "on"
         } else {
-          v[f.name] = Array.isArray(raw) ? raw[0] : raw
+          v[f.name] = Array.isArray(raw)
+            ? raw[0]
+            : raw
         }
       }
 
@@ -77,24 +104,37 @@ export function useFilterRuntime(
     let canceled = false
 
     const load = async () => {
-      setLoading(true)
+      try {
+        setLoading(true)
 
-      const data = await api.get<FilterMetaResponse>(
-        `/${entity}/filter/meta/?fieldset=${fieldset}`
-      )
+        const data =
+          await api.get<FilterMetaResponse>(
+            `/${entity}/filter/meta/?fieldset=${fieldset}`
+          )
 
-      if (canceled) return
+        if (canceled) {
+          return
+        }
 
-      data.fields.forEach(validateFieldSchema)
+        data.fields.forEach(validateFieldSchema)
 
-      setFields(data.fields)
-      setSavedFilters(data.saved_filters ?? [])
-      setValues(applyQueryToValues(data.fields, initialQuery))
+        setFields(data.fields)
+        setSavedFilters(data.saved_filters ?? [])
 
-      setLoading(false)
+        setValues(
+          applyQueryToValues(
+            data.fields,
+            initialQuery
+          )
+        )
+      } finally {
+        if (!canceled) {
+          setLoading(false)
+        }
+      }
     }
 
-    load()
+    void load()
 
     return () => {
       canceled = true
@@ -110,7 +150,10 @@ export function useFilterRuntime(
 
   const setFieldValue = useCallback(
     (name: string, value: Value) => {
-      setValues(prev => ({ ...prev, [name]: value }))
+      setValues(prev => ({
+        ...prev,
+        [name]: value,
+      }))
     },
     []
   )
@@ -122,9 +165,12 @@ export function useFilterRuntime(
       const val = values[f.name]
       const key = `field_${f.id}`
 
-      if (Array.isArray(val) && val.length) {
+      if (Array.isArray(val) && val.length > 0) {
         q[key] = val.join(",")
-      } else if (typeof val === "string" && val.trim()) {
+      } else if (
+        typeof val === "string" &&
+        val.trim()
+      ) {
         q[key] = val
       } else if (typeof val === "boolean") {
         q[key] = val ? "1" : "0"
