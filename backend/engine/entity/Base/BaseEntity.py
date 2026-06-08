@@ -2,6 +2,7 @@ from rest_framework.exceptions import (
     PermissionDenied,
 )
 
+from backend.engine.change.ChangeDetector import ChangeDetector
 from backend.engine.entity.Base.EntityContext import (
     EntityContext,
 )
@@ -383,7 +384,6 @@ class BaseEntity:
             self,
             ctx,
     ):
-
         instance = getattr(
             ctx,
             "instance",
@@ -391,16 +391,13 @@ class BaseEntity:
         )
 
         if instance and instance.pk:
-
-            ctx.before_state = (
-                serialize_instance(
-                    instance
-                )
+            ctx.before_state = serialize_instance(
+                instance
             )
-
         else:
-
             ctx.before_state = {}
+
+        ctx.changes = []
 
         return ctx
 
@@ -408,7 +405,6 @@ class BaseEntity:
             self,
             ctx,
     ):
-
         instance = getattr(
             ctx,
             "instance",
@@ -418,8 +414,14 @@ class BaseEntity:
         if not instance:
             return ctx
 
-        after_state = serialize_instance(
+        ctx.after_state = serialize_instance(
             instance
+        )
+
+        ctx.changes = ChangeDetector().detect_from_state(
+            entity=self,
+            before=ctx.before_state,
+            after=ctx.after_state,
         )
 
         action = (
@@ -429,47 +431,28 @@ class BaseEntity:
         )
 
         log_entity_event(
-
             request=ctx.request,
-
             action=action,
-
             entity=self.entity,
-
             instance=instance,
-
-            before=getattr(
-                ctx,
-                "before_state",
-                {},
-            ),
-
-            after=after_state,
-
+            before=ctx.before_state,
+            after=ctx.after_state,
             meta={
-
                 "mode": ctx.mode,
-
                 "entity": self.entity,
+                "changes": ctx.changes.to_list(),
             },
         )
 
         return ctx
-
-    # =====================================================
-    # DELETE LIFECYCLE
-    # =====================================================
 
     def before_delete(
             self,
             request,
             instance,
     ):
-
-        instance._audit_before_delete = (
-            serialize_instance(
-                instance
-            )
+        instance._audit_before_delete = serialize_instance(
+            instance
         )
 
     def after_delete(
@@ -477,25 +460,17 @@ class BaseEntity:
             request,
             instance,
     ):
-
         log_entity_event(
-
             request=request,
-
             action="delete",
-
             entity=self.entity,
-
             instance=instance,
-
             before=getattr(
                 instance,
                 "_audit_before_delete",
                 {},
             ),
-
             after={},
-
             meta={
                 "entity": self.entity,
             },

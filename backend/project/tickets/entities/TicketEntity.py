@@ -5,7 +5,6 @@ from backend.engine.entity.Base.BaseEntity import (
 from backend.project.tickets.models import (
     Ticket,
     TicketField,
-    TicketFieldSet,
 )
 
 
