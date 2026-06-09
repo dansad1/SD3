@@ -1,40 +1,22 @@
 # backend/project/tickets/services/TicketCommentService.py
 
-from django.core.exceptions import (
-    ValidationError,
-)
+from django.core.exceptions import ValidationError
 
-from backend.project.tickets.models import (
-    TicketComment,
-)
+from backend.project.tickets.models import TicketComment
 
 
 class TicketCommentService:
 
     @classmethod
-    def normalize_text(
-        cls,
-        text,
-    ):
-        text = str(
-            text or ""
-        ).strip()
-
-        return text
+    def normalize_text(cls, text):
+        return str(text or "").strip()
 
     @classmethod
-    def validate(
-        cls,
-        text,
-    ):
-        text = cls.normalize_text(
-            text
-        )
+    def validate_text(cls, text):
+        text = cls.normalize_text(text)
 
         if not text:
-            raise ValidationError(
-                "Комментарий пуст."
-            )
+            raise ValidationError("Комментарий пуст.")
 
         return text
 
@@ -44,19 +26,15 @@ class TicketCommentService:
         ticket,
         author,
         text,
-        hide=False,
+        hide_from_client=False,
     ):
-        text = cls.validate(
-            text
-        )
+        text = cls.validate_text(text)
 
         return TicketComment.objects.create(
             ticket=ticket,
             author=author,
             text=text,
-            hide_from_client=bool(
-                hide
-            ),
+            hide_from_client=bool(hide_from_client),
         )
 
     @classmethod
@@ -64,27 +42,26 @@ class TicketCommentService:
         cls,
         comment,
         text,
-        hide=None,
+        hide_from_client=None,
     ):
-        text = cls.validate(
-            text
-        )
+        text = cls.validate_text(text)
 
         comment.text = text
 
-        if hide is not None:
+        update_fields = [
+            "text",
+        ]
 
-            comment.hide_from_client = bool(
-                hide
-            )
+        if hide_from_client is not None:
+            comment.hide_from_client = bool(hide_from_client)
+            update_fields.append("hide_from_client")
 
-        comment.save()
+        comment.save(
+            update_fields=update_fields,
+        )
 
         return comment
 
     @classmethod
-    def delete(
-        cls,
-        comment,
-    ):
+    def delete(cls, comment):
         comment.delete()

@@ -1,6 +1,5 @@
 # backend/project/tickets/services/TicketTimelineService.py
 
-
 class TicketTimelineService:
 
     def __init__(
@@ -23,21 +22,21 @@ class TicketTimelineService:
                 hide_from_client=False,
             )
 
-        result = []
-
-        for comment in qs:
-            result.append({
+        return [
+            {
                 "type": "comment",
                 "id": comment.id,
                 "date": comment.created_at,
-                "author": str(comment.author)
-                if comment.author_id
-                else None,
+                "author": (
+                    str(comment.author)
+                    if comment.author_id
+                    else None
+                ),
                 "text": comment.text,
                 "hide_from_client": comment.hide_from_client,
-            })
-
-        return result
+            }
+            for comment in qs
+        ]
 
     def get_logs(self):
         if not hasattr(
@@ -46,25 +45,29 @@ class TicketTimelineService:
         ):
             return []
 
-        result = []
-
-        for log in self.ticket.logs.select_related("author").all():
-            result.append({
+        return [
+            {
                 "type": "log",
                 "id": log.id,
-                "date": log.created_at
-                if hasattr(log, "created_at")
-                else log.timestamp,
-                "author": str(log.author)
-                if getattr(log, "author_id", None)
-                else None,
+                "date": (
+                    log.created_at
+                    if hasattr(log, "created_at")
+                    else log.timestamp
+                ),
+                "author": (
+                    str(log.author)
+                    if getattr(log, "author_id", None)
+                    else None
+                ),
                 "text": getattr(log, "description", ""),
-                "event": str(log.event)
-                if getattr(log, "event_id", None)
-                else None,
-            })
-
-        return result
+                "event": (
+                    str(log.event)
+                    if getattr(log, "event_id", None)
+                    else None
+                ),
+            }
+            for log in self.ticket.logs.select_related("author").all()
+        ]
 
     def build(self):
         items = (
