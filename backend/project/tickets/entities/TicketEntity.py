@@ -2,9 +2,15 @@ from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
 
+from backend.generic.models import (
+    DynamicField,
+    DjangoField,
+)
+
 from backend.project.tickets.models import (
     Ticket,
     TicketField,
+    TicketFieldSet,
 )
 
 
@@ -119,6 +125,107 @@ class TicketEntity(
         ]
 
     # =====================================================
+    # FIELDS
+    # =====================================================
+
+    def get_fields(
+        self,
+        request,
+        obj=None,
+    ):
+
+        fields = []
+
+        for field in self.model._meta.get_fields():
+
+            name = getattr(
+                field,
+                "name",
+                None,
+            )
+
+            if not name:
+                continue
+
+            if not self.include_model_field(
+                field
+            ):
+                continue
+
+            fields.append(
+                DjangoField(field)
+            )
+
+        existing_names = {
+            field.name
+            for field in fields
+        }
+
+        # =============================================
+        # FORM MODE
+        # =============================================
+
+        if obj is not None:
+
+            dynamic_fields = (
+                self.get_dynamic_fields(
+                    request,
+                    obj=obj,
+                )
+            )
+
+        # =============================================
+        # LIST MODE
+        # =============================================
+
+        else:
+
+            fieldset = (
+
+                TicketFieldSet.objects
+
+                .filter(
+                    code="default"
+                )
+
+                .first()
+            )
+
+            if not fieldset:
+
+                dynamic_fields = []
+
+            else:
+
+                dynamic_fields = (
+
+                    TicketField.objects
+
+                    .filter(
+                        fieldset=fieldset,
+                    )
+
+                    .order_by(
+                        "order",
+                        "id",
+                    )
+                )
+
+        for field in dynamic_fields:
+
+            if (
+                field.name
+                in existing_names
+            ):
+                continue
+
+            fields.append(
+                DynamicField(field)
+            )
+
+        return fields
+
+    # =====================================================
     # DYNAMIC FIELDS
     # =====================================================
 
@@ -128,75 +235,73 @@ class TicketEntity(
         obj=None,
     ):
 
+        fieldset = None
+
         # =============================================
         # EXISTING TICKET
         # =============================================
 
-        if obj and obj.type_id:
+        if (
+            obj
+            and obj.type_id
+            and obj.type
+        ):
 
-            fieldset = obj.type.fieldset
-
-            if not fieldset:
-                return []
-
-            return (
-
-                TicketField.objects
-
-                .filter(
-                    fieldset=fieldset,
-                )
-
-                .order_by(
-                    "order",
-                    "id",
-                )
+            fieldset = (
+                obj.type.fieldset
             )
 
         # =============================================
         # CREATE MODE
         # =============================================
 
-        type_id = request.GET.get(
-            "type"
-        )
+        else:
 
-        if not type_id:
-            return []
-
-        try:
-
-            type_id = int(type_id)
-
-        except (
-            TypeError,
-            ValueError,
-        ):
-
-            return []
-
-        ticket_type = (
-
-            self.model.type.field
-            .remote_field.model
-
-            .objects
-
-            .filter(
-                pk=type_id
+            type_id = request.GET.get(
+                "type"
             )
 
-            .select_related(
-                "fieldset"
+            if not type_id:
+                return []
+
+            try:
+
+                type_id = int(
+                    type_id
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+
+                return []
+
+            ticket_type = (
+
+                self.model.type.field
+                .remote_field.model
+
+                .objects
+
+                .filter(
+                    pk=type_id
+                )
+
+                .select_related(
+                    "fieldset"
+                )
+
+                .first()
             )
 
-            .first()
-        )
+            if ticket_type:
 
-        if not ticket_type:
-            return []
+                fieldset = (
+                    ticket_type.fieldset
+                )
 
-        if not ticket_type.fieldset:
+        if not fieldset:
             return []
 
         return (
@@ -204,7 +309,7 @@ class TicketEntity(
             TicketField.objects
 
             .filter(
-                fieldset=ticket_type.fieldset,
+                fieldset=fieldset,
             )
 
             .order_by(

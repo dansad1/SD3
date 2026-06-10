@@ -5,72 +5,12 @@ from django.db import models
 class Ticket(models.Model):
 
     # =====================================================
-    # CLASSIFICATION
+    # SCHEMA
     # =====================================================
 
     type = models.ForeignKey(
         "tickets.TicketType",
         on_delete=models.PROTECT,
-        related_name="tickets",
-    )
-
-    category = models.ForeignKey(
-        "tickets.TicketCategory",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="tickets",
-    )
-
-    priority = models.ForeignKey(
-        "tickets.TicketPriority",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="tickets",
-    )
-
-    # =====================================================
-    # WORKFLOW
-    # =====================================================
-
-    status = models.ForeignKey(
-        "tickets.TicketStatus",
-        null=True,
-        blank=True,
-        on_delete=models.PROTECT,
-        related_name="tickets",
-    )
-
-    # =====================================================
-    # ASSIGNMENT
-    # =====================================================
-
-    executor_group = models.ForeignKey(
-        "tickets.ExecutorGroup",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="tickets",
-    )
-
-    assigned_to = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="assigned_tickets",
-    )
-
-    # =====================================================
-    # COMPANY
-    # =====================================================
-
-    company = models.ForeignKey(
-        "companies.Company",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
         related_name="tickets",
     )
 
@@ -85,6 +25,18 @@ class Ticket(models.Model):
         on_delete=models.SET_NULL,
         related_name="created_tickets",
     )
+
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="assigned_tickets",
+    )
+
+    # =====================================================
+    # SYSTEM
+    # =====================================================
 
     archived = models.BooleanField(
         default=False,
@@ -121,25 +73,13 @@ class Ticket(models.Model):
 
             models.Index(
                 fields=[
-                    "status",
+                    "type",
                 ]
             ),
 
             models.Index(
                 fields=[
                     "assigned_to",
-                ]
-            ),
-
-            models.Index(
-                fields=[
-                    "executor_group",
-                ]
-            ),
-
-            models.Index(
-                fields=[
-                    "company",
                 ]
             ),
 
@@ -205,12 +145,9 @@ class Ticket(models.Model):
         default=None,
     ):
 
-        values = (
+        value = (
             self.get_dynamic_values_map()
-        )
-
-        value = values.get(
-            field_name
+            .get(field_name)
         )
 
         if not value:

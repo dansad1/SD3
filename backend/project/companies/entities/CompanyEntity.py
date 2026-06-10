@@ -108,6 +108,33 @@ class CompanyEntity(BaseEntity):
         obj=None,
     ):
 
+        # =============================================
+        # EXISTING COMPANY
+        # =============================================
+
+        if (
+            obj
+            and obj.fieldset_id
+        ):
+
+            return (
+
+                CompanyField.objects
+
+                .filter(
+                    fieldset=obj.fieldset,
+                )
+
+                .order_by(
+                    "order",
+                    "id",
+                )
+            )
+
+        # =============================================
+        # CREATE MODE
+        # =============================================
+
         fieldset = request.GET.get(
             "fieldset"
         )
@@ -122,8 +149,13 @@ class CompanyEntity(BaseEntity):
         ):
 
             return (
+
                 CompanyField.objects
+
+                .all()
+
                 .order_by(
+                    "order",
                     "id",
                 )
             )
@@ -150,39 +182,19 @@ class CompanyEntity(BaseEntity):
         # =============================================
 
         return (
+
             CompanyField.objects
+
             .filter(
                 fieldset_id=fieldset_id,
                 fieldset__is_active=True,
             )
+
             .order_by(
+                "order",
                 "id",
             )
         )
-
-    # =====================================================
-    # FIELDS
-    # =====================================================
-
-    def get_fields(
-        self,
-        request,
-        obj=None,
-    ):
-
-        fields = super().get_fields(
-            request=request,
-            obj=obj,
-        )
-
-        fields.extend(
-            self.get_dynamic_fields(
-                request=request,
-                obj=obj,
-            )
-        )
-
-        return fields
 
     # =====================================================
     # OPTIONS
@@ -194,11 +206,18 @@ class CompanyEntity(BaseEntity):
     ):
 
         return {
+
             "value": obj.pk,
 
             "label": (
-                obj.get_value("name")
-                or f"Company #{obj.pk}"
+
+                obj.get_value(
+                    "name"
+                )
+
+                or
+
+                f"Company #{obj.pk}"
             ),
         }
 
