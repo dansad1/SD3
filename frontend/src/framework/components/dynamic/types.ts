@@ -10,6 +10,18 @@ export type InsertCommand = {
   value: string
   mode: "append" | "replace"
 }
+export type PermissionOption = {
+  id: number
+  value: number
+  code: string
+  label: string
+  description?: string
+}
+
+export type PermissionGroup = {
+  name: string
+  permissions: PermissionOption[]
+}
 
 export type Value =
   | string
@@ -158,7 +170,9 @@ export interface FieldSchema {
       title?: string
     }
   }
+  groups?: PermissionGroup[]
 }
+
 
 /* =========================================================
    WIDGET PROPS

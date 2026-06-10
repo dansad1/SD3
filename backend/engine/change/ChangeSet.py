@@ -1,5 +1,3 @@
-# engine/changes/ChangeSet.py
-
 class ChangeSet(list):
 
     def has(
@@ -28,4 +26,10 @@ class ChangeSet(list):
         return [
             x.field
             for x in self
+        ]
+
+    def to_list(self):
+        return [
+            item.to_dict()
+            for item in self
         ]

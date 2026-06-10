@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.core.exceptions import (
     ValidationError
 )
@@ -7,7 +9,8 @@ from backend.engine.entity.Base.BaseEntity import (
 )
 
 from backend.project.users.models import (
-    UserRole
+    UserRole,
+    Permission,
 )
 
 
@@ -113,10 +116,6 @@ class UserRoleEntity(BaseEntity):
 
         errors = {}
 
-        # -------------------------------------------------
-        # CODE
-        # -------------------------------------------------
-
         code = payload.get(
             "code"
         )
@@ -138,10 +137,6 @@ class UserRoleEntity(BaseEntity):
                     "Reserved role code"
                 ]
 
-        # -------------------------------------------------
-        # PRIORITY
-        # -------------------------------------------------
-
         priority = payload.get(
             "priority"
         )
@@ -153,10 +148,6 @@ class UserRoleEntity(BaseEntity):
                 errors["priority"] = [
                     "Priority must be >= 0"
                 ]
-
-        # -------------------------------------------------
-        # RESULT
-        # -------------------------------------------------
 
         if errors:
 
@@ -176,9 +167,6 @@ class UserRoleEntity(BaseEntity):
         instance,
     ):
 
-        # нельзя удалить роль,
-        # если есть пользователи
-
         if instance.users.exists():
 
             raise ValidationError({
@@ -191,3 +179,78 @@ class UserRoleEntity(BaseEntity):
     # SCHEMA
     # =====================================================
 
+    def customize_field_schema(
+            self,
+            field,
+            schema,
+            request=None,
+            obj=None,
+    ):
+
+        if field.name != "permissions":
+            return schema
+
+        groups = OrderedDict()
+
+        permissions = (
+            Permission.objects
+            .all()
+            .order_by(
+                "category",
+                "code",
+            )
+        )
+
+        for permission in permissions:
+
+            category = (
+                    permission.category
+                    or "Общее"
+            )
+
+            if category not in groups:
+                groups[category] = {
+
+                    "name":
+                        category,
+
+                    "permissions":
+                        [],
+                }
+
+            groups[category][
+                "permissions"
+            ].append({
+
+                "id":
+                    permission.pk,
+
+                "value":
+                    permission.pk,
+
+                "code":
+                    permission.code,
+
+                "label":
+                    (
+                            permission.name
+                            or permission.code
+                    ),
+
+                "description":
+                    permission.description,
+            })
+
+        schema.update({
+
+            "widget":
+                "permission_editor",
+
+            "groups":
+                list(
+                    groups.values()
+                ),
+
+        })
+
+        return schema

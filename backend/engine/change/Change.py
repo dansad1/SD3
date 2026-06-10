@@ -1,5 +1,3 @@
-# engine/changes/Change.py
-
 from dataclasses import dataclass
 
 
@@ -25,3 +23,13 @@ class Change:
             !=
             self.new_value
         )
+
+    def to_dict(self):
+        return {
+            "field": self.field,
+            "label": self.label,
+            "old_value": self.old_value,
+            "new_value": self.new_value,
+            "field_type": self.field_type,
+            "source": self.source,
+        }

@@ -1,8 +1,10 @@
-
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
-from backend.project.users.models import Permission
+
+from backend.project.users.models import (
+    Permission,
+)
 
 
 class PermissionEntity(
@@ -22,20 +24,21 @@ class PermissionEntity(
     # =====================================================
 
     list_display = [
-        "id",
-        "codename",
+        "category",
+        "code",
         "name",
     ]
 
     search_fields = [
-        "codename",
+        "code",
         "name",
-        "content_type__app_label",
+        "description",
+        "category",
     ]
 
     ordering = [
-        "content_type__app_label",
-        "codename",
+        "category",
+        "code",
     ]
 
     # =====================================================
@@ -63,9 +66,18 @@ class PermissionEntity(
 
             "label":
                 (
-                    f"{obj.content_type.app_label}."
-                    f"{obj.codename}"
+                    obj.name
+                    or obj.code
                 ),
+
+            "code":
+                obj.code,
+
+            "category":
+                obj.category,
+
+            "description":
+                obj.description,
         }
 
     # =====================================================
@@ -78,13 +90,23 @@ class PermissionEntity(
     ):
 
         return (
-            f"{obj.content_type.app_label}."
-            f"{obj.codename}"
+            obj.name
+            or obj.code
         )
 
-    def represent_codename(
+    def represent_code(
         self,
         obj,
     ):
 
-        return obj.codename
+        return obj.code
+
+    def represent_category(
+        self,
+        obj,
+    ):
+
+        return (
+            obj.category
+            or ""
+        )

@@ -17,6 +17,7 @@ import { TimeInputWidget } from "./widgets/TimeInput"
 import type {
   WidgetRenderer,
 } from "./types"
+import { PermissionEditorWidget } from "./widgets/PermissionEditor"
 
 /* =========================================================
    TYPES
@@ -162,7 +163,16 @@ export const widgetRegistry = {
       "InsertVariables",
     ],
   },
+  PermissionEditor: {
 
+    component: PermissionEditorWidget,
+
+    aliases: [
+      "permission_editor",
+      "PermissionEditor",
+    ],
+
+  },
 } satisfies Record<
   string,
   WidgetDefinition

@@ -32,34 +32,24 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     list_display = [
-
         "login",
-
         "role",
-
         "is_active",
-
         "telegram",
-
         "department",
     ]
 
     search_fields = [
-
         "login",
-
         "telegram",
     ]
 
     filter_fields = [
-
         "role",
-
         "is_active",
     ]
 
     ordering = [
-
         "login",
     ]
 
@@ -68,15 +58,10 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     exclude_fields = {
-
         "groups",
-
         "user_permissions",
-
         "last_login",
-
         "created_at",
-
         "updated_at",
     }
 
@@ -85,21 +70,11 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     capabilities = {
-
-        "list":
-            "users.view",
-
-        "view":
-            "users.view",
-
-        "create":
-            "users.create",
-
-        "edit":
-            "users.edit",
-
-        "delete":
-            "users.delete",
+        "list": "users.view",
+        "view": "users.view",
+        "create": "users.create",
+        "edit": "users.edit",
+        "delete": "users.delete",
     }
 
     # =====================================================
@@ -109,18 +84,14 @@ class UserEntity(BaseEntity):
     def get_select_related(self):
 
         return [
-
             "role",
-
             "fieldset",
         ]
 
     def get_prefetch_related(self):
 
         return [
-
             "dynamic_values",
-
             "dynamic_values__field",
         ]
 
@@ -135,10 +106,6 @@ class UserEntity(BaseEntity):
     ):
 
         fields = []
-
-        # =================================================
-        # STATIC DJANGO FIELDS
-        # =================================================
 
         for field in self.model._meta.get_fields():
 
@@ -160,14 +127,8 @@ class UserEntity(BaseEntity):
                 DjangoField(field)
             )
 
-        # =================================================
-        # DYNAMIC FIELDS
-        # =================================================
-
         existing_names = {
-
             field.name
-
             for field in fields
         }
 
@@ -199,11 +160,8 @@ class UserEntity(BaseEntity):
     ):
 
         return (
-
             UserField.objects
-
             .all()
-
             .order_by(
                 "id",
             )
@@ -219,15 +177,11 @@ class UserEntity(BaseEntity):
     ):
 
         return {
-
             "value": obj.pk,
-
             "label": (
-
                 obj.get_value(
                     "full_name"
                 )
-
                 or obj.login
             ),
         }
@@ -292,6 +246,12 @@ class UserEntity(BaseEntity):
         ctx,
     ):
 
+        # ВАЖНО:
+        # создаёт before_state для аудита
+        ctx = super().before_save(
+            ctx
+        )
+
         password = ctx.data.get(
             "password"
         )
@@ -306,6 +266,24 @@ class UserEntity(BaseEntity):
                 "password",
                 None,
             )
+
+        return ctx
+
+    # =====================================================
+    # AFTER SAVE
+    # =====================================================
+
+    def after_save(
+        self,
+        ctx,
+    ):
+
+        # ВАЖНО:
+        # создаёт after_state,
+        # changes и audit log
+        ctx = super().after_save(
+            ctx
+        )
 
         return ctx
 
@@ -325,12 +303,15 @@ class UserEntity(BaseEntity):
         ):
 
             raise ValidationError({
-
                 "detail": [
-
                     "You cannot delete yourself"
                 ]
             })
+
+        super().before_delete(
+            request,
+            instance,
+        )
 
     # =====================================================
     # FIELD SCHEMA
@@ -361,20 +342,15 @@ class UserEntity(BaseEntity):
         ):
 
             if name in {
-
                 "is_superuser",
-
                 "is_staff",
             }:
 
                 schema["hidden"] = True
 
         if name in {
-
             "created_at",
-
             "updated_at",
-
             "last_login",
         }:
 

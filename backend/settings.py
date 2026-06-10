@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "backend.project.tickets",
     "backend.project.services",
     "backend.project.audit",
+    "backend.project.notifications",
 
 ]
 AUTH_USER_MODEL = "users.User"
