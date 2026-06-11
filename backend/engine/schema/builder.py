@@ -42,12 +42,6 @@ class EntitySchemaBuilder:
         )
 
         # =================================================
-        # RESULT
-        # =================================================
-
-        fields_schema = []
-
-        # =================================================
         # RUNTIME FIELDS
         # =================================================
 
@@ -59,14 +53,12 @@ class EntitySchemaBuilder:
         )
 
         # =================================================
-        # DEDUPLICATION
-        # =================================================
-
-        seen = set()
-
-        # =================================================
         # BUILD
         # =================================================
+
+        fields_schema = []
+
+        seen = set()
 
         for field in fields:
 
@@ -76,17 +68,11 @@ class EntitySchemaBuilder:
             if field.name in seen:
                 continue
 
-            seen.add(field.name)
-
-            if field.hidden:
-                continue
+            seen.add(
+                field.name
+            )
 
             schema = field.get_schema()
-
-            # =============================================
-            # DEBUG
-            # =============================================
-
 
             if action == "view":
                 schema["readonly"] = True
@@ -94,8 +80,6 @@ class EntitySchemaBuilder:
             fields_schema.append(
                 schema
             )
-
-
 
         # =================================================
         # RESPONSE

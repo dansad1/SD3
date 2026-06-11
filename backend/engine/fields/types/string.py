@@ -25,6 +25,8 @@ class StringFieldType(BaseFieldType):
 
     label = "String"
 
+    widget = "text"
+
     searchable = True
 
     sortable = True
@@ -40,71 +42,13 @@ class StringFieldType(BaseFieldType):
     ABSOLUTE_MAX_LENGTH = 10000
 
     # =====================================================
-    # VALIDATE
+    # CONVERSION
     # =====================================================
 
-    def validate(
+    def to_string(
         self,
-        field,
         value,
     ):
-
-        value = super().validate(
-            field,
-            value,
-        )
-
-        # =============================================
-        # EMPTY
-        # =============================================
-
-        if value in (
-            None,
-            "",
-        ):
-
-            return value
-
-        # =============================================
-        # MULTIPLE
-        # =============================================
-
-        values = (
-            value
-            if field.is_multiple
-            else [value]
-        )
-
-        validated = []
-
-        for item in values:
-
-            validated.append(
-                self.validate_single(
-                    field,
-                    item,
-                )
-            )
-
-        if field.is_multiple:
-
-            return validated
-
-        return validated[0]
-
-    # =====================================================
-    # VALIDATE SINGLE
-    # =====================================================
-
-    def validate_single(
-        self,
-        field,
-        value,
-    ):
-
-        # =============================================
-        # TYPE
-        # =============================================
 
         if not isinstance(
             value,
@@ -121,30 +65,50 @@ class StringFieldType(BaseFieldType):
 
         value = str(value)
 
-        # =============================================
-        # UNICODE NORMALIZATION
-        # =============================================
-
         value = unicodedata.normalize(
             "NFKC",
             value,
         )
 
-        # =============================================
-        # TRIM
-        # =============================================
+        return value.strip()
 
-        value = value.strip()
+    # =====================================================
+    # VALIDATION
+    # =====================================================
+
+    def validate_string(
+        self,
+        field,
+        value,
+    ):
+
+        value = self.to_string(
+            value
+        )
 
         # =============================================
         # LENGTH
         # =============================================
 
-        max_length = getattr(
-            field,
-            "max_length",
-            None,
-        ) or self.DEFAULT_MAX_LENGTH
+        max_length = (
+            field.max_value
+            or self.DEFAULT_MAX_LENGTH
+        )
+
+        try:
+
+            max_length = int(
+                max_length
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+
+            max_length = (
+                self.DEFAULT_MAX_LENGTH
+            )
 
         max_length = min(
             max_length,
@@ -163,17 +127,18 @@ class StringFieldType(BaseFieldType):
 
         for char in value:
 
-            if ord(char) < 32:
-
-                if char not in (
+            if (
+                ord(char) < 32
+                and char not in (
                     "\n",
                     "\r",
                     "\t",
-                ):
+                )
+            ):
 
-                    raise ValidationError(
-                        "Недопустимые символы"
-                    )
+                raise ValidationError(
+                    "Недопустимые символы"
+                )
 
         # =============================================
         # REGEX
@@ -203,6 +168,45 @@ class StringFieldType(BaseFieldType):
         return value
 
     # =====================================================
+    # VALIDATE
+    # =====================================================
+
+    def validate(
+        self,
+        field,
+        value,
+    ):
+
+        value = super().validate(
+            field,
+            value,
+        )
+
+        if value in (
+            None,
+            "",
+        ):
+
+            return value
+
+        if field.is_multiple:
+
+            return [
+
+                self.validate_string(
+                    field,
+                    item,
+                )
+
+                for item in value
+            ]
+
+        return self.validate_string(
+            field,
+            value,
+        )
+
+    # =====================================================
     # NORMALIZE
     # =====================================================
 
@@ -219,25 +223,13 @@ class StringFieldType(BaseFieldType):
         if field.is_multiple:
 
             return [
-                self.normalize_single(v)
+                self.to_string(v)
                 for v in value
             ]
 
-        return self.normalize_single(
+        return self.to_string(
             value
         )
-
-    def normalize_single(
-        self,
-        value,
-    ):
-
-        value = unicodedata.normalize(
-            "NFKC",
-            str(value),
-        )
-
-        return value.strip()
 
     # =====================================================
     # SERIALIZE
@@ -289,16 +281,6 @@ class StringFieldType(BaseFieldType):
     # UI
     # =====================================================
 
-    def get_widget(
-        self,
-        field,
-    ):
-
-        return (
-            field.widget
-            or "TextInput"
-        )
-
     def get_schema(
         self,
         field,
@@ -312,11 +294,7 @@ class StringFieldType(BaseFieldType):
 
             "maxLength":
 
-                getattr(
-                    field,
-                    "max_length",
-                    None,
-                )
+                field.max_value
 
                 or self.DEFAULT_MAX_LENGTH,
 

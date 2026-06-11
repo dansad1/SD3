@@ -24,6 +24,8 @@ class NumberFieldType(BaseFieldType):
 
     label = "Number"
 
+    widget = "number"
+
     sortable = True
 
     searchable = False
@@ -34,7 +36,53 @@ class NumberFieldType(BaseFieldType):
     # LIMITS
     # =====================================================
 
-    MAX_ABS = 10**15
+    MAX_ABS = 10 ** 15
+
+    # =====================================================
+    # CONVERSION
+    # =====================================================
+
+    def to_number(
+        self,
+        value,
+    ):
+
+        if isinstance(
+            value,
+            bool,
+        ):
+
+            raise ValidationError(
+                "Некорректное число"
+            )
+
+        try:
+
+            number = float(
+                value
+            )
+
+        except Exception:
+
+            raise ValidationError(
+                "Некорректное число"
+            )
+
+        if not math.isfinite(
+            number
+        ):
+
+            raise ValidationError(
+                "Некорректное число"
+            )
+
+        if abs(number) > self.MAX_ABS:
+
+            raise ValidationError(
+                "Слишком большое число"
+            )
+
+        return number
 
     # =====================================================
     # VALIDATE
@@ -51,10 +99,6 @@ class NumberFieldType(BaseFieldType):
             value,
         )
 
-        # =============================================
-        # EMPTY
-        # =============================================
-
         if value in (
             None,
             "",
@@ -62,93 +106,16 @@ class NumberFieldType(BaseFieldType):
 
             return value
 
-        # =============================================
-        # MULTIPLE
-        # =============================================
-
         if field.is_multiple:
 
-            if not isinstance(
-                value,
-                list,
-            ):
-
-                raise ValidationError(
-                    "Ожидался список чисел"
-                )
-
             return [
-                self.validate_single(v)
+                self.to_number(v)
                 for v in value
             ]
 
-        # =============================================
-        # SINGLE
-        # =============================================
-
-        return self.validate_single(
+        return self.to_number(
             value
         )
-
-    # =====================================================
-    # VALIDATE SINGLE
-    # =====================================================
-
-    def validate_single(
-        self,
-        value,
-    ):
-
-        # =============================================
-        # BOOL
-        # =============================================
-
-        if isinstance(
-            value,
-            bool,
-        ):
-
-            raise ValidationError(
-                "Некорректное число"
-            )
-
-        # =============================================
-        # CONVERT
-        # =============================================
-
-        try:
-
-            number = float(value)
-
-        except Exception:
-
-            raise ValidationError(
-                "Некорректное число"
-            )
-
-        # =============================================
-        # NAN / INF
-        # =============================================
-
-        if not math.isfinite(
-            number
-        ):
-
-            raise ValidationError(
-                "Некорректное число"
-            )
-
-        # =============================================
-        # LIMITS
-        # =============================================
-
-        if abs(number) > self.MAX_ABS:
-
-            raise ValidationError(
-                "Слишком большое число"
-            )
-
-        return number
 
     # =====================================================
     # NORMALIZE
@@ -170,11 +137,11 @@ class NumberFieldType(BaseFieldType):
         if field.is_multiple:
 
             return [
-                self.validate_single(v)
+                self.to_number(v)
                 for v in value
             ]
 
-        return self.validate_single(
+        return self.to_number(
             value
         )
 
@@ -189,6 +156,27 @@ class NumberFieldType(BaseFieldType):
     ):
 
         return value
+
+    # =====================================================
+    # DESERIALIZE
+    # =====================================================
+
+    def deserialize(
+        self,
+        field,
+        value,
+    ):
+
+        if value in (
+            None,
+            "",
+        ):
+
+            return None
+
+        return self.to_number(
+            value
+        )
 
     # =====================================================
     # FILTER
@@ -210,7 +198,7 @@ class NumberFieldType(BaseFieldType):
 
         try:
 
-            value = self.validate_single(
+            value = self.to_number(
                 value
             )
 
@@ -219,5 +207,33 @@ class NumberFieldType(BaseFieldType):
             return queryset.none()
 
         return queryset.filter(**{
-            field.name: value
+            field.name:
+                value
         })
+
+    # =====================================================
+    # UI
+    # =====================================================
+
+    def get_schema(
+        self,
+        field,
+    ):
+
+        schema = super().get_schema(
+            field
+        )
+
+        if field.min_value is not None:
+
+            schema["min"] = (
+                field.min_value
+            )
+
+        if field.max_value is not None:
+
+            schema["max"] = (
+                field.max_value
+            )
+
+        return schema

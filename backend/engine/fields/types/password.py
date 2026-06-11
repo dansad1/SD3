@@ -1,4 +1,6 @@
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import (
+    ValidationError,
+)
 
 from backend.engine.fields.types.base import (
     BaseFieldType,
@@ -24,15 +26,18 @@ class PasswordAccessor:
         field,
         value,
     ):
+
         if value in (
             None,
             "",
         ):
-            return
+            return obj
 
         obj.set_password(
             value
         )
+
+        return obj
 
 
 @register_field_type
@@ -44,34 +49,19 @@ class PasswordFieldType(
 
     label = "Password"
 
-    serializeable = False
+    widget = "password"
 
     searchable = False
 
     filterable = False
 
+    sortable = False
+
     accessor = PasswordAccessor()
 
-    def get_schema(
-        self,
-        field,
-    ):
-
-        schema = super().get_schema(
-            field
-        )
-
-        schema.update({
-
-            "inputType":
-                "password",
-
-            "autocomplete":
-                "new-password",
-
-        })
-
-        return schema
+    # =====================================================
+    # VALIDATE
+    # =====================================================
 
     def validate(
         self,
@@ -100,6 +90,10 @@ class PasswordFieldType(
 
         return value
 
+    # =====================================================
+    # NORMALIZE
+    # =====================================================
+
     def normalize(
         self,
         field,
@@ -112,7 +106,13 @@ class PasswordFieldType(
         ):
             return None
 
-        return str(value)
+        return str(
+            value
+        )
+
+    # =====================================================
+    # SERIALIZE
+    # =====================================================
 
     def serialize(
         self,
@@ -120,3 +120,36 @@ class PasswordFieldType(
         value,
     ):
         return None
+
+    # =====================================================
+    # DESERIALIZE
+    # =====================================================
+
+    def deserialize(
+        self,
+        field,
+        value,
+    ):
+        return None
+
+    # =====================================================
+    # UI
+    # =====================================================
+
+    def get_schema(
+        self,
+        field,
+    ):
+
+        schema = super().get_schema(
+            field
+        )
+
+        schema.update({
+
+            "autocomplete":
+                "new-password",
+
+        })
+
+        return schema

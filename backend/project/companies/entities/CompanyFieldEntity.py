@@ -1,10 +1,5 @@
-from backend.engine.entity.Base.BaseEntity import (
-    BaseEntity
-)
-
-from backend.project.companies.models import (
-    CompanyField
-)
+from backend.engine.entity.Base.BaseEntity import BaseEntity
+from backend.project.companies.models import CompanyField
 
 
 class CompanyFieldEntity(BaseEntity):
@@ -13,105 +8,54 @@ class CompanyFieldEntity(BaseEntity):
 
     entity = "company-fields"
 
-    # =====================================================
-    # FORM
-    # =====================================================
+    exclude_fields = [
 
-    form_sections = [
+        "fieldset",
 
-        {
-            "title": "Основное",
+        "created_at",
 
-            "fields": [
-                "fieldset",
-                "name",
-                "label",
-                "field_type",
-            ],
-        },
-
-        {
-            "title": "UI",
-
-            "fields": [
-                "placeholder",
-                "help_text",
-                "default_value",
-                "choices",
-            ],
-        },
-
-        {
-            "title": "Валидация",
-
-            "fields": [
-                "required",
-                "unique",
-                "regex",
-                "min_value",
-                "max_value",
-            ],
-        },
-
-        {
-            "title": "Системное",
-
-            "fields": [
-                "is_multiple",
-                "is_system",
-            ],
-        },
+        "updated_at",
     ]
 
-    # =====================================================
-    # LIST
-    # =====================================================
-
     list_display = [
-        "fieldset",
+
         "name",
+
         "label",
+
         "field_type",
+
         "required",
-        "readonly",
-        "hidden",
-        "order",
+
+        "unique",
+
+        "is_multiple",
+
+        "is_system",
     ]
 
     search_fields = [
+
         "name",
+
         "label",
     ]
 
     filter_fields = [
-        "fieldset",
+
         "field_type",
     ]
 
     ordering = [
-        "fieldset",
-        "order",
+
         "id",
     ]
 
-    # =====================================================
-    # ACCESS
-    # =====================================================
-
     capabilities = {
+
         "list": "company_fields.view",
         "view": "company_fields.view",
         "create": "company_fields.create",
         "edit": "company_fields.edit",
         "delete": "company_fields.delete",
     }
-
-    # =====================================================
-    # QUERYSET
-    # =====================================================
-
-    def get_select_related(self):
-
-        return [
-            "fieldset",
-        ]

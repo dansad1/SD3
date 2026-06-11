@@ -1,4 +1,3 @@
-
 class BaseField:
     """
     Runtime field abstraction.
@@ -43,22 +42,6 @@ class BaseField:
         )
 
     @property
-    def readonly(self):
-        return getattr(
-            self.source,
-            "readonly",
-            False,
-        )
-
-    @property
-    def hidden(self):
-        return getattr(
-            self.source,
-            "hidden",
-            False,
-        )
-
-    @property
     def unique(self):
         return getattr(
             self.source,
@@ -75,7 +58,7 @@ class BaseField:
         )
 
     # =====================================================
-    # UI
+    # UI HINTS
     # =====================================================
 
     @property
@@ -92,30 +75,6 @@ class BaseField:
             self.source,
             "help_text",
             None,
-        )
-
-    @property
-    def widget(self):
-        return getattr(
-            self.source,
-            "widget",
-            None,
-        )
-
-    @property
-    def width(self):
-        return getattr(
-            self.source,
-            "width",
-            12,
-        )
-
-    @property
-    def order(self):
-        return getattr(
-            self.source,
-            "order",
-            0,
         )
 
     # =====================================================
@@ -167,18 +126,6 @@ class BaseField:
         )
 
     # =====================================================
-    # RELATION
-    # =====================================================
-
-    @property
-    def relation_entity(self):
-        return getattr(
-            self.source,
-            "relation_entity",
-            None,
-        )
-
-    # =====================================================
     # DEFAULT
     # =====================================================
 
@@ -189,6 +136,18 @@ class BaseField:
             "default_value",
             None,
         )
+
+    # =====================================================
+    # CHOICES
+    # =====================================================
+
+    @property
+    def choices(self):
+        return getattr(
+            self.source,
+            "choices",
+            [],
+        ) or []
 
     # =====================================================
     # OPTIONS
@@ -204,7 +163,7 @@ class BaseField:
         )
 
         if not value:
-            return []
+            return {}
 
         return value
 
@@ -231,7 +190,6 @@ class BaseField:
         self,
         value,
     ):
-
         return self.field_type.validate(
             self,
             value,
@@ -241,7 +199,6 @@ class BaseField:
         self,
         value,
     ):
-
         return self.field_type.normalize(
             self,
             value,
@@ -251,7 +208,6 @@ class BaseField:
         self,
         value,
     ):
-
         return self.field_type.serialize(
             self,
             value,
@@ -261,7 +217,6 @@ class BaseField:
         self,
         value,
     ):
-
         return self.field_type.deserialize(
             self,
             value,
@@ -288,20 +243,11 @@ class BaseField:
             "required":
                 self.required,
 
-            "readonly":
-                self.readonly,
-
-            "hidden":
-                self.hidden,
-
             "placeholder":
                 self.placeholder,
 
             "help_text":
                 self.help_text,
-
-            "width":
-                self.width,
 
             "multiple":
                 self.is_multiple,
@@ -312,8 +258,8 @@ class BaseField:
         # =============================================
 
         if self.section:
-            schema["ui"] = {
 
+            schema["ui"] = {
                 "section":
                     self.section,
             }
@@ -323,12 +269,17 @@ class BaseField:
         # =============================================
 
         if self.choices:
-            schema["options"] = (
+
+            # новый формат
+
+            schema["choices"] = (
                 self.choices
             )
 
-            schema["widget"] = (
-                "Select"
+            # совместимость со старым фронтом
+
+            schema["options"] = (
+                self.choices
             )
 
         return schema
@@ -342,7 +293,6 @@ class BaseField:
         queryset,
         value,
     ):
-
         return self.field_type.apply_filter(
             queryset,
             self,
@@ -354,7 +304,6 @@ class BaseField:
         queryset,
         value,
     ):
-
         return self.field_type.apply_search(
             queryset,
             self,
@@ -370,7 +319,6 @@ class BaseField:
         accessor,
         obj,
     ):
-
         return accessor.get(
             obj,
             self,

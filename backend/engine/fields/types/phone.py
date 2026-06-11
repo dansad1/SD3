@@ -24,6 +24,8 @@ class PhoneFieldType(StringFieldType):
 
     label = "Phone"
 
+    widget = "phone"
+
     searchable = True
 
     sortable = False
@@ -37,43 +39,10 @@ class PhoneFieldType(StringFieldType):
     DEFAULT_REGION = "UA"
 
     # =====================================================
-    # VALIDATE
+    # CONVERSION
     # =====================================================
 
-    def validate(
-        self,
-        field,
-        value,
-    ):
-
-        value = super().validate(
-            field,
-            value,
-        )
-
-        if value in (
-            None,
-            "",
-        ):
-
-            return value
-
-        if field.is_multiple:
-
-            return [
-                self.validate_single(v)
-                for v in value
-            ]
-
-        return self.validate_single(
-            value
-        )
-
-    # =====================================================
-    # VALIDATE SINGLE
-    # =====================================================
-
-    def validate_single(
+    def to_phone(
         self,
         value,
     ):
@@ -113,10 +82,6 @@ class PhoneFieldType(StringFieldType):
                 "Некорректный номер"
             )
 
-        # =============================================
-        # VALID
-        # =============================================
-
         if not (
             phonenumbers
             .is_possible_number(
@@ -139,10 +104,6 @@ class PhoneFieldType(StringFieldType):
                 "Некорректный номер"
             )
 
-        # =============================================
-        # E164
-        # =============================================
-
         return (
             phonenumbers.format_number(
 
@@ -152,6 +113,39 @@ class PhoneFieldType(StringFieldType):
                 .PhoneNumberFormat
                 .E164,
             )
+        )
+
+    # =====================================================
+    # VALIDATE
+    # =====================================================
+
+    def validate(
+        self,
+        field,
+        value,
+    ):
+
+        value = super().validate(
+            field,
+            value,
+        )
+
+        if value in (
+            None,
+            "",
+        ):
+
+            return value
+
+        if field.is_multiple:
+
+            return [
+                self.to_phone(v)
+                for v in value
+            ]
+
+        return self.to_phone(
+            value
         )
 
     # =====================================================
@@ -174,27 +168,42 @@ class PhoneFieldType(StringFieldType):
         if field.is_multiple:
 
             return [
-                self.validate_single(v)
+                self.to_phone(v)
                 for v in value
             ]
 
-        return self.validate_single(
+        return self.to_phone(
+            value
+        )
+
+    # =====================================================
+    # DESERIALIZE
+    # =====================================================
+
+    def deserialize(
+        self,
+        field,
+        value,
+    ):
+
+        if not value:
+
+            return None
+
+        if field.is_multiple:
+
+            return [
+                self.to_phone(v)
+                for v in value
+            ]
+
+        return self.to_phone(
             value
         )
 
     # =====================================================
     # UI
     # =====================================================
-
-    def get_widget(
-        self,
-        field,
-    ):
-
-        return (
-            field.widget
-            or "phone"
-        )
 
     def get_schema(
         self,
@@ -207,17 +216,14 @@ class PhoneFieldType(StringFieldType):
 
         schema.update({
 
-            "inputType":
-                "tel",
-
             "autocomplete":
                 "tel",
 
-            "placeholder":
-                "+780501234567",
-
             "format":
                 "E.164",
+
+            "defaultRegion":
+                self.DEFAULT_REGION,
         })
 
         return schema

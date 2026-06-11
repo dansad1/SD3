@@ -33,9 +33,6 @@ def build_fields(ctx):
         # HIDDEN
         # =====================================
 
-        if field.hidden:
-            continue
-
         # =====================================
         # LIST DISPLAY
         # =====================================
@@ -88,11 +85,7 @@ def build_fields(ctx):
             "type":
                 field.type,
 
-            "readonly":
-                field.readonly,
 
-            "hidden":
-                field.hidden,
         })
 
     ctx.fields = fields

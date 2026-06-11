@@ -34,7 +34,6 @@ class CompanyEntity(BaseEntity):
 
         # static
         "id",
-        "fieldset",
         "archived",
         "created_at",
 
@@ -51,12 +50,12 @@ class CompanyEntity(BaseEntity):
     ]
 
     filter_fields = [
-        "fieldset",
         "archived",
     ]
-
-    ordering = [
-        "-id",
+    exclude_fields = [
+        "fieldset",
+        "created_at",
+        "updated_at",
     ]
 
     # =====================================================
@@ -125,10 +124,7 @@ class CompanyEntity(BaseEntity):
                     fieldset=obj.fieldset,
                 )
 
-                .order_by(
-                    "order",
-                    "id",
-                )
+
             )
 
         # =============================================
@@ -154,10 +150,7 @@ class CompanyEntity(BaseEntity):
 
                 .all()
 
-                .order_by(
-                    "order",
-                    "id",
-                )
+
             )
 
         # =============================================
@@ -190,10 +183,7 @@ class CompanyEntity(BaseEntity):
                 fieldset__is_active=True,
             )
 
-            .order_by(
-                "order",
-                "id",
-            )
+
         )
 
     # =====================================================

@@ -25,6 +25,8 @@ class JSONFieldType(BaseFieldType):
 
     label = "JSON"
 
+    widget = "json"
+
     searchable = False
 
     sortable = False
@@ -43,7 +45,41 @@ class JSONFieldType(BaseFieldType):
 
     MAX_OBJECT_KEYS = 1000
 
-    MAX_TOTAL_SIZE = 1024 * 1024  # 1MB
+    MAX_TOTAL_SIZE = 1024 * 1024
+
+    DANGEROUS_KEYS = {
+        "__proto__",
+        "constructor",
+        "prototype",
+    }
+
+    # =====================================================
+    # PARSE
+    # =====================================================
+
+    def parse_json(
+        self,
+        value,
+    ):
+
+        if isinstance(
+            value,
+            str,
+        ):
+
+            try:
+
+                return json.loads(
+                    value
+                )
+
+            except Exception:
+
+                raise ValidationError(
+                    "Некорректный JSON"
+                )
+
+        return value
 
     # =====================================================
     # VALIDATE
@@ -67,26 +103,9 @@ class JSONFieldType(BaseFieldType):
 
             return value
 
-        # =============================================
-        # STRING JSON
-        # =============================================
-
-        if isinstance(
-            value,
-            str,
-        ):
-
-            try:
-
-                value = json.loads(
-                    value
-                )
-
-            except Exception:
-
-                raise ValidationError(
-                    "Некорректный JSON"
-                )
+        value = self.parse_json(
+            value
+        )
 
         # =============================================
         # RECURSIVE VALIDATION
@@ -144,38 +163,20 @@ class JSONFieldType(BaseFieldType):
         depth,
     ):
 
-        # =============================================
-        # DEPTH
-        # =============================================
-
         if depth > self.MAX_DEPTH:
 
             raise ValidationError(
                 "JSON слишком вложенный"
             )
 
-        # =============================================
-        # NULL
-        # =============================================
-
         if value is None:
-
             return
-
-        # =============================================
-        # BOOL
-        # =============================================
 
         if isinstance(
             value,
             bool,
         ):
-
             return
-
-        # =============================================
-        # NUMBER
-        # =============================================
 
         if isinstance(
             value,
@@ -185,24 +186,21 @@ class JSONFieldType(BaseFieldType):
             ),
         ):
 
-            if isinstance(
-                value,
-                float,
+            if (
+                isinstance(
+                    value,
+                    float,
+                )
+                and not math.isfinite(
+                    value
+                )
             ):
 
-                if not math.isfinite(
-                    value
-                ):
-
-                    raise ValidationError(
-                        "Некорректное число"
-                    )
+                raise ValidationError(
+                    "Некорректное число"
+                )
 
             return
-
-        # =============================================
-        # STRING
-        # =============================================
 
         if isinstance(
             value,
@@ -219,10 +217,6 @@ class JSONFieldType(BaseFieldType):
                 )
 
             return
-
-        # =============================================
-        # LIST
-        # =============================================
 
         if isinstance(
             value,
@@ -247,10 +241,6 @@ class JSONFieldType(BaseFieldType):
 
             return
 
-        # =============================================
-        # OBJECT
-        # =============================================
-
         if isinstance(
             value,
             dict,
@@ -267,10 +257,6 @@ class JSONFieldType(BaseFieldType):
 
             for key, item in value.items():
 
-                # =====================================
-                # KEY TYPE
-                # =====================================
-
                 if not isinstance(
                     key,
                     str,
@@ -280,28 +266,16 @@ class JSONFieldType(BaseFieldType):
                         "Ключ JSON должен быть строкой"
                     )
 
-                # =====================================
-                # KEY SIZE
-                # =====================================
-
                 if len(key) > 255:
 
                     raise ValidationError(
                         "Слишком длинный ключ"
                     )
 
-                # =====================================
-                # PROTOTYPE POLLUTION
-                # =====================================
-
-                dangerous = {
-
-                    "__proto__",
-                    "constructor",
-                    "prototype",
-                }
-
-                if key in dangerous:
+                if (
+                    key
+                    in self.DANGEROUS_KEYS
+                ):
 
                     raise ValidationError(
                         "Недопустимый ключ JSON"
@@ -313,10 +287,6 @@ class JSONFieldType(BaseFieldType):
                 )
 
             return
-
-        # =============================================
-        # INVALID TYPE
-        # =============================================
 
         raise ValidationError(
             "Недопустимый тип JSON"
@@ -339,24 +309,9 @@ class JSONFieldType(BaseFieldType):
 
             return None
 
-        if isinstance(
-            value,
-            str,
-        ):
-
-            try:
-
-                value = json.loads(
-                    value
-                )
-
-            except Exception:
-
-                raise ValidationError(
-                    "Некорректный JSON"
-                )
-
-        return value
+        return self.parse_json(
+            value
+        )
 
     # =====================================================
     # SERIALIZE
@@ -386,16 +341,6 @@ class JSONFieldType(BaseFieldType):
     # UI
     # =====================================================
 
-    def get_widget(
-        self,
-        field,
-    ):
-
-        return (
-            field.widget
-            or "json"
-        )
-
     def get_schema(
         self,
         field,
@@ -407,7 +352,8 @@ class JSONFieldType(BaseFieldType):
 
         schema.update({
 
-            "json": True,
+            "json":
+                True,
 
             "maxDepth":
                 self.MAX_DEPTH,

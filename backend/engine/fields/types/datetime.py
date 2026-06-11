@@ -1,7 +1,3 @@
-# =========================================================
-# backend/dynamic/field_types/datetime.py
-# =========================================================
-
 from datetime import (
     datetime,
     timezone,
@@ -29,110 +25,23 @@ class DateTimeFieldType(BaseFieldType):
 
     label = "DateTime"
 
+    widget = "datetime"
+
     sortable = True
 
     searchable = False
 
     filterable = True
 
-    # =====================================================
-    # LIMITS
-    # =====================================================
-
     MIN_YEAR = 1900
 
     MAX_YEAR = 2100
 
     # =====================================================
-    # VALIDATE
+    # CONVERSION
     # =====================================================
 
-    def validate(
-        self,
-        field,
-        value,
-    ):
-
-        value = super().validate(
-            field,
-            value,
-        )
-
-        # =============================================
-        # EMPTY
-        # =============================================
-
-        if value in (
-            None,
-            "",
-        ):
-
-            return value
-
-        # =============================================
-        # MULTIPLE
-        # =============================================
-
-        if field.is_multiple:
-
-            if not isinstance(
-                value,
-                list,
-            ):
-
-                raise ValidationError(
-                    "Ожидался список дат"
-                )
-
-            return [
-                self.validate_single(v)
-                for v in value
-            ]
-
-        # =============================================
-        # SINGLE
-        # =============================================
-
-        return self.validate_single(
-            value
-        )
-
-    # =====================================================
-    # VALIDATE SINGLE
-    # =====================================================
-
-    def validate_single(
-        self,
-        value,
-    ):
-
-        dt = self.parse_datetime(
-            value
-        )
-
-        # =============================================
-        # RANGE
-        # =============================================
-
-        if dt.year < self.MIN_YEAR:
-
-            raise ValidationError(
-                "Дата слишком маленькая"
-            )
-
-        if dt.year > self.MAX_YEAR:
-
-            raise ValidationError(
-                "Дата слишком большая"
-            )
-
-        return dt
-
-    # =====================================================
-    # PARSE
-    # =====================================================
-
-    def parse_datetime(
+    def to_datetime(
         self,
         value,
     ):
@@ -149,10 +58,6 @@ class DateTimeFieldType(BaseFieldType):
             dt = value
 
         else:
-
-            # =========================================
-            # TYPE
-            # =========================================
 
             if not isinstance(
                 value,
@@ -175,10 +80,6 @@ class DateTimeFieldType(BaseFieldType):
                     "Некорректная дата"
                 )
 
-            # =========================================
-            # ISO PARSE
-            # =========================================
-
             try:
 
                 dt = datetime.fromisoformat(
@@ -198,22 +99,78 @@ class DateTimeFieldType(BaseFieldType):
         # TZ NORMALIZATION
         # =============================================
 
-        if dj_timezone.is_naive(dt):
+        if dj_timezone.is_naive(
+            dt
+        ):
 
             dt = dj_timezone.make_aware(
                 dt,
                 timezone.utc,
             )
 
-        # =============================================
-        # UTC
-        # =============================================
-
-        dt = dt.astimezone(
+        return dt.astimezone(
             timezone.utc
         )
 
+    # =====================================================
+    # VALIDATION
+    # =====================================================
+
+    def validate_datetime(
+        self,
+        value,
+    ):
+
+        dt = self.to_datetime(
+            value
+        )
+
+        if dt.year < self.MIN_YEAR:
+
+            raise ValidationError(
+                "Дата слишком маленькая"
+            )
+
+        if dt.year > self.MAX_YEAR:
+
+            raise ValidationError(
+                "Дата слишком большая"
+            )
+
         return dt
+
+    # =====================================================
+    # VALIDATE
+    # =====================================================
+
+    def validate(
+        self,
+        field,
+        value,
+    ):
+
+        value = super().validate(
+            field,
+            value,
+        )
+
+        if value in (
+            None,
+            "",
+        ):
+
+            return value
+
+        if field.is_multiple:
+
+            return [
+                self.validate_datetime(v)
+                for v in value
+            ]
+
+        return self.validate_datetime(
+            value
+        )
 
     # =====================================================
     # NORMALIZE
@@ -235,11 +192,11 @@ class DateTimeFieldType(BaseFieldType):
         if field.is_multiple:
 
             return [
-                self.validate_single(v)
+                self.validate_datetime(v)
                 for v in value
             ]
 
-        return self.validate_single(
+        return self.validate_datetime(
             value
         )
 
@@ -293,23 +250,13 @@ class DateTimeFieldType(BaseFieldType):
 
             return None
 
-        return self.parse_datetime(
+        return self.to_datetime(
             value
         )
 
     # =====================================================
     # UI
     # =====================================================
-
-    def get_widget(
-        self,
-        field,
-    ):
-
-        return (
-            field.widget
-            or "datetime"
-        )
 
     def get_schema(
         self,
@@ -321,9 +268,6 @@ class DateTimeFieldType(BaseFieldType):
         )
 
         schema.update({
-
-            "inputType":
-                "datetime-local",
 
             "timezone":
                 "UTC",

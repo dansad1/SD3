@@ -3,25 +3,56 @@ from django.db import models
 
 FIELD_TYPES = [
 
+    # ==========================================
+    # TEXT
+    # ==========================================
+
     ("string", "String"),
     ("text", "Text"),
     ("richtext", "RichText"),
 
+    # ==========================================
+    # NUMBERS
+    # ==========================================
+
     ("number", "Number"),
 
+    # ==========================================
+    # BOOLEAN
+    # ==========================================
+
     ("boolean", "Boolean"),
+
+    # ==========================================
+    # DATE
+    # ==========================================
 
     ("date", "Date"),
     ("datetime", "DateTime"),
 
+    # ==========================================
+    # DATA
+    # ==========================================
+
     ("json", "JSON"),
+
+    # ==========================================
+    # GENERIC RELATION
+    # ==========================================
 
     ("relation", "Relation"),
 
+    # ==========================================
+    # SPECIAL
+    # ==========================================
+
     ("email", "Email"),
     ("phone", "Phone"),
-
     ("password", "Password"),
+
+    # ==========================================
+    # DOMAIN
+    # ==========================================
 
     ("user", "User"),
     ("role", "Role"),
@@ -51,75 +82,11 @@ class BaseField(models.Model):
         max_length=50,
         choices=FIELD_TYPES,
         default="string",
+        db_index=True,
     )
 
     # =====================================================
-    # RELATIONS
-    # =====================================================
-
-    relation_entity = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-    )
-
-    is_multiple = models.BooleanField(
-        default=False,
-    )
-
-    # =====================================================
-    # UI
-    # =====================================================
-
-    placeholder = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-    )
-
-    help_text = models.TextField(
-        blank=True,
-        null=True,
-    )
-
-    widget = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-    )
-
-    hidden = models.BooleanField(
-        default=False,
-    )
-
-    readonly = models.BooleanField(
-        default=False,
-    )
-
-    order = models.IntegerField(
-        default=0,
-    )
-
-    width = models.IntegerField(
-        default=12,
-    )
-
-    # =====================================================
-    # OPTIONS
-    # =====================================================
-
-    choices = models.JSONField(
-        default=list,
-        blank=True,
-    )
-
-    options = models.JSONField(
-        default=list,
-        blank=True,
-    )
-
-    # =====================================================
-    # VALUES
+    # DEFAULT VALUE
     # =====================================================
 
     default_value = models.TextField(
@@ -158,12 +125,68 @@ class BaseField(models.Model):
     )
 
     # =====================================================
+    # MULTI VALUE
+    # =====================================================
+
+    is_multiple = models.BooleanField(
+        default=False,
+    )
+
+    # =====================================================
+    # UX HINTS
+    # =====================================================
+
+    placeholder = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+    )
+
+    help_text = models.TextField(
+        blank=True,
+        null=True,
+    )
+
+    # =====================================================
+    # ENUM VALUES
+    # =====================================================
+
+    choices = models.JSONField(
+        default=list,
+        blank=True,
+    )
+
+    # =====================================================
+    # TYPE CONFIG
+    # =====================================================
+
+    options = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    # =====================================================
+    # GROUPING
+    # =====================================================
+
+    section = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        db_index=True,
+    )
+
+    # =====================================================
     # SYSTEM
     # =====================================================
 
     is_system = models.BooleanField(
         default=False,
     )
+
+    # =====================================================
+    # AUDIT
+    # =====================================================
 
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -173,14 +196,5 @@ class BaseField(models.Model):
         auto_now=True,
     )
 
-    # =====================================================
-    # META
-    # =====================================================
-    section = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        db_index=True,
-    )
     class Meta:
         abstract = True

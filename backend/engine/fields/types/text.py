@@ -14,6 +14,8 @@ class TextFieldType(StringFieldType):
 
     label = "Text"
 
+    widget = "textarea"
+
     DEFAULT_MAX_LENGTH = 50000
 
     ABSOLUTE_MAX_LENGTH = 100000
@@ -24,15 +26,9 @@ class TextFieldType(StringFieldType):
 
     filterable = False
 
-    def get_widget(
-        self,
-        field,
-    ):
-
-        return (
-            field.widget
-            or "textarea"
-        )
+    # =====================================================
+    # UI
+    # =====================================================
 
     def get_schema(
         self,
@@ -45,9 +41,11 @@ class TextFieldType(StringFieldType):
 
         schema.update({
 
-            "multiline": True,
+            "multiline":
+                True,
 
-            "rows": 6,
+            "rows":
+                6,
         })
 
         return schema

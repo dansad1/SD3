@@ -20,13 +20,100 @@ from backend.engine.fields.types.registry import (
 
 
 @register_field_type
-class RelationFieldType(
-    BaseFieldType
-):
+class RelationFieldType(BaseFieldType):
 
     code = "relation"
 
     label = "Relation"
+
+    widget = "select"
+
+    sortable = False
+
+    searchable = False
+
+    filterable = True
+
+    MAX_OPTIONS = 100
+
+    # =====================================================
+    # ENTITY
+    # =====================================================
+
+    def get_entity_name(
+        self,
+        field,
+    ):
+
+        return (
+            field.options.get(
+                "entity"
+            )
+            or field.options.get(
+                "relation_entity"
+            )
+        )
+
+    def get_entity(
+        self,
+        field,
+    ):
+
+        entity_name = self.get_entity_name(
+            field
+        )
+
+        if not entity_name:
+
+            raise ValidationError(
+                "Не задана связанная сущность"
+            )
+
+        entity = entity_registry.get(
+            entity_name
+        )
+
+        if not entity:
+
+            raise ValidationError(
+                f"Entity {entity_name} не найдена"
+            )
+
+        return entity
+
+    # =====================================================
+    # VALUE
+    # =====================================================
+
+    def extract_id(
+        self,
+        value,
+    ):
+
+        if isinstance(
+            value,
+            dict,
+        ):
+
+            value = (
+                value.get("value")
+                or value.get("id")
+            )
+
+        try:
+
+            return int(
+                value
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+
+            raise ValidationError(
+                f"Invalid relation id: {value}"
+            )
 
     # =====================================================
     # VALIDATE
@@ -38,7 +125,7 @@ class RelationFieldType(
         value,
     ):
 
-        super().validate(
+        value = super().validate(
             field,
             value,
         )
@@ -48,11 +135,8 @@ class RelationFieldType(
             "",
             [],
         ):
-            return
 
-        # ================================================
-        # MULTIPLE
-        # ================================================
+            return value
 
         if field.is_multiple:
 
@@ -62,14 +146,10 @@ class RelationFieldType(
             ):
 
                 raise ValidationError(
-                    "Expected list"
+                    "Ожидался список"
                 )
 
-            return
-
-        # ================================================
-        # SINGLE
-        # ================================================
+            return value
 
         if isinstance(
             value,
@@ -77,8 +157,10 @@ class RelationFieldType(
         ):
 
             raise ValidationError(
-                "Expected single value"
+                "Ожидалось одно значение"
             )
+
+        return value
 
     # =====================================================
     # NORMALIZE
@@ -101,71 +183,23 @@ class RelationFieldType(
                 else None
             )
 
-        # ================================================
-        # ENTITY
-        # ================================================
-
-        if not field.relation_entity:
-
-            raise ValidationError(
-                "Не задан relation_entity"
-            )
-
-        entity = entity_registry.get(
-            field.relation_entity
+        entity = self.get_entity(
+            field
         )
-
-        if not entity:
-
-            raise ValidationError(
-                f"Entity "
-                f"{field.relation_entity} "
-                f"не найдена"
-            )
 
         model = entity.model
 
-        # ================================================
-        # MANY
-        # ================================================
-
         if field.is_multiple:
 
-            normalized_ids = []
-
-            for item in value:
-
-                # frontend object
-                if isinstance(
-                    item,
-                    dict,
-                ):
-
-                    item = (
-                        item.get("value")
-                        or item.get("id")
-                    )
-
-                try:
-
-                    normalized_ids.append(
-                        int(item)
-                    )
-
-                except (
-                    TypeError,
-                    ValueError,
-                ):
-
-                    raise ValidationError(
-                        f"Invalid relation id: "
-                        f"{item}"
-                    )
-
-            queryset = (
-                model.objects.filter(
-                    pk__in=normalized_ids
+            ids = [
+                self.extract_id(
+                    item
                 )
+                for item in value
+            ]
+
+            queryset = model.objects.filter(
+                pk__in=ids
             )
 
             found_ids = set(
@@ -176,59 +210,34 @@ class RelationFieldType(
             )
 
             missing = (
-                set(normalized_ids)
+                set(ids)
                 - found_ids
             )
 
             if missing:
 
                 raise ValidationError(
-                    f"Objects not found: "
-                    f"{sorted(missing)}"
+                    f"Objects not found: {sorted(missing)}"
                 )
 
-            return list(queryset)
-
-        # ================================================
-        # SINGLE
-        # ================================================
-
-        if isinstance(
-            value,
-            dict,
-        ):
-
-            value = (
-                value.get("value")
-                or value.get("id")
+            return list(
+                queryset
             )
 
-        try:
-
-            value = int(value)
-
-        except (
-            TypeError,
-            ValueError,
-        ):
-
-            raise ValidationError(
-                f"Invalid relation id: "
-                f"{value}"
-            )
+        object_id = self.extract_id(
+            value
+        )
 
         try:
 
             return model.objects.get(
-                pk=value
+                pk=object_id
             )
 
         except model.DoesNotExist:
 
             raise ValidationError(
-                f"Object "
-                f"{value} "
-                f"not found"
+                f"Object {object_id} not found"
             )
 
     # =====================================================
@@ -236,198 +245,135 @@ class RelationFieldType(
     # =====================================================
 
     def serialize(
-            self,
-            field,
-            value,
+        self,
+        field,
+        value,
     ):
 
-        # ================================================
-        # EMPTY
-        # ================================================
-
         if value is None:
+
             return (
                 []
                 if field.is_multiple
                 else None
             )
 
-        # ================================================
-        # MANY
-        # ================================================
-
         if field.is_multiple:
+
             items = (
                 value.all()
-                if hasattr(value, "all")
+                if hasattr(
+                    value,
+                    "all",
+                )
                 else value
             )
 
             return [
-
                 {
                     "value": item.pk,
                     "label": str(item),
                 }
-
                 for item in items
             ]
-
-        # ================================================
-        # SINGLE
-        # ================================================
 
         return {
             "value": value.pk,
             "label": str(value),
         }
+
     # =====================================================
-    # WIDGET
+    # DESERIALIZE
     # =====================================================
 
-    def get_widget(
+    def deserialize(
+        self,
+        field,
+        value,
+    ):
+
+        return self.normalize(
+            field,
+            value,
+        )
+
+    # =====================================================
+    # OPTIONS
+    # =====================================================
+
+    def get_options(
         self,
         field,
     ):
 
-        return (
-            field.widget
-            or (
-                "multiselect"
-                if field.is_multiple
-                else "select"
-            )
+        entity_name = self.get_entity_name(
+            field
         )
 
-    # =====================================================
-    # SCHEMA
-    # =====================================================
+        if not entity_name:
+
+            return []
+
+        try:
+
+            entity = entity_registry.get(
+                entity_name
+            )
+
+        except Exception:
+
+            return []
+
+        if not entity:
+
+            return []
+
+        queryset = (
+            entity.model.objects
+            .all()
+            .order_by("pk")[:self.MAX_OPTIONS]
+        )
+
+        return [
+            {
+                "value": obj.pk,
+                "label": str(obj),
+            }
+            for obj in queryset
+        ]
+
     # =====================================================
     # SCHEMA
     # =====================================================
 
     def get_schema(
-            self,
-            field,
+        self,
+        field,
     ):
-
-        print(
-            "🔥 RELATION GET_SCHEMA",
-            field.name,
-        )
 
         schema = super().get_schema(
             field
         )
 
-        options = []
-
-        relation_entity = (
-            field.relation_entity
+        entity_name = self.get_entity_name(
+            field
         )
-
-        print(
-            "🔥 RELATION ENTITY",
-            field.name,
-            relation_entity,
-        )
-
-        if relation_entity:
-
-            try:
-
-                entity = entity_registry.get(
-                    relation_entity
-                )
-
-                print(
-                    "🔥 ENTITY",
-                    relation_entity,
-                    entity,
-                )
-
-                if entity:
-                    queryset = (
-                        entity.model.objects.all()
-                    )
-
-                    print(
-                        "🔥 QUERYSET COUNT",
-                        field.name,
-                        queryset.count(),
-                    )
-
-                    options = [
-
-                        {
-                            "value": obj.pk,
-                            "label": str(obj),
-                        }
-
-                        for obj in queryset
-                    ]
-
-                    print(
-                        "🔥 OPTIONS COUNT",
-                        field.name,
-                        len(options),
-                    )
-
-            except Exception as e:
-
-                print(
-                    "🔥 OPTIONS ERROR",
-                    field.name,
-                    repr(e),
-                )
-
-                options = []
 
         schema.update({
 
-            # новый контракт
-
             "entity":
-                relation_entity,
-
-            "options":
-                options,
-
-            # совместимость
+                entity_name,
 
             "relation_entity":
-                relation_entity,
-
+                entity_name,
 
             "multiple":
                 field.is_multiple,
+
+            "options":
+                self.get_options(
+                    field
+                ),
         })
-
-        print(
-            "🔥 FINAL SCHEMA",
-            field.name,
-            {
-                "entity":
-                    schema.get("entity"),
-
-                "relation_entity":
-                    schema.get(
-                        "relation_entity"
-                    ),
-
-                "multiple":
-                    schema.get(
-                        "multiple"
-                    ),
-
-                "options":
-                    len(
-                        schema.get(
-                            "options",
-                            [],
-                        )
-                    ),
-            }
-        )
 
         return schema

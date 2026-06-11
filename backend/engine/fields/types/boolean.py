@@ -1,7 +1,3 @@
-# =========================================================
-# backend/dynamic/field_types/boolean.py
-# =========================================================
-
 from django.core.exceptions import (
     ValidationError,
 )
@@ -22,65 +18,60 @@ class BooleanFieldType(BaseFieldType):
 
     label = "Boolean"
 
+    widget = "checkbox"
+
     sortable = True
 
     searchable = False
 
     filterable = True
 
-    # =====================================================
-    # VALUES
-    # =====================================================
-
     TRUE_VALUES = {
-
         True,
-
         1,
-
         "1",
-
         "true",
-
         "True",
-
         "TRUE",
-
         "yes",
-
         "Yes",
-
         "YES",
-
         "on",
-
         "ON",
     }
 
     FALSE_VALUES = {
-
         False,
-
         0,
-
         "0",
-
         "false",
-
         "False",
-
         "FALSE",
-
         "no",
-
         "No",
-
         "NO",
-
         "off",
-
         "OFF",
     }
+
+    # =====================================================
+    # CONVERSION
+    # =====================================================
+
+    def to_bool(
+        self,
+        value,
+    ):
+
+        if value in self.TRUE_VALUES:
+            return True
+
+        if value in self.FALSE_VALUES:
+            return False
+
+        raise ValidationError(
+            "Некорректное булево значение"
+        )
 
     # =====================================================
     # VALIDATE
@@ -97,60 +88,21 @@ class BooleanFieldType(BaseFieldType):
             value,
         )
 
-        # =============================================
-        # EMPTY
-        # =============================================
-
         if value in (
             None,
             "",
         ):
-
             return value
-
-        # =============================================
-        # MULTIPLE
-        # =============================================
 
         if field.is_multiple:
 
-            if not isinstance(
-                value,
-                list,
-            ):
-
-                raise ValidationError(
-                    "Ожидался список"
-                )
-
             return [
-                self.validate_single(v)
+                self.to_bool(v)
                 for v in value
             ]
 
-        return self.validate_single(
+        return self.to_bool(
             value
-        )
-
-    # =====================================================
-    # VALIDATE SINGLE
-    # =====================================================
-
-    def validate_single(
-        self,
-        value,
-    ):
-
-        if value in self.TRUE_VALUES:
-
-            return True
-
-        if value in self.FALSE_VALUES:
-
-            return False
-
-        raise ValidationError(
-            "Некорректное булево значение"
         )
 
     # =====================================================
@@ -167,17 +119,16 @@ class BooleanFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return None
 
         if field.is_multiple:
 
             return [
-                self.validate_single(v)
+                self.to_bool(v)
                 for v in value
             ]
 
-        return self.validate_single(
+        return self.to_bool(
             value
         )
 
@@ -192,7 +143,6 @@ class BooleanFieldType(BaseFieldType):
     ):
 
         if value is None:
-
             return None
 
         return bool(value)
@@ -208,10 +158,9 @@ class BooleanFieldType(BaseFieldType):
     ):
 
         if value is None:
-
             return None
 
-        return self.validate_single(
+        return self.to_bool(
             value
         )
 
@@ -230,32 +179,18 @@ class BooleanFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return queryset
 
-        normalized = (
-            self.validate_single(
-                value
-            )
-        )
-
         return queryset.filter(**{
-            field.name: normalized
+            field.name:
+                self.to_bool(
+                    value
+                )
         })
 
     # =====================================================
     # UI
     # =====================================================
-
-    def get_widget(
-        self,
-        field,
-    ):
-
-        return (
-            field.widget
-            or "checkbox"
-        )
 
     def get_schema(
         self,
@@ -267,7 +202,6 @@ class BooleanFieldType(BaseFieldType):
         )
 
         schema.update({
-
             "inputType":
                 "checkbox",
         })

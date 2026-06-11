@@ -18,10 +18,6 @@ class DjangoField(BaseField):
     @property
     def accessor(self):
 
-        # ================================================
-        # FIELD TYPE ACCESSOR
-        # ================================================
-
         field_type_accessor = getattr(
             self.field_type,
             "accessor",
@@ -29,12 +25,7 @@ class DjangoField(BaseField):
         )
 
         if field_type_accessor:
-
             return field_type_accessor
-
-        # ================================================
-        # DEFAULT ACCESSOR
-        # ================================================
 
         return DjangoFieldAccessor()
 
@@ -46,7 +37,6 @@ class DjangoField(BaseField):
         self,
         obj,
     ):
-
         return self.accessor.get(
             obj,
             self,
@@ -57,7 +47,6 @@ class DjangoField(BaseField):
         obj,
         value,
     ):
-
         return self.accessor.set(
             obj,
             self,
@@ -70,17 +59,12 @@ class DjangoField(BaseField):
 
     @property
     def name(self):
-
         return self.source.name
 
     @property
     def type(self):
 
         field = self.source
-
-        # =================================================
-        # PASSWORD
-        # =================================================
 
         if (
             field.name == "password"
@@ -91,10 +75,6 @@ class DjangoField(BaseField):
         ):
             return "password"
 
-        # =================================================
-        # RELATION
-        # =================================================
-
         if isinstance(
             field,
             (
@@ -104,10 +84,6 @@ class DjangoField(BaseField):
         ):
             return "relation"
 
-        # =================================================
-        # TEXT
-        # =================================================
-
         if isinstance(
             field,
             models.TextField,
@@ -116,17 +92,18 @@ class DjangoField(BaseField):
 
         if isinstance(
             field,
+            models.EmailField,
+        ):
+            return "email"
+
+        if isinstance(
+            field,
             (
                 models.CharField,
-                models.EmailField,
                 models.SlugField,
             ),
         ):
             return "string"
-
-        # =================================================
-        # NUMBERS
-        # =================================================
 
         if isinstance(
             field,
@@ -138,19 +115,11 @@ class DjangoField(BaseField):
         ):
             return "number"
 
-        # =================================================
-        # BOOL
-        # =================================================
-
         if isinstance(
             field,
             models.BooleanField,
         ):
             return "boolean"
-
-        # =================================================
-        # DATE
-        # =================================================
 
         if isinstance(
             field,
@@ -164,10 +133,6 @@ class DjangoField(BaseField):
         ):
             return "date"
 
-        # =================================================
-        # JSON
-        # =================================================
-
         if isinstance(
             field,
             models.JSONField,
@@ -177,44 +142,22 @@ class DjangoField(BaseField):
         return "string"
 
     # =====================================================
-    # UI
+    # META
     # =====================================================
 
     @property
     def label(self):
-
         return (
             self.source.verbose_name
             or self.name
         )
 
     @property
-    def placeholder(self):
-
-        return None
-
-    @property
     def help_text(self):
-
         return (
             self.source.help_text
             or ""
         )
-
-    @property
-    def widget(self):
-
-        return None
-
-    @property
-    def width(self):
-
-        return 12
-
-    @property
-    def order(self):
-
-        return 0
 
     # =====================================================
     # VALIDATION
@@ -222,49 +165,18 @@ class DjangoField(BaseField):
 
     @property
     def required(self):
-
         return not (
             self.source.blank
             or self.source.null
         )
 
     @property
-    def readonly(self):
-
-        return not getattr(
-            self.source,
-            "editable",
-            True,
-        )
-
-    @property
-    def hidden(self):
-
-        return False
-
-    @property
     def unique(self):
-
         return getattr(
             self.source,
             "unique",
             False,
         )
-
-    @property
-    def regex(self):
-
-        return None
-
-    @property
-    def min_value(self):
-
-        return None
-
-    @property
-    def max_value(self):
-
-        return None
 
     # =====================================================
     # RELATIONS
@@ -272,98 +184,12 @@ class DjangoField(BaseField):
 
     @property
     def is_multiple(self):
-
         return getattr(
             self.source,
             "many_to_many",
             False,
         )
 
-    @property
-    def relation_entity(self):
-
-        remote = getattr(
-            self.source,
-            "remote_field",
-            None,
-        )
-
-        if not remote:
-            return None
-
-        model = remote.model
-
-        from backend.engine.entity.EntityRegistry import (
-            entity_registry,
-        )
-
-        print(
-            "\n🔥 RELATION LOOKUP"
-        )
-
-        print(
-            "field:",
-            self.name,
-        )
-
-        print(
-            "model:",
-            model,
-        )
-
-        print(
-            "model module:",
-            getattr(
-                model,
-                "__module__",
-                None,
-            ),
-        )
-
-        print(
-            "model name:",
-            getattr(
-                model,
-                "__name__",
-                None,
-            ),
-        )
-
-        print(
-            "registered models:"
-        )
-
-        for m, e in (
-                entity_registry
-                        .storage
-                        .by_model
-                        .items()
-        ):
-            print(
-                "  ",
-                m,
-                "=>",
-                e.entity,
-            )
-
-        entity = (
-            entity_registry
-            .for_model(model)
-        )
-
-        print(
-            "FOUND ENTITY:",
-            entity,
-        )
-
-        if not entity:
-            return None
-
-        return entity.entity
-
-    # =====================================================
-    # CHOICES
-    # =====================================================
     # =====================================================
     # CHOICES
     # =====================================================

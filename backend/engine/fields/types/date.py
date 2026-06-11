@@ -1,7 +1,3 @@
-# =========================================================
-# backend/dynamic/field_types/date.py
-# =========================================================
-
 from datetime import (
     date,
     datetime,
@@ -27,15 +23,13 @@ class DateFieldType(BaseFieldType):
 
     label = "Date"
 
+    widget = "date"
+
     sortable = True
 
     searchable = False
 
     filterable = True
-
-    # =====================================================
-    # LIMITS
-    # =====================================================
 
     MIN_DATE = date(
         1900,
@@ -48,6 +42,84 @@ class DateFieldType(BaseFieldType):
         12,
         31,
     )
+
+    # =====================================================
+    # CONVERSION
+    # =====================================================
+
+    def to_date(
+        self,
+        value,
+    ):
+
+        if isinstance(
+            value,
+            date,
+        ) and not isinstance(
+            value,
+            datetime,
+        ):
+            return value
+
+        if isinstance(
+            value,
+            datetime,
+        ):
+            return value.date()
+
+        if not isinstance(
+            value,
+            (
+                str,
+                int,
+                float,
+            ),
+        ):
+            raise ValidationError(
+                "Некорректная дата"
+            )
+
+        raw = str(value).strip()
+
+        if not raw:
+            raise ValidationError(
+                "Некорректная дата"
+            )
+
+        try:
+            return date.fromisoformat(
+                raw
+            )
+
+        except Exception:
+            raise ValidationError(
+                "Некорректная дата"
+            )
+
+    # =====================================================
+    # VALIDATION
+    # =====================================================
+
+    def validate_date(
+        self,
+        value,
+    ):
+
+        parsed = self.to_date(
+            value
+        )
+
+        if parsed < self.MIN_DATE:
+            raise ValidationError(
+                "Дата слишком маленькая"
+            )
+
+        if parsed > self.MAX_DATE:
+            raise ValidationError(
+                "Дата слишком большая"
+            )
+
+        return parsed
 
     # =====================================================
     # VALIDATE
@@ -64,153 +136,22 @@ class DateFieldType(BaseFieldType):
             value,
         )
 
-        # =============================================
-        # EMPTY
-        # =============================================
-
         if value in (
             None,
             "",
         ):
-
             return value
-
-        # =============================================
-        # MULTIPLE
-        # =============================================
 
         if field.is_multiple:
 
-            if not isinstance(
-                value,
-                list,
-            ):
-
-                raise ValidationError(
-                    "Ожидался список дат"
-                )
-
             return [
-                self.validate_single(v)
+                self.validate_date(v)
                 for v in value
             ]
 
-        # =============================================
-        # SINGLE
-        # =============================================
-
-        return self.validate_single(
+        return self.validate_date(
             value
         )
-
-    # =====================================================
-    # VALIDATE SINGLE
-    # =====================================================
-
-    def validate_single(
-        self,
-        value,
-    ):
-
-        parsed = self.parse_date(
-            value
-        )
-
-        # =============================================
-        # RANGE
-        # =============================================
-
-        if parsed < self.MIN_DATE:
-
-            raise ValidationError(
-                "Дата слишком маленькая"
-            )
-
-        if parsed > self.MAX_DATE:
-
-            raise ValidationError(
-                "Дата слишком большая"
-            )
-
-        return parsed
-
-    # =====================================================
-    # PARSE
-    # =====================================================
-
-    def parse_date(
-        self,
-        value,
-    ):
-
-        # =============================================
-        # DATE
-        # =============================================
-
-        if isinstance(
-            value,
-            date,
-        ) and not isinstance(
-            value,
-            datetime,
-        ):
-
-            return value
-
-        # =============================================
-        # DATETIME
-        # =============================================
-
-        if isinstance(
-            value,
-            datetime,
-        ):
-
-            return value.date()
-
-        # =============================================
-        # TYPE
-        # =============================================
-
-        if not isinstance(
-            value,
-            (
-                str,
-                int,
-                float,
-            ),
-        ):
-
-            raise ValidationError(
-                "Некорректная дата"
-            )
-
-        raw = str(value).strip()
-
-        if not raw:
-
-            raise ValidationError(
-                "Некорректная дата"
-            )
-
-        # =============================================
-        # STRICT ISO DATE
-        # YYYY-MM-DD
-        # =============================================
-
-        try:
-
-            parsed = date.fromisoformat(
-                raw
-            )
-
-        except Exception:
-
-            raise ValidationError(
-                "Некорректная дата"
-            )
-
-        return parsed
 
     # =====================================================
     # NORMALIZE
@@ -226,17 +167,16 @@ class DateFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return None
 
         if field.is_multiple:
 
             return [
-                self.validate_single(v)
+                self.validate_date(v)
                 for v in value
             ]
 
-        return self.validate_single(
+        return self.validate_date(
             value
         )
 
@@ -251,14 +191,12 @@ class DateFieldType(BaseFieldType):
     ):
 
         if value is None:
-
             return None
 
         if isinstance(
             value,
             datetime,
         ):
-
             value = value.date()
 
         return value.isoformat()
@@ -274,26 +212,15 @@ class DateFieldType(BaseFieldType):
     ):
 
         if not value:
-
             return None
 
-        return self.parse_date(
+        return self.to_date(
             value
         )
 
     # =====================================================
     # UI
     # =====================================================
-
-    def get_widget(
-        self,
-        field,
-    ):
-
-        return (
-            field.widget
-            or "date"
-        )
 
     def get_schema(
         self,
@@ -305,9 +232,6 @@ class DateFieldType(BaseFieldType):
         )
 
         schema.update({
-
-            "inputType":
-                "date",
 
             "min":
                 self.MIN_DATE.isoformat(),

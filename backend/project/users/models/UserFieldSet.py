@@ -6,14 +6,6 @@ from backend.project.tickets.models import TicketFieldSet
 
 
 class UserFieldSet(BaseFieldSet):
-
-    class Meta:
-
-        ordering = [
-            "order",
-            "id",
-        ]
-
     def __str__(self):
         return self.name
 

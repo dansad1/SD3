@@ -23,8 +23,7 @@ def serialize(ctx):
             # HIDDEN
             # =====================================
 
-            if field.hidden:
-                continue
+           
 
             # =====================================
             # LIST DISPLAY

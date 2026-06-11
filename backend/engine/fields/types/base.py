@@ -1,5 +1,3 @@
-# backend/engine/fields/types/base.py
-
 from django.core.exceptions import ValidationError
 
 
@@ -12,6 +10,8 @@ class BaseFieldType:
     code = "base"
 
     label = "Base"
+
+    widget = None
 
     sortable = True
 
@@ -52,6 +52,7 @@ class BaseFieldType:
 
         if (
             field.is_multiple
+            and value is not None
             and not isinstance(
                 value,
                 list,
@@ -141,7 +142,7 @@ class BaseFieldType:
     ):
 
         return (
-            field.widget
+            self.widget
             or self.code
         )
 
@@ -162,6 +163,10 @@ class BaseFieldType:
 
             "type":
                 self.code,
+
+            # =========================================
+            # WIDGET
+            # =========================================
 
             "widget":
                 self.get_widget(
