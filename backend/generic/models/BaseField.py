@@ -64,6 +64,9 @@ FIELD_TYPES = [
 ]
 
 
+from django.db import models
+
+
 class BaseField(models.Model):
 
     # =====================================================
@@ -89,7 +92,8 @@ class BaseField(models.Model):
     # DEFAULT VALUE
     # =====================================================
 
-    default_value = models.TextField(
+    default_value = models.CharField(
+        max_length=1000,
         blank=True,
         null=True,
     )
@@ -142,7 +146,8 @@ class BaseField(models.Model):
         null=True,
     )
 
-    help_text = models.TextField(
+    help_text = models.CharField(
+        max_length=1000,
         blank=True,
         null=True,
     )

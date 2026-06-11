@@ -36,25 +36,24 @@ type WidgetDefinition = {
 export const widgetRegistry = {
 
   TextInput: {
-    component: TextInputWidget,
+  component: TextInputWidget,
 
-    aliases: [
-      "string",
-      "textinput",
-      "TextInput",
-    ],
-  },
+  aliases: [
+    "string",
+    "text",
+    "textinput",
+    "TextInput",
+  ],
+},
 
-  Textarea: {
-    component: TextareaWidget,
+Textarea: {
+  component: TextareaWidget,
 
-    aliases: [
-      "text",
-      "textarea",
-      "Textarea",
-      "json",
-    ],
-  },
+  aliases: [
+    "textarea",
+    "Textarea",
+  ],
+},
 
   NumberInput: {
     component: NumberInputWidget,
