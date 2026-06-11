@@ -1,8 +1,3 @@
-# =========================================================
-# ENTITY
-# backend/project/companies/entities/DepartmentEntity.py
-# =========================================================
-
 from django.core.exceptions import (
     ValidationError,
 )
@@ -10,6 +5,7 @@ from django.core.exceptions import (
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
+from backend.generic.models import DynamicField
 
 from backend.project.companies.models import (
     Department,
@@ -19,99 +15,55 @@ from backend.project.companies.models import (
 
 class DepartmentEntity(BaseEntity):
 
-    # =====================================================
-    # BASE
-    # =====================================================
-
     model = Department
 
     entity = "department"
 
-    # =====================================================
-    # UI
-    # =====================================================
-
     list_display = [
-
         "id",
-
         "name",
-
         "company",
-
         "parent",
-
         "created_at",
     ]
 
     search_fields = [
-
         "name",
     ]
 
     filter_fields = [
-
         "company",
-
         "parent",
-
         "archived",
     ]
 
     ordering = [
-
         "name",
     ]
-
-    # =====================================================
-    # TREE
-    # =====================================================
 
     hierarchy = True
 
     hierarchy_parent_field = "parent"
 
-    # =====================================================
-    # ACCESS
-    # =====================================================
-
     capabilities = {
-
-        "list":
-            "departments.view",
-
-        "view":
-            "departments.view",
-
-        "create":
-            "departments.create",
-
-        "edit":
-            "departments.edit",
-
-        "delete":
-            "departments.delete",
+        "list": "departments.view",
+        "view": "departments.view",
+        "create": "departments.create",
+        "edit": "departments.edit",
+        "delete": "departments.delete",
     }
-
-    # =====================================================
-    # QUERYSET
-    # =====================================================
 
     def get_select_related(self):
 
         return [
-
             "company",
-
             "parent",
         ]
 
     def get_prefetch_related(self):
 
         return [
-
             "children",
-
             "users",
         ]
 
@@ -125,51 +77,19 @@ class DepartmentEntity(BaseEntity):
         obj=None,
     ):
 
-        return (
+        return [
 
-            CompanyField.objects
+            DynamicField(field)
 
-            .filter(
+            for field in
+
+            CompanyField.objects.filter(
                 fieldset__is_active=True,
-            )
-
-            .order_by(
+            ).order_by(
                 "id",
             )
 
-        )
-
-    # =====================================================
-    # FIELDS
-    # =====================================================
-
-    def get_fields(
-        self,
-        request,
-        obj=None,
-    ):
-
-        fields = super().get_fields(
-
-            request=request,
-
-            obj=obj,
-
-        )
-
-        fields.extend(
-
-            self.get_dynamic_fields(
-
-                request=request,
-
-                obj=obj,
-
-            )
-
-        )
-
-        return fields
+        ]
 
     # =====================================================
     # OPTIONS
@@ -181,12 +101,8 @@ class DepartmentEntity(BaseEntity):
     ):
 
         return {
-
-            "value":
-                obj.pk,
-
-            "label":
-                obj.get_full_path(),
+            "value": obj.pk,
+            "label": obj.get_full_path(),
         }
 
     # =====================================================
@@ -202,43 +118,28 @@ class DepartmentEntity(BaseEntity):
 
         errors = {}
 
-        # =================================================
-        # NAME
-        # =================================================
-
-        name = payload.get(
+        if not payload.get(
             "name"
-        )
-
-        if not name:
+        ):
 
             errors["name"] = [
                 "Название обязательно"
             ]
-
-        # =================================================
-        # SELF PARENT
-        # =================================================
 
         parent = payload.get(
             "parent"
         )
 
         if (
-
             instance
             and parent
-            and str(parent.pk) == str(instance.pk)
-
+            and str(parent.pk)
+            == str(instance.pk)
         ):
 
             errors["parent"] = [
                 "Отдел не может быть родителем самому себе"
             ]
-
-        # =================================================
-        # RESULT
-        # =================================================
 
         if errors:
 
@@ -267,16 +168,10 @@ class DepartmentEntity(BaseEntity):
             "company"
         )
 
-        # =================================================
-        # COMPANY TREE VALIDATION
-        # =================================================
-
         if (
-
             parent
             and company
             and parent.company_id != company.id
-
         ):
 
             raise ValidationError({
@@ -289,10 +184,6 @@ class DepartmentEntity(BaseEntity):
 
             })
 
-        # =================================================
-        # CYCLIC CHECK
-        # =================================================
-
         if instance and parent:
 
             current = parent
@@ -304,7 +195,9 @@ class DepartmentEntity(BaseEntity):
                     raise ValidationError({
 
                         "parent": [
+
                             "Нельзя создать циклическую иерархию"
+
                         ]
 
                     })
@@ -314,7 +207,7 @@ class DepartmentEntity(BaseEntity):
         return ctx
 
     # =====================================================
-    # TREE SERIALIZATION
+    # TREE
     # =====================================================
 
     def serialize_hierarchy_meta(
@@ -333,10 +226,6 @@ class DepartmentEntity(BaseEntity):
             "_has_children":
                 obj.has_children,
         }
-
-    # =====================================================
-    # TREE DEPTH
-    # =====================================================
 
     def get_depth(
         self,
@@ -365,50 +254,6 @@ class DepartmentEntity(BaseEntity):
         instance,
     ):
 
-        # ================================================
-        # DETACH USERS
-        # ================================================
-
         instance.users.clear()
 
         return None
-
-    # =====================================================
-    # SCHEMA
-    # =====================================================
-
-    def customize_field_schema(
-        self,
-        request,
-        schema,
-        field=None,
-    ):
-
-        # =================================================
-        # READONLY
-        # =================================================
-
-        if schema["name"] in {
-
-            "id",
-
-            "created_at",
-
-            "updated_at",
-        }:
-
-            schema["readonly"] = True
-
-        # =================================================
-        # TREE PARENT FILTER
-        # =================================================
-
-        if schema["name"] == "parent":
-
-            schema["filter"] = {
-
-                "company":
-                    "$form.company",
-            }
-
-        return schema

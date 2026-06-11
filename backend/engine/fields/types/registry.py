@@ -1,5 +1,5 @@
 # =========================================================
-# backend/dynamic/field_types/registry.py
+# backend/engine/fields/types/registry.py
 # =========================================================
 
 FIELD_TYPES = {}
@@ -13,9 +13,27 @@ def register_field_type(cls):
 
     instance = cls()
 
-    FIELD_TYPES[
-        instance.code
-    ] = instance
+    code = getattr(
+        instance,
+        "code",
+        None,
+    )
+
+    if not code:
+
+        raise RuntimeError(
+            f"Field type {cls.__name__} "
+            f"does not define code"
+        )
+
+    if code in FIELD_TYPES:
+
+        raise RuntimeError(
+            f"Field type '{code}' "
+            f"already registered"
+        )
+
+    FIELD_TYPES[code] = instance
 
     return cls
 
@@ -26,13 +44,52 @@ def register_field_type(cls):
 
 def get_field_type(code):
 
-    if code not in FIELD_TYPES:
+    # =============================================
+    # ALREADY RESOLVED
+    # =============================================
+
+    if hasattr(
+        code,
+        "code",
+    ):
+        return code
+
+    # =============================================
+    # EMPTY
+    # =============================================
+
+    if not code:
 
         raise RuntimeError(
-            f"Unknown field type: {code}"
+            "Field type is empty"
         )
 
-    return FIELD_TYPES[code]
+    # =============================================
+    # LOOKUP
+    # =============================================
+
+    field_type = FIELD_TYPES.get(
+        code
+    )
+
+    if field_type:
+
+        return field_type
+
+    raise RuntimeError(
+        f"Unknown field type: {code}. "
+        f"Available: "
+        f"{', '.join(sorted(FIELD_TYPES.keys()))}"
+    )
+
+
+# =========================================================
+# EXISTS
+# =========================================================
+
+def has_field_type(code):
+
+    return code in FIELD_TYPES
 
 
 # =========================================================
@@ -45,6 +102,17 @@ def get_all_field_types():
 
 
 # =========================================================
+# CODES
+# =========================================================
+
+def get_field_type_codes():
+
+    return list(
+        FIELD_TYPES.keys()
+    )
+
+
+# =========================================================
 # DJANGO CHOICES
 # =========================================================
 
@@ -54,10 +122,10 @@ def get_field_type_choices():
 
         (
             field_type.code,
-
             field_type.label,
         )
 
         for field_type
+
         in FIELD_TYPES.values()
     ]

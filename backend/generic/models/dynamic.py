@@ -75,3 +75,4 @@ class DynamicField(BaseField):
     @property
     def type(self):
         return self.source.field_type
+
