@@ -151,11 +151,11 @@ class BaseFieldType:
     # =====================================================
 
     def get_schema(
-        self,
-        field,
+            self,
+            field,
     ):
 
-        return {
+        schema = {
 
             "type":
                 self.code,
@@ -174,10 +174,6 @@ class BaseFieldType:
             "filterable":
                 self.filterable,
 
-            # =====================================
-            # FIELD BUILDER
-            # =====================================
-
             "features":
                 self.get_features(
                     field
@@ -189,6 +185,14 @@ class BaseFieldType:
                 ),
         }
 
+        print(
+            "FIELD TYPE SCHEMA",
+            field.name,
+            self.__class__.__name__,
+            schema,
+        )
+
+        return schema
     # =====================================================
     # FILTER
     # =====================================================

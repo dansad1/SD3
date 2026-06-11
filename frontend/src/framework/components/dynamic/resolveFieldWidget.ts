@@ -24,6 +24,20 @@ export function resolveFieldWidget(
   interaction?: InteractionMode
 ): WidgetKey {
 
+  console.log(
+    "🔵 resolveFieldWidget INPUT",
+    {
+      name: field.name,
+      type: field.type,
+      widget: field.widget,
+      options: field.options,
+      entity: field.entity,
+      multiple: field.multiple,
+      readonly: field.readonly,
+      semantic: field.semantic,
+    }
+  )
+
   /* ========================================
      interaction
   ======================================== */
@@ -57,6 +71,16 @@ export function resolveFieldWidget(
       })
 
     if (semanticWidget) {
+
+      console.log(
+        "🟢 resolveFieldWidget SEMANTIC",
+        {
+          name: field.name,
+          semanticType,
+          widget: semanticWidget,
+        }
+      )
+
       return semanticWidget
     }
   }
@@ -65,5 +89,24 @@ export function resolveFieldWidget(
      primitive layer
   ======================================== */
 
-  return resolvePrimitiveWidget(field)
+  const widget =
+    resolvePrimitiveWidget(
+      field
+    )
+
+  console.log(
+    "🟣 resolveFieldWidget RESULT",
+    {
+      name: field.name,
+      type: field.type,
+      widgetFromSchema:
+        field.widget,
+      resolvedWidget:
+        widget,
+      options:
+        field.options,
+    }
+  )
+
+  return widget
 }

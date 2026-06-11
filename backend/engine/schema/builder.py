@@ -2,6 +2,8 @@ from django.core.exceptions import (
     PermissionDenied,
 )
 
+import json
+
 
 class EntitySchemaBuilder:
 
@@ -20,30 +22,17 @@ class EntitySchemaBuilder:
         action="view",
     ):
 
-        # =================================================
-        # ACTION VALIDATION
-        # =================================================
-
         if action not in (
             "view",
             "create",
             "edit",
         ):
-
             raise PermissionDenied
-
-        # =================================================
-        # PERMISSION
-        # =================================================
 
         self.entity.check_permission(
             request,
             action,
         )
-
-        # =================================================
-        # RUNTIME FIELDS
-        # =================================================
 
         fields = (
             self.entity.get_fields(
@@ -51,10 +40,6 @@ class EntitySchemaBuilder:
             )
             or []
         )
-
-        # =================================================
-        # BUILD
-        # =================================================
 
         fields_schema = []
 
@@ -74,6 +59,23 @@ class EntitySchemaBuilder:
 
             schema = field.get_schema()
 
+            # =========================================
+            # DEBUG
+            # =========================================
+
+            print(
+                "\n🔍 FIELD SCHEMA"
+            )
+
+            print(
+                json.dumps(
+                    schema,
+                    indent=2,
+                    ensure_ascii=False,
+                    default=str,
+                )
+            )
+
             if action == "view":
                 schema["readonly"] = True
 
@@ -81,11 +83,7 @@ class EntitySchemaBuilder:
                 schema
             )
 
-        # =================================================
-        # RESPONSE
-        # =================================================
-
-        return {
+        response = {
 
             "entity":
                 self.entity.entity,
@@ -104,3 +102,18 @@ class EntitySchemaBuilder:
                     )
                 ),
         }
+
+        print(
+            "\n🚀 FINAL FORM SCHEMA"
+        )
+
+        print(
+            json.dumps(
+                response,
+                indent=2,
+                ensure_ascii=False,
+                default=str,
+            )
+        )
+
+        return response

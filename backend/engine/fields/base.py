@@ -258,32 +258,68 @@ class BaseField:
         # =============================================
 
         if self.section:
-
             schema["ui"] = {
                 "section":
                     self.section,
             }
 
         # =============================================
-        # ENUM / CHOICES
+        # OPTIONS BRIDGE
         # =============================================
 
-        if self.choices:
+        if "options" not in schema:
 
-            # новый формат
+            options = []
 
+            if self.choices:
+
+                options = self.choices
+
+            elif isinstance(
+                    self.options,
+                    list,
+            ):
+
+                options = self.options
+
+            if options:
+                schema["options"] = options
+
+        # =============================================
+        # LEGACY COMPAT
+        # =============================================
+
+        if (
+                schema.get("options")
+                and "choices" not in schema
+        ):
             schema["choices"] = (
-                self.choices
+                schema["options"]
             )
 
-            # совместимость со старым фронтом
+        # =============================================
+        # AUTO SELECT
+        # =============================================
 
-            schema["options"] = (
-                self.choices
+        if (
+                schema.get("options")
+                and not schema.get(
+            "entity"
+        )
+                and schema.get(
+            "widget"
+        )
+                in (
+                "text",
+                "string",
+                None,
+        )
+        ):
+            schema["widget"] = (
+                "select"
             )
 
         return schema
-
     # =====================================================
     # FILTER / SEARCH
     # =====================================================

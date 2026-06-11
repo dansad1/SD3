@@ -1,20 +1,36 @@
 import type { Json } from "@/framework/types/json"
 import type { PageEffect } from "@/framework/page/runtime/effects/types"
+import type { FieldSchema } from "@/framework/components/dynamic/types"
 
 /* =========================
    STATE
 ========================= */
 
-export type FormValues = Record<string, Json>
+export type FormValues =
+  Record<string, Json>
 
 export type FormRuntimeMeta = {
-  visible: Record<string, boolean>
-  disabled: Record<string, boolean>
+
+  visible:
+    Record<string, boolean>
+
+  disabled:
+    Record<string, boolean>
+
+  fields:
+    Record<
+      string,
+      Partial<FieldSchema>
+    >
 }
 
 export type FormRuntimeState = {
-  values: FormValues
-  meta: FormRuntimeMeta
+
+  values:
+    FormValues
+
+  meta:
+    FormRuntimeMeta
 }
 
 /* =========================
@@ -24,51 +40,91 @@ export type FormRuntimeState = {
 export type MatchRule =
   | {
       field: string
+
       eq?: Json
+
       neq?: Json
+
       in?: Json[]
+
       notIn?: Json[]
+
       empty?: boolean
     }
-  | { all: MatchRule[] }
-  | { any: MatchRule[] }
-  | { not: MatchRule }
+  | {
+      all: MatchRule[]
+    }
+  | {
+      any: MatchRule[]
+    }
+  | {
+      not: MatchRule
+    }
 
 /* =========================
    EFFECTS
 ========================= */
 
 export type FormEffect =
+
   | {
       type: "set"
+
       field: string
+
       value: Json
     }
+
   | {
       type: "clear"
+
       field: string
     }
+
   | {
       type: "patch"
+
       values: FormValues
     }
+
   | {
       type: "visible"
+
       field: string
+
       value: boolean
     }
+
   | {
       type: "disabled"
+
       field: string
+
       value: boolean
     }
+
+  | {
+      type: "field_patch"
+
+      field: string
+
+      patch: Partial<FieldSchema>
+    }
+
   | {
       type: "fetch"
+
       url: string
-      map: Record<string, string>
+
+      map: Record<
+        string,
+        string
+      >
     }
+
   | {
       type: "page"
+
       effect: PageEffect
     }
 
@@ -77,9 +133,13 @@ export type FormEffect =
 ========================= */
 
 export type Reaction = {
+
   id?: string
+
   watch: string[]
+
   match?: MatchRule
+
   effects: FormEffect[]
 }
 
@@ -87,4 +147,7 @@ export type Reaction = {
    ENGINE TYPES
 ========================= */
 
-export type RunPageEffect = (effect: PageEffect) => void
+export type RunPageEffect =
+  (
+    effect: PageEffect
+  ) => void
