@@ -18,7 +18,9 @@ from backend.engine.fields.types.string import (
 
 
 @register_field_type
-class RichTextFieldType(StringFieldType):
+class RichTextFieldType(
+    StringFieldType
+):
 
     code = "richtext"
 
@@ -27,10 +29,18 @@ class RichTextFieldType(StringFieldType):
     widget = "richtext"
 
     searchable = True
-
     sortable = False
-
     filterable = False
+
+    features = [
+        "default_value",
+        "required",
+        "placeholder",
+        "help_text",
+        "max_value",
+    ]
+
+    default_value_widget = "richtext"
 
     DEFAULT_MAX_LENGTH = 100000
 
@@ -84,11 +94,42 @@ class RichTextFieldType(StringFieldType):
     )
 
     # =====================================================
+    # LIMITS
+    # =====================================================
+
+    def get_max_length(
+        self,
+        field,
+    ):
+
+        if field.max_value:
+
+            try:
+
+                value = int(
+                    field.max_value
+                )
+
+            except Exception:
+
+                raise ValidationError(
+                    "Некорректный max_value"
+                )
+
+            return min(
+                value,
+                self.ABSOLUTE_MAX_LENGTH,
+            )
+
+        return self.DEFAULT_MAX_LENGTH
+
+    # =====================================================
     # SANITIZE
     # =====================================================
 
     def sanitize(
         self,
+        field,
         value,
     ):
 
@@ -98,6 +139,17 @@ class RichTextFieldType(StringFieldType):
         raw = str(
             value
         )
+
+        if (
+            len(raw)
+            > self.get_max_length(
+                field
+            )
+        ):
+
+            raise ValidationError(
+                "Текст слишком длинный"
+            )
 
         lowered = raw.lower()
 
@@ -155,12 +207,16 @@ class RichTextFieldType(StringFieldType):
         if field.is_multiple:
 
             return [
-                self.sanitize(v)
+                self.sanitize(
+                    field,
+                    v,
+                )
                 for v in value
             ]
 
         return self.sanitize(
-            value
+            field,
+            value,
         )
 
     # =====================================================
@@ -182,12 +238,16 @@ class RichTextFieldType(StringFieldType):
         if field.is_multiple:
 
             return [
-                self.sanitize(v)
+                self.sanitize(
+                    field,
+                    v,
+                )
                 for v in value
             ]
 
         return self.sanitize(
-            value
+            field,
+            value,
         )
 
     # =====================================================
@@ -199,6 +259,9 @@ class RichTextFieldType(StringFieldType):
         field,
         value,
     ):
+
+        if value is None:
+            return None
 
         return self.normalize(
             field,
@@ -226,12 +289,17 @@ class RichTextFieldType(StringFieldType):
             "sanitize":
                 True,
 
+            "inputType":
+                "richtext",
+
             "allowedTags":
                 self.ALLOWED_TAGS,
 
             "maxLength":
-                field.max_value
-                or self.DEFAULT_MAX_LENGTH,
+                self.get_max_length(
+                    field
+                ),
+
         })
 
         return schema

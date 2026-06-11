@@ -20,7 +20,9 @@ from backend.engine.fields.types.registry import (
 
 
 @register_field_type
-class RelationFieldType(BaseFieldType):
+class RelationFieldType(
+    BaseFieldType
+):
 
     code = "relation"
 
@@ -29,10 +31,15 @@ class RelationFieldType(BaseFieldType):
     widget = "select"
 
     sortable = False
-
     searchable = False
-
     filterable = True
+
+    features = [
+        "required",
+        "relation_entity",
+        "is_multiple",
+        "help_text",
+    ]
 
     MAX_OPTIONS = 100
 
@@ -52,6 +59,9 @@ class RelationFieldType(BaseFieldType):
             or field.options.get(
                 "relation_entity"
             )
+            or field.options.get(
+                "model"
+            )
         )
 
     def get_entity(
@@ -59,8 +69,10 @@ class RelationFieldType(BaseFieldType):
         field,
     ):
 
-        entity_name = self.get_entity_name(
-            field
+        entity_name = (
+            self.get_entity_name(
+                field
+            )
         )
 
         if not entity_name:
@@ -198,20 +210,22 @@ class RelationFieldType(BaseFieldType):
                 for item in value
             ]
 
-            queryset = model.objects.filter(
-                pk__in=ids
-            )
-
-            found_ids = set(
-                queryset.values_list(
-                    "pk",
-                    flat=True,
+            queryset = (
+                model.objects.filter(
+                    pk__in=ids
                 )
             )
 
+            objects = {
+                obj.pk: obj
+                for obj in queryset
+            }
+
             missing = (
                 set(ids)
-                - found_ids
+                - set(
+                    objects.keys()
+                )
             )
 
             if missing:
@@ -220,12 +234,15 @@ class RelationFieldType(BaseFieldType):
                     f"Objects not found: {sorted(missing)}"
                 )
 
-            return list(
-                queryset
-            )
+            return [
+                objects[obj_id]
+                for obj_id in ids
+            ]
 
-        object_id = self.extract_id(
-            value
+        object_id = (
+            self.extract_id(
+                value
+            )
         )
 
         try:
@@ -306,18 +323,21 @@ class RelationFieldType(BaseFieldType):
         field,
     ):
 
-        entity_name = self.get_entity_name(
-            field
+        entity_name = (
+            self.get_entity_name(
+                field
+            )
         )
 
         if not entity_name:
-
             return []
 
         try:
 
-            entity = entity_registry.get(
-                entity_name
+            entity = (
+                entity_registry.get(
+                    entity_name
+                )
             )
 
         except Exception:
@@ -325,13 +345,13 @@ class RelationFieldType(BaseFieldType):
             return []
 
         if not entity:
-
             return []
 
         queryset = (
             entity.model.objects
             .all()
-            .order_by("pk")[:self.MAX_OPTIONS]
+            .order_by("pk")
+            [: self.MAX_OPTIONS]
         )
 
         return [
@@ -341,6 +361,36 @@ class RelationFieldType(BaseFieldType):
             }
             for obj in queryset
         ]
+
+    # =====================================================
+    # FILTER
+    # =====================================================
+
+    def apply_filter(
+        self,
+        queryset,
+        field,
+        value,
+    ):
+
+        if value in (
+            None,
+            "",
+        ):
+            return queryset
+
+        object_id = (
+            self.extract_id(
+                value
+            )
+        )
+
+        return queryset.filter(
+            **{
+                field.name:
+                    object_id
+            }
+        )
 
     # =====================================================
     # SCHEMA
@@ -355,11 +405,16 @@ class RelationFieldType(BaseFieldType):
             field
         )
 
-        entity_name = self.get_entity_name(
-            field
+        entity_name = (
+            self.get_entity_name(
+                field
+            )
         )
 
         schema.update({
+
+            "inputType":
+                "relation",
 
             "entity":
                 entity_name,
@@ -370,6 +425,13 @@ class RelationFieldType(BaseFieldType):
             "multiple":
                 field.is_multiple,
 
+            "lookup":
+                True,
+
+            "maxOptions":
+                self.MAX_OPTIONS,
+
+            # совместимость
             "options":
                 self.get_options(
                     field

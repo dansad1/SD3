@@ -1,6 +1,4 @@
-from django.core.exceptions import (
-    ValidationError,
-)
+from django.core.exceptions import ValidationError
 
 from backend.engine.fields.types.base import (
     BaseFieldType,
@@ -21,10 +19,16 @@ class BooleanFieldType(BaseFieldType):
     widget = "checkbox"
 
     sortable = True
-
     searchable = False
-
     filterable = True
+
+    features = [
+        "default_value",
+        "help_text",
+        "required",
+    ]
+
+    default_value_widget = "checkbox"
 
     TRUE_VALUES = {
         True,
@@ -54,10 +58,6 @@ class BooleanFieldType(BaseFieldType):
         "OFF",
     }
 
-    # =====================================================
-    # CONVERSION
-    # =====================================================
-
     def to_bool(
         self,
         value,
@@ -72,10 +72,6 @@ class BooleanFieldType(BaseFieldType):
         raise ValidationError(
             "Некорректное булево значение"
         )
-
-    # =====================================================
-    # VALIDATE
-    # =====================================================
 
     def validate(
         self,
@@ -95,7 +91,6 @@ class BooleanFieldType(BaseFieldType):
             return value
 
         if field.is_multiple:
-
             return [
                 self.to_bool(v)
                 for v in value
@@ -104,10 +99,6 @@ class BooleanFieldType(BaseFieldType):
         return self.to_bool(
             value
         )
-
-    # =====================================================
-    # NORMALIZE
-    # =====================================================
 
     def normalize(
         self,
@@ -122,7 +113,6 @@ class BooleanFieldType(BaseFieldType):
             return None
 
         if field.is_multiple:
-
             return [
                 self.to_bool(v)
                 for v in value
@@ -131,10 +121,6 @@ class BooleanFieldType(BaseFieldType):
         return self.to_bool(
             value
         )
-
-    # =====================================================
-    # SERIALIZE
-    # =====================================================
 
     def serialize(
         self,
@@ -146,10 +132,6 @@ class BooleanFieldType(BaseFieldType):
             return None
 
         return bool(value)
-
-    # =====================================================
-    # DESERIALIZE
-    # =====================================================
 
     def deserialize(
         self,
@@ -164,10 +146,6 @@ class BooleanFieldType(BaseFieldType):
             value
         )
 
-    # =====================================================
-    # FILTER
-    # =====================================================
-
     def apply_filter(
         self,
         queryset,
@@ -181,16 +159,12 @@ class BooleanFieldType(BaseFieldType):
         ):
             return queryset
 
-        return queryset.filter(**{
-            field.name:
-                self.to_bool(
-                    value
-                )
-        })
-
-    # =====================================================
-    # UI
-    # =====================================================
+        return queryset.filter(
+            **{
+                field.name:
+                    self.to_bool(value)
+            }
+        )
 
     def get_schema(
         self,
@@ -202,8 +176,20 @@ class BooleanFieldType(BaseFieldType):
         )
 
         schema.update({
+
             "inputType":
                 "checkbox",
+
+            "builder": {
+
+                "features":
+                    self.features,
+
+                "defaultValueWidget":
+                    self.default_value_widget,
+
+            }
+
         })
 
         return schema

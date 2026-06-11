@@ -28,13 +28,21 @@ class DateTimeFieldType(BaseFieldType):
     widget = "datetime"
 
     sortable = True
-
     searchable = False
-
     filterable = True
 
-    MIN_YEAR = 1900
+    features = [
+        "default_value",
+        "required",
+        "min_value",
+        "max_value",
+        "placeholder",
+        "help_text",
+    ]
 
+    default_value_widget = "datetime"
+
+    MIN_YEAR = 1900
     MAX_YEAR = 2100
 
     # =====================================================
@@ -46,15 +54,10 @@ class DateTimeFieldType(BaseFieldType):
         value,
     ):
 
-        # =============================================
-        # DATETIME
-        # =============================================
-
         if isinstance(
             value,
             datetime,
         ):
-
             dt = value
 
         else:
@@ -67,7 +70,6 @@ class DateTimeFieldType(BaseFieldType):
                     float,
                 ),
             ):
-
                 raise ValidationError(
                     "Некорректная дата"
                 )
@@ -75,7 +77,6 @@ class DateTimeFieldType(BaseFieldType):
             raw = str(value).strip()
 
             if not raw:
-
                 raise ValidationError(
                     "Некорректная дата"
                 )
@@ -95,13 +96,7 @@ class DateTimeFieldType(BaseFieldType):
                     "Некорректная дата"
                 )
 
-        # =============================================
-        # TZ NORMALIZATION
-        # =============================================
-
-        if dj_timezone.is_naive(
-            dt
-        ):
+        if dj_timezone.is_naive(dt):
 
             dt = dj_timezone.make_aware(
                 dt,
@@ -113,11 +108,53 @@ class DateTimeFieldType(BaseFieldType):
         )
 
     # =====================================================
+    # LIMITS
+    # =====================================================
+
+    def get_min_datetime(
+        self,
+        field,
+    ):
+
+        if field.min_value:
+            return self.to_datetime(
+                field.min_value
+            )
+
+        return datetime(
+            self.MIN_YEAR,
+            1,
+            1,
+            tzinfo=timezone.utc,
+        )
+
+    def get_max_datetime(
+        self,
+        field,
+    ):
+
+        if field.max_value:
+            return self.to_datetime(
+                field.max_value
+            )
+
+        return datetime(
+            self.MAX_YEAR,
+            12,
+            31,
+            23,
+            59,
+            59,
+            tzinfo=timezone.utc,
+        )
+
+    # =====================================================
     # VALIDATION
     # =====================================================
 
     def validate_datetime(
         self,
+        field,
         value,
     ):
 
@@ -125,14 +162,20 @@ class DateTimeFieldType(BaseFieldType):
             value
         )
 
-        if dt.year < self.MIN_YEAR:
+        min_dt = self.get_min_datetime(
+            field
+        )
 
+        max_dt = self.get_max_datetime(
+            field
+        )
+
+        if dt < min_dt:
             raise ValidationError(
                 "Дата слишком маленькая"
             )
 
-        if dt.year > self.MAX_YEAR:
-
+        if dt > max_dt:
             raise ValidationError(
                 "Дата слишком большая"
             )
@@ -158,18 +201,21 @@ class DateTimeFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return value
 
         if field.is_multiple:
 
             return [
-                self.validate_datetime(v)
+                self.validate_datetime(
+                    field,
+                    v,
+                )
                 for v in value
             ]
 
         return self.validate_datetime(
-            value
+            field,
+            value,
         )
 
     # =====================================================
@@ -186,18 +232,21 @@ class DateTimeFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return None
 
         if field.is_multiple:
 
             return [
-                self.validate_datetime(v)
+                self.validate_datetime(
+                    field,
+                    v,
+                )
                 for v in value
             ]
 
         return self.validate_datetime(
-            value
+            field,
+            value,
         )
 
     # =====================================================
@@ -211,13 +260,11 @@ class DateTimeFieldType(BaseFieldType):
     ):
 
         if value is None:
-
             return None
 
         if dj_timezone.is_naive(
             value
         ):
-
             value = dj_timezone.make_aware(
                 value,
                 timezone.utc,
@@ -247,11 +294,36 @@ class DateTimeFieldType(BaseFieldType):
     ):
 
         if not value:
-
             return None
 
         return self.to_datetime(
             value
+        )
+
+    # =====================================================
+    # FILTER
+    # =====================================================
+
+    def apply_filter(
+        self,
+        queryset,
+        field,
+        value,
+    ):
+
+        if value in (
+            None,
+            "",
+        ):
+            return queryset
+
+        return queryset.filter(
+            **{
+                field.name:
+                    self.to_datetime(
+                        value
+                    )
+            }
         )
 
     # =====================================================
@@ -267,10 +339,38 @@ class DateTimeFieldType(BaseFieldType):
             field
         )
 
+        min_dt = self.get_min_datetime(
+            field
+        )
+
+        max_dt = self.get_max_datetime(
+            field
+        )
+
         schema.update({
+
+            "inputType":
+                "datetime",
 
             "timezone":
                 "UTC",
+
+            "min":
+                min_dt.isoformat(),
+
+            "max":
+                max_dt.isoformat(),
+
+            "builder": {
+
+                "features":
+                    self.features,
+
+                "defaultValueWidget":
+                    self.default_value_widget,
+
+            }
+
         })
 
         return schema

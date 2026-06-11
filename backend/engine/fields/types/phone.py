@@ -18,7 +18,9 @@ from backend.engine.fields.types.registry import (
 
 
 @register_field_type
-class PhoneFieldType(StringFieldType):
+class PhoneFieldType(
+    StringFieldType
+):
 
     code = "phone"
 
@@ -27,10 +29,18 @@ class PhoneFieldType(StringFieldType):
     widget = "phone"
 
     searchable = True
-
     sortable = False
-
     filterable = True
+
+    features = [
+        "default_value",
+        "required",
+        "unique",
+        "placeholder",
+        "help_text",
+    ]
+
+    default_value_widget = "phone"
 
     # =====================================================
     # DEFAULT REGION
@@ -54,7 +64,6 @@ class PhoneFieldType(StringFieldType):
                 int,
             ),
         ):
-
             raise ValidationError(
                 "Некорректный номер"
             )
@@ -62,7 +71,6 @@ class PhoneFieldType(StringFieldType):
         raw = str(value).strip()
 
         if not raw:
-
             raise ValidationError(
                 "Некорректный номер"
             )
@@ -88,7 +96,6 @@ class PhoneFieldType(StringFieldType):
                 parsed
             )
         ):
-
             raise ValidationError(
                 "Некорректный номер"
             )
@@ -99,16 +106,13 @@ class PhoneFieldType(StringFieldType):
                 parsed
             )
         ):
-
             raise ValidationError(
                 "Некорректный номер"
             )
 
         return (
             phonenumbers.format_number(
-
                 parsed,
-
                 phonenumbers
                 .PhoneNumberFormat
                 .E164,
@@ -134,7 +138,6 @@ class PhoneFieldType(StringFieldType):
             None,
             "",
         ):
-
             return value
 
         if field.is_multiple:
@@ -162,7 +165,6 @@ class PhoneFieldType(StringFieldType):
             None,
             "",
         ):
-
             return None
 
         if field.is_multiple:
@@ -177,6 +179,17 @@ class PhoneFieldType(StringFieldType):
         )
 
     # =====================================================
+    # SERIALIZE
+    # =====================================================
+
+    def serialize(
+        self,
+        field,
+        value,
+    ):
+        return value
+
+    # =====================================================
     # DESERIALIZE
     # =====================================================
 
@@ -187,7 +200,6 @@ class PhoneFieldType(StringFieldType):
     ):
 
         if not value:
-
             return None
 
         if field.is_multiple:
@@ -199,6 +211,40 @@ class PhoneFieldType(StringFieldType):
 
         return self.to_phone(
             value
+        )
+
+    # =====================================================
+    # FILTER
+    # =====================================================
+
+    def apply_filter(
+        self,
+        queryset,
+        field,
+        value,
+    ):
+
+        if value in (
+            None,
+            "",
+        ):
+            return queryset
+
+        try:
+
+            value = self.to_phone(
+                value
+            )
+
+        except ValidationError:
+
+            return queryset.none()
+
+        return queryset.filter(
+            **{
+                field.name:
+                    value
+            }
         )
 
     # =====================================================
@@ -216,6 +262,9 @@ class PhoneFieldType(StringFieldType):
 
         schema.update({
 
+            "inputType":
+                "tel",
+
             "autocomplete":
                 "tel",
 
@@ -224,6 +273,7 @@ class PhoneFieldType(StringFieldType):
 
             "defaultRegion":
                 self.DEFAULT_REGION,
+
         })
 
         return schema

@@ -28,23 +28,25 @@ class JSONFieldType(BaseFieldType):
     widget = "json"
 
     searchable = False
-
     sortable = False
-
     filterable = False
+
+    features = [
+        "default_value",
+        "required",
+        "help_text",
+    ]
+
+    default_value_widget = "json"
 
     # =====================================================
     # LIMITS
     # =====================================================
 
     MAX_DEPTH = 10
-
     MAX_STRING_LENGTH = 10000
-
     MAX_LIST_ITEMS = 1000
-
     MAX_OBJECT_KEYS = 1000
-
     MAX_TOTAL_SIZE = 1024 * 1024
 
     DANGEROUS_KEYS = {
@@ -100,25 +102,16 @@ class JSONFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return value
 
         value = self.parse_json(
             value
         )
 
-        # =============================================
-        # RECURSIVE VALIDATION
-        # =============================================
-
         self.validate_json(
             value=value,
             depth=0,
         )
-
-        # =============================================
-        # SERIALIZABLE
-        # =============================================
 
         try:
 
@@ -133,10 +126,6 @@ class JSONFieldType(BaseFieldType):
             raise ValidationError(
                 "Некорректный JSON"
             )
-
-        # =============================================
-        # SIZE
-        # =============================================
 
         if (
             len(
@@ -306,7 +295,6 @@ class JSONFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return None
 
         return self.parse_json(
@@ -322,7 +310,6 @@ class JSONFieldType(BaseFieldType):
         field,
         value,
     ):
-
         return value
 
     # =====================================================
@@ -334,7 +321,6 @@ class JSONFieldType(BaseFieldType):
         field,
         value,
     ):
-
         return value
 
     # =====================================================
@@ -355,11 +341,15 @@ class JSONFieldType(BaseFieldType):
             "json":
                 True,
 
+            "inputType":
+                "json",
+
             "maxDepth":
                 self.MAX_DEPTH,
 
             "maxSize":
                 self.MAX_TOTAL_SIZE,
+
         })
 
         return schema

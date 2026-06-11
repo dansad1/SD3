@@ -3,21 +3,22 @@ from django.core.exceptions import ValidationError
 
 class BaseFieldType:
 
-    # =====================================================
-    # META
-    # =====================================================
-
     code = "base"
-
     label = "Base"
 
     widget = None
 
     sortable = True
-
     searchable = False
-
     filterable = False
+
+    # =====================================================
+    # FIELD BUILDER FEATURES
+    # =====================================================
+
+    features = []
+
+    default_value_widget = None
 
     # =====================================================
     # VALIDATE
@@ -29,10 +30,6 @@ class BaseFieldType:
         value,
     ):
 
-        # =============================================
-        # REQUIRED
-        # =============================================
-
         if (
             field.required
             and value in (
@@ -41,14 +38,9 @@ class BaseFieldType:
                 [],
             )
         ):
-
             raise ValidationError(
                 "Обязательное поле"
             )
-
-        # =============================================
-        # MULTIPLE
-        # =============================================
 
         if (
             field.is_multiple
@@ -58,7 +50,6 @@ class BaseFieldType:
                 list,
             )
         ):
-
             raise ValidationError(
                 "Ожидался список"
             )
@@ -74,7 +65,6 @@ class BaseFieldType:
         field,
         value,
     ):
-
         return value
 
     # =====================================================
@@ -86,7 +76,6 @@ class BaseFieldType:
         field,
         value,
     ):
-
         return value
 
     # =====================================================
@@ -98,7 +87,6 @@ class BaseFieldType:
         field,
         value,
     ):
-
         return value
 
     # =====================================================
@@ -110,7 +98,6 @@ class BaseFieldType:
         field,
         obj,
     ):
-
         return getattr(
             obj,
             field.name,
@@ -123,7 +110,6 @@ class BaseFieldType:
         obj,
         value,
     ):
-
         setattr(
             obj,
             field.name,
@@ -133,17 +119,31 @@ class BaseFieldType:
         return obj
 
     # =====================================================
-    # WIDGET
+    # UI
     # =====================================================
 
     def get_widget(
         self,
         field,
     ):
-
         return (
             self.widget
             or self.code
+        )
+
+    def get_features(
+        self,
+        field,
+    ):
+        return self.features
+
+    def get_default_value_widget(
+        self,
+        field,
+    ):
+        return (
+            self.default_value_widget
+            or self.get_widget(field)
         )
 
     # =====================================================
@@ -157,25 +157,13 @@ class BaseFieldType:
 
         return {
 
-            # =========================================
-            # TYPE
-            # =========================================
-
             "type":
                 self.code,
-
-            # =========================================
-            # WIDGET
-            # =========================================
 
             "widget":
                 self.get_widget(
                     field
                 ),
-
-            # =========================================
-            # CAPABILITIES
-            # =========================================
 
             "sortable":
                 self.sortable,
@@ -185,6 +173,20 @@ class BaseFieldType:
 
             "filterable":
                 self.filterable,
+
+            # =====================================
+            # FIELD BUILDER
+            # =====================================
+
+            "features":
+                self.get_features(
+                    field
+                ),
+
+            "default_value_widget":
+                self.get_default_value_widget(
+                    field
+                ),
         }
 
     # =====================================================
@@ -204,9 +206,11 @@ class BaseFieldType:
         ):
             return queryset
 
-        return queryset.filter(**{
-            field.name: value
-        })
+        return queryset.filter(
+            **{
+                field.name: value
+            }
+        )
 
     # =====================================================
     # SEARCH
@@ -225,9 +229,12 @@ class BaseFieldType:
         if not self.searchable:
             return queryset
 
-        return queryset.filter(**{
-            f"{field.name}__icontains": value
-        })
+        return queryset.filter(
+            **{
+                f"{field.name}__icontains":
+                    value
+            }
+        )
 
     # =====================================================
     # SORT
@@ -246,7 +253,6 @@ class BaseFieldType:
         key = field.name
 
         if direction == "desc":
-
             key = f"-{key}"
 
         return queryset.order_by(

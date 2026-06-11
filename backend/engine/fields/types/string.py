@@ -19,7 +19,9 @@ from backend.engine.fields.types.registry import (
 
 
 @register_field_type
-class StringFieldType(BaseFieldType):
+class StringFieldType(
+    BaseFieldType
+):
 
     code = "string"
 
@@ -28,10 +30,20 @@ class StringFieldType(BaseFieldType):
     widget = "text"
 
     searchable = True
-
     sortable = True
-
     filterable = True
+
+    features = [
+        "default_value",
+        "required",
+        "unique",
+        "regex",
+        "max_value",
+        "placeholder",
+        "help_text",
+    ]
+
+    default_value_widget = "text"
 
     # =====================================================
     # LIMITS
@@ -40,6 +52,40 @@ class StringFieldType(BaseFieldType):
     DEFAULT_MAX_LENGTH = 255
 
     ABSOLUTE_MAX_LENGTH = 10000
+
+    # =====================================================
+    # CONFIG
+    # =====================================================
+
+    def get_max_length(
+        self,
+        field,
+    ):
+
+        value = (
+            field.max_value
+            or self.DEFAULT_MAX_LENGTH
+        )
+
+        try:
+
+            value = int(
+                value
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+
+            value = (
+                self.DEFAULT_MAX_LENGTH
+            )
+
+        return min(
+            value,
+            self.ABSOLUTE_MAX_LENGTH,
+        )
 
     # =====================================================
     # CONVERSION
@@ -73,6 +119,16 @@ class StringFieldType(BaseFieldType):
         return value.strip()
 
     # =====================================================
+    # STRING VALIDATION HOOK
+    # =====================================================
+
+    def validate_string_value(
+        self,
+        value,
+    ):
+        return value
+
+    # =====================================================
     # VALIDATION
     # =====================================================
 
@@ -86,33 +142,10 @@ class StringFieldType(BaseFieldType):
             value
         )
 
-        # =============================================
-        # LENGTH
-        # =============================================
-
         max_length = (
-            field.max_value
-            or self.DEFAULT_MAX_LENGTH
-        )
-
-        try:
-
-            max_length = int(
-                max_length
+            self.get_max_length(
+                field
             )
-
-        except (
-            TypeError,
-            ValueError,
-        ):
-
-            max_length = (
-                self.DEFAULT_MAX_LENGTH
-            )
-
-        max_length = min(
-            max_length,
-            self.ABSOLUTE_MAX_LENGTH,
         )
 
         if len(value) > max_length:
@@ -120,10 +153,6 @@ class StringFieldType(BaseFieldType):
             raise ValidationError(
                 f"Максимум {max_length} символов"
             )
-
-        # =============================================
-        # CONTROL CHARS
-        # =============================================
 
         for char in value:
 
@@ -139,10 +168,6 @@ class StringFieldType(BaseFieldType):
                 raise ValidationError(
                     "Недопустимые символы"
                 )
-
-        # =============================================
-        # REGEX
-        # =============================================
 
         if field.regex:
 
@@ -165,7 +190,9 @@ class StringFieldType(BaseFieldType):
                     "Некорректный формат"
                 )
 
-        return value
+        return self.validate_string_value(
+            value
+        )
 
     # =====================================================
     # VALIDATE
@@ -292,14 +319,17 @@ class StringFieldType(BaseFieldType):
 
         schema.update({
 
+            "inputType":
+                "text",
+
             "maxLength":
-
-                field.max_value
-
-                or self.DEFAULT_MAX_LENGTH,
+                self.get_max_length(
+                    field
+                ),
 
             "multiline":
                 False,
+
         })
 
         return schema

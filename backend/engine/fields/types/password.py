@@ -52,12 +52,22 @@ class PasswordFieldType(
     widget = "password"
 
     searchable = False
-
     filterable = False
-
     sortable = False
 
     accessor = PasswordAccessor()
+
+    features = [
+        "required",
+        "help_text",
+    ]
+
+    # =====================================================
+    # PASSWORD POLICY
+    # =====================================================
+
+    MIN_LENGTH = 8
+    MAX_LENGTH = 256
 
     # =====================================================
     # VALIDATE
@@ -86,6 +96,24 @@ class PasswordFieldType(
         ):
             raise ValidationError(
                 "Некорректное значение"
+            )
+
+        value = value.strip()
+
+        if (
+            len(value)
+            < self.MIN_LENGTH
+        ):
+            raise ValidationError(
+                f"Минимум {self.MIN_LENGTH} символов"
+            )
+
+        if (
+            len(value)
+            > self.MAX_LENGTH
+        ):
+            raise ValidationError(
+                f"Максимум {self.MAX_LENGTH} символов"
             )
 
         return value
@@ -147,8 +175,20 @@ class PasswordFieldType(
 
         schema.update({
 
+            "inputType":
+                "password",
+
             "autocomplete":
                 "new-password",
+
+            "minLength":
+                self.MIN_LENGTH,
+
+            "maxLength":
+                self.MAX_LENGTH,
+
+            "reveal":
+                False,
 
         })
 

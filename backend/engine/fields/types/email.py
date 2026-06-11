@@ -20,7 +20,6 @@ from backend.engine.fields.types.registry import (
     register_field_type,
 )
 
-
 # =====================================================
 # CONSTANTS
 # =====================================================
@@ -36,9 +35,7 @@ DOMAIN_MAX_LENGTH = 253
 # =====================================================
 
 EMAIL_RE = re.compile(
-
     r"^[^\s@]+@[^\s@]+\.[^\s@]+$",
-
     re.IGNORECASE,
 )
 
@@ -55,10 +52,18 @@ class EmailFieldType(
     widget = "email"
 
     searchable = True
-
     sortable = True
-
     filterable = True
+
+    features = [
+        "default_value",
+        "required",
+        "unique",
+        "placeholder",
+        "help_text",
+    ]
+
+    default_value_widget = "email"
 
     # =====================================================
     # VALIDATION
@@ -69,7 +74,9 @@ class EmailFieldType(
         value,
     ):
 
-        value = value.lower()
+        value = str(
+            value
+        ).strip().lower()
 
         if len(value) > MAX_EMAIL_LENGTH:
 
@@ -79,8 +86,7 @@ class EmailFieldType(
 
         try:
 
-            local,
-            domain = value.rsplit(
+            local, domain = value.rsplit(
                 "@",
                 1,
             )
@@ -150,7 +156,6 @@ class EmailFieldType(
             None,
             "",
         ):
-
             return value
 
         if field.is_multiple:
@@ -180,19 +185,65 @@ class EmailFieldType(
         )
 
         if value is None:
-
             return None
 
         if field.is_multiple:
 
             return [
-                str(v).lower()
+                self.validate_email_value(v)
                 for v in value
             ]
 
-        return str(
+        return self.validate_email_value(
             value
-        ).lower()
+        )
+
+    # =====================================================
+    # SEARCH
+    # =====================================================
+
+    def apply_search(
+        self,
+        queryset,
+        field,
+        value,
+    ):
+
+        if not value:
+            return queryset
+
+        return queryset.filter(
+            **{
+                f"{field.name}__icontains":
+                    str(value).strip()
+            }
+        )
+
+    # =====================================================
+    # FILTER
+    # =====================================================
+
+    def apply_filter(
+        self,
+        queryset,
+        field,
+        value,
+    ):
+
+        if value in (
+            None,
+            "",
+        ):
+            return queryset
+
+        return queryset.filter(
+            **{
+                field.name:
+                    self.validate_email_value(
+                        value
+                    )
+            }
+        )
 
     # =====================================================
     # UI
@@ -209,11 +260,25 @@ class EmailFieldType(
 
         schema.update({
 
+            "inputType":
+                "email",
+
             "autocomplete":
                 "email",
 
             "maxLength":
                 MAX_EMAIL_LENGTH,
+
+            "builder": {
+
+                "features":
+                    self.features,
+
+                "defaultValueWidget":
+                    self.default_value_widget,
+
+            },
+
         })
 
         return schema

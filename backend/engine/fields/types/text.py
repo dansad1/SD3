@@ -8,7 +8,9 @@ from backend.engine.fields.types.string import (
 
 
 @register_field_type
-class TextFieldType(StringFieldType):
+class TextFieldType(
+    StringFieldType
+):
 
     code = "text"
 
@@ -16,15 +18,25 @@ class TextFieldType(StringFieldType):
 
     widget = "textarea"
 
+    sortable = False
+    searchable = True
+    filterable = False
+
+    features = [
+        "default_value",
+        "required",
+        "max_value",
+        "placeholder",
+        "help_text",
+    ]
+
+    default_value_widget = "textarea"
+
     DEFAULT_MAX_LENGTH = 50000
 
     ABSOLUTE_MAX_LENGTH = 100000
 
-    sortable = False
-
-    searchable = True
-
-    filterable = False
+    DEFAULT_ROWS = 6
 
     # =====================================================
     # UI
@@ -41,11 +53,15 @@ class TextFieldType(StringFieldType):
 
         schema.update({
 
+            "inputType":
+                "textarea",
+
             "multiline":
                 True,
 
             "rows":
-                6,
+                self.DEFAULT_ROWS,
+
         })
 
         return schema

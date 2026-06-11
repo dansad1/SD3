@@ -27,10 +27,20 @@ class NumberFieldType(BaseFieldType):
     widget = "number"
 
     sortable = True
-
     searchable = False
-
     filterable = True
+
+    features = [
+        "default_value",
+        "required",
+        "unique",
+        "min_value",
+        "max_value",
+        "placeholder",
+        "help_text",
+    ]
+
+    default_value_widget = "number"
 
     # =====================================================
     # LIMITS
@@ -51,7 +61,6 @@ class NumberFieldType(BaseFieldType):
             value,
             bool,
         ):
-
             raise ValidationError(
                 "Некорректное число"
             )
@@ -71,15 +80,91 @@ class NumberFieldType(BaseFieldType):
         if not math.isfinite(
             number
         ):
-
             raise ValidationError(
                 "Некорректное число"
             )
 
         if abs(number) > self.MAX_ABS:
-
             raise ValidationError(
                 "Слишком большое число"
+            )
+
+        return number
+
+    # =====================================================
+    # FIELD LIMITS
+    # =====================================================
+
+    def get_min_number(
+        self,
+        field,
+    ):
+
+        if field.min_value in (
+            None,
+            "",
+        ):
+            return None
+
+        return self.to_number(
+            field.min_value
+        )
+
+    def get_max_number(
+        self,
+        field,
+    ):
+
+        if field.max_value in (
+            None,
+            "",
+        ):
+            return None
+
+        return self.to_number(
+            field.max_value
+        )
+
+    # =====================================================
+    # VALIDATION
+    # =====================================================
+
+    def validate_number(
+        self,
+        field,
+        value,
+    ):
+
+        number = self.to_number(
+            value
+        )
+
+        min_value = (
+            self.get_min_number(
+                field
+            )
+        )
+
+        max_value = (
+            self.get_max_number(
+                field
+            )
+        )
+
+        if (
+            min_value is not None
+            and number < min_value
+        ):
+            raise ValidationError(
+                f"Минимальное значение: {min_value}"
+            )
+
+        if (
+            max_value is not None
+            and number > max_value
+        ):
+            raise ValidationError(
+                f"Максимальное значение: {max_value}"
             )
 
         return number
@@ -103,18 +188,21 @@ class NumberFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return value
 
         if field.is_multiple:
 
             return [
-                self.to_number(v)
+                self.validate_number(
+                    field,
+                    v,
+                )
                 for v in value
             ]
 
-        return self.to_number(
-            value
+        return self.validate_number(
+            field,
+            value,
         )
 
     # =====================================================
@@ -131,18 +219,21 @@ class NumberFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return None
 
         if field.is_multiple:
 
             return [
-                self.to_number(v)
+                self.validate_number(
+                    field,
+                    v,
+                )
                 for v in value
             ]
 
-        return self.to_number(
-            value
+        return self.validate_number(
+            field,
+            value,
         )
 
     # =====================================================
@@ -154,7 +245,6 @@ class NumberFieldType(BaseFieldType):
         field,
         value,
     ):
-
         return value
 
     # =====================================================
@@ -171,7 +261,6 @@ class NumberFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return None
 
         return self.to_number(
@@ -193,7 +282,6 @@ class NumberFieldType(BaseFieldType):
             None,
             "",
         ):
-
             return queryset
 
         try:
@@ -206,10 +294,12 @@ class NumberFieldType(BaseFieldType):
 
             return queryset.none()
 
-        return queryset.filter(**{
-            field.name:
-                value
-        })
+        return queryset.filter(
+            **{
+                field.name:
+                    value
+            }
+        )
 
     # =====================================================
     # UI
@@ -224,16 +314,35 @@ class NumberFieldType(BaseFieldType):
             field
         )
 
-        if field.min_value is not None:
+        min_value = (
+            self.get_min_number(
+                field
+            )
+        )
+
+        max_value = (
+            self.get_max_number(
+                field
+            )
+        )
+
+        schema.update({
+
+            "inputType":
+                "number",
+
+        })
+
+        if min_value is not None:
 
             schema["min"] = (
-                field.min_value
+                min_value
             )
 
-        if field.max_value is not None:
+        if max_value is not None:
 
             schema["max"] = (
-                field.max_value
+                max_value
             )
 
         return schema
