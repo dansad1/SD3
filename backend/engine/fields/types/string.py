@@ -172,3 +172,24 @@ class StringFieldType(
             return [str(v) for v in value]
 
         return str(value)
+
+    def get_schema(
+            self,
+            field,
+    ):
+
+        schema = super().get_schema(
+            field
+        )
+
+        if field.choices:
+            schema.update({
+
+                "widget": "select",
+
+                "options":
+                    field.choices,
+
+            })
+
+        return schema

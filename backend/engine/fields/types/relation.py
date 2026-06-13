@@ -19,7 +19,6 @@ from backend.engine.fields.types.registry import (
 class RelationFieldType(
     BaseFieldType
 ):
-
     code = "relation"
 
     label = "Relation"
@@ -42,25 +41,56 @@ class RelationFieldType(
     # =====================================================
 
     def get_entity_name(
-        self,
-        field,
+            self,
+            field,
     ):
 
-        return (
-            field.options.get(
-                "entity"
-            )
-            or field.options.get(
-                "relation_entity"
-            )
-            or field.options.get(
-                "model"
+        entity_name = (
+                field.options.get("entity")
+                or field.options.get(
+            "relation_entity"
+        )
+                or field.options.get(
+            "model"
+        )
+        )
+
+        if entity_name:
+            return entity_name
+
+        source = getattr(
+            field,
+            "source",
+            None,
+        )
+
+        remote_field = getattr(
+            source,
+            "remote_field",
+            None,
+        )
+
+        if not remote_field:
+            return None
+
+        related_model = (
+            remote_field.model
+        )
+
+        related_entity = (
+            entity_registry.for_model(
+                related_model
             )
         )
 
+        if not related_entity:
+            return None
+
+        return related_entity.entity
+
     def get_entity(
-        self,
-        field,
+            self,
+            field,
     ):
 
         entity_name = (
@@ -70,7 +100,6 @@ class RelationFieldType(
         )
 
         if not entity_name:
-
             raise ValidationError(
                 "Не задана связанная сущность"
             )
@@ -80,7 +109,6 @@ class RelationFieldType(
         )
 
         if not entity:
-
             raise ValidationError(
                 f"Entity {entity_name} не найдена"
             )
@@ -92,18 +120,17 @@ class RelationFieldType(
     # =====================================================
 
     def extract_id(
-        self,
-        value,
+            self,
+            value,
     ):
 
         if isinstance(
-            value,
-            dict,
+                value,
+                dict,
         ):
-
             value = (
-                value.get("value")
-                or value.get("id")
+                    value.get("value")
+                    or value.get("id")
             )
 
         try:
@@ -113,8 +140,8 @@ class RelationFieldType(
             )
 
         except (
-            TypeError,
-            ValueError,
+                TypeError,
+                ValueError,
         ):
 
             raise ValidationError(
@@ -126,9 +153,9 @@ class RelationFieldType(
     # =====================================================
 
     def validate(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
 
         value = super().validate(
@@ -137,19 +164,18 @@ class RelationFieldType(
         )
 
         if value in (
-            None,
-            "",
-            [],
+                None,
+                "",
+                [],
         ):
             return value
 
         if field.is_multiple:
 
             if not isinstance(
-                value,
-                list,
+                    value,
+                    list,
             ):
-
                 raise ValidationError(
                     "Ожидался список"
                 )
@@ -157,10 +183,9 @@ class RelationFieldType(
             return value
 
         if isinstance(
-            value,
-            list,
+                value,
+                list,
         ):
-
             raise ValidationError(
                 "Ожидалось одно значение"
             )
@@ -172,16 +197,15 @@ class RelationFieldType(
     # =====================================================
 
     def normalize(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
 
         if value in (
-            None,
-            "",
+                None,
+                "",
         ):
-
             return (
                 []
                 if field.is_multiple
@@ -219,14 +243,13 @@ class RelationFieldType(
             }
 
             missing = (
-                set(unique_ids)
-                - set(
-                    objects.keys()
-                )
+                    set(unique_ids)
+                    - set(
+                objects.keys()
+            )
             )
 
             if missing:
-
                 raise ValidationError(
                     f"Objects not found: {sorted(missing)}"
                 )
@@ -259,13 +282,12 @@ class RelationFieldType(
     # =====================================================
 
     def serialize(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
 
         if value is None:
-
             return (
                 []
                 if field.is_multiple
@@ -273,7 +295,6 @@ class RelationFieldType(
             )
 
         if field.is_multiple:
-
             items = (
                 value.all()
                 if hasattr(
@@ -301,9 +322,9 @@ class RelationFieldType(
     # =====================================================
 
     def deserialize(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
 
         return self.normalize(
@@ -316,15 +337,15 @@ class RelationFieldType(
     # =====================================================
 
     def apply_filter(
-        self,
-        queryset,
-        field,
-        value,
+            self,
+            queryset,
+            field,
+            value,
     ):
 
         if value in (
-            None,
-            "",
+                None,
+                "",
         ):
             return queryset
 
@@ -346,8 +367,8 @@ class RelationFieldType(
     # =====================================================
 
     def get_schema(
-        self,
-        field,
+            self,
+            field,
     ):
 
         schema = super().get_schema(

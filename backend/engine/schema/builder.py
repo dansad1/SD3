@@ -4,6 +4,10 @@ from django.core.exceptions import (
 
 import json
 
+from backend.engine.entity.EntityRegistry import (
+    entity_registry,
+)
+
 
 class EntitySchemaBuilder:
 
@@ -17,15 +21,15 @@ class EntitySchemaBuilder:
     # =====================================================
 
     def build(
-        self,
-        request,
-        action="view",
+            self,
+            request,
+            action="view",
     ):
 
         if action not in (
-            "view",
-            "create",
-            "edit",
+                "view",
+                "create",
+                "edit",
         ):
             raise PermissionDenied
 
@@ -35,10 +39,10 @@ class EntitySchemaBuilder:
         )
 
         fields = (
-            self.entity.get_fields(
-                request
-            )
-            or []
+                self.entity.get_fields(
+                    request
+                )
+                or []
         )
 
         fields_schema = []
@@ -60,21 +64,57 @@ class EntitySchemaBuilder:
             schema = field.get_schema()
 
             # =========================================
-            # DEBUG
+            # RELATION OPTIONS
             # =========================================
 
-            print(
-                "\n🔍 FIELD SCHEMA"
-            )
+            if (
+                    schema.get("type")
+                    == "relation"
+            ):
 
-            print(
-                json.dumps(
-                    schema,
-                    indent=2,
-                    ensure_ascii=False,
-                    default=str,
+                entity_name = (
+                    schema.get(
+                        "entity"
+                    )
                 )
-            )
+
+                if entity_name:
+
+                    try:
+
+                        relation_entity = (
+                            entity_registry.get(
+                                entity_name
+                            )
+                        )
+
+                        schema["options"] = [
+
+                            relation_entity
+                            .represent_option(
+                                obj
+                            )
+
+                            for obj in (
+                                relation_entity
+                                .get_queryset(
+                                    request
+                                )
+                            )
+
+                        ]
+
+                    except Exception as e:
+
+                        schema["options"] = []
+
+                else:
+
+                    schema["options"] = []
+
+            # =========================================
+            # DEBUG
+            # =========================================
 
             if action == "view":
                 schema["readonly"] = True
@@ -102,18 +142,5 @@ class EntitySchemaBuilder:
                     )
                 ),
         }
-
-        print(
-            "\n🚀 FINAL FORM SCHEMA"
-        )
-
-        print(
-            json.dumps(
-                response,
-                indent=2,
-                ensure_ascii=False,
-                default=str,
-            )
-        )
 
         return response
