@@ -1,7 +1,3 @@
-# =========================================================
-# backend/dynamic/field_types/number.py
-# =========================================================
-
 import math
 
 from django.core.exceptions import (
@@ -31,20 +27,11 @@ class NumberFieldType(BaseFieldType):
     filterable = True
 
     features = [
-        "default_value",
         "required",
         "unique",
-        "min_value",
-        "max_value",
         "placeholder",
         "help_text",
     ]
-
-    default_value_widget = "number"
-
-    # =====================================================
-    # LIMITS
-    # =====================================================
 
     MAX_ABS = 10 ** 15
 
@@ -84,87 +71,12 @@ class NumberFieldType(BaseFieldType):
                 "Некорректное число"
             )
 
-        if abs(number) > self.MAX_ABS:
+        if (
+            abs(number)
+            > self.MAX_ABS
+        ):
             raise ValidationError(
                 "Слишком большое число"
-            )
-
-        return number
-
-    # =====================================================
-    # FIELD LIMITS
-    # =====================================================
-
-    def get_min_number(
-        self,
-        field,
-    ):
-
-        if field.min_value in (
-            None,
-            "",
-        ):
-            return None
-
-        return self.to_number(
-            field.min_value
-        )
-
-    def get_max_number(
-        self,
-        field,
-    ):
-
-        if field.max_value in (
-            None,
-            "",
-        ):
-            return None
-
-        return self.to_number(
-            field.max_value
-        )
-
-    # =====================================================
-    # VALIDATION
-    # =====================================================
-
-    def validate_number(
-        self,
-        field,
-        value,
-    ):
-
-        number = self.to_number(
-            value
-        )
-
-        min_value = (
-            self.get_min_number(
-                field
-            )
-        )
-
-        max_value = (
-            self.get_max_number(
-                field
-            )
-        )
-
-        if (
-            min_value is not None
-            and number < min_value
-        ):
-            raise ValidationError(
-                f"Минимальное значение: {min_value}"
-            )
-
-        if (
-            max_value is not None
-            and number > max_value
-        ):
-            raise ValidationError(
-                f"Максимальное значение: {max_value}"
             )
 
         return number
@@ -193,16 +105,12 @@ class NumberFieldType(BaseFieldType):
         if field.is_multiple:
 
             return [
-                self.validate_number(
-                    field,
-                    v,
-                )
+                self.to_number(v)
                 for v in value
             ]
 
-        return self.validate_number(
-            field,
-            value,
+        return self.to_number(
+            value
         )
 
     # =====================================================
@@ -224,16 +132,12 @@ class NumberFieldType(BaseFieldType):
         if field.is_multiple:
 
             return [
-                self.validate_number(
-                    field,
-                    v,
-                )
+                self.to_number(v)
                 for v in value
             ]
 
-        return self.validate_number(
-            field,
-            value,
+        return self.to_number(
+            value
         )
 
     # =====================================================
@@ -300,49 +204,3 @@ class NumberFieldType(BaseFieldType):
                     value
             }
         )
-
-    # =====================================================
-    # UI
-    # =====================================================
-
-    def get_schema(
-        self,
-        field,
-    ):
-
-        schema = super().get_schema(
-            field
-        )
-
-        min_value = (
-            self.get_min_number(
-                field
-            )
-        )
-
-        max_value = (
-            self.get_max_number(
-                field
-            )
-        )
-
-        schema.update({
-
-            "inputType":
-                "number",
-
-        })
-
-        if min_value is not None:
-
-            schema["min"] = (
-                min_value
-            )
-
-        if max_value is not None:
-
-            schema["max"] = (
-                max_value
-            )
-
-        return schema

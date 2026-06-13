@@ -32,18 +32,10 @@ class DateTimeFieldType(BaseFieldType):
     filterable = True
 
     features = [
-        "default_value",
         "required",
-        "min_value",
-        "max_value",
         "placeholder",
         "help_text",
     ]
-
-    default_value_widget = "datetime"
-
-    MIN_YEAR = 1900
-    MAX_YEAR = 2100
 
     # =====================================================
     # CONVERSION
@@ -108,79 +100,16 @@ class DateTimeFieldType(BaseFieldType):
         )
 
     # =====================================================
-    # LIMITS
-    # =====================================================
-
-    def get_min_datetime(
-        self,
-        field,
-    ):
-
-        if field.min_value:
-            return self.to_datetime(
-                field.min_value
-            )
-
-        return datetime(
-            self.MIN_YEAR,
-            1,
-            1,
-            tzinfo=timezone.utc,
-        )
-
-    def get_max_datetime(
-        self,
-        field,
-    ):
-
-        if field.max_value:
-            return self.to_datetime(
-                field.max_value
-            )
-
-        return datetime(
-            self.MAX_YEAR,
-            12,
-            31,
-            23,
-            59,
-            59,
-            tzinfo=timezone.utc,
-        )
-
-    # =====================================================
     # VALIDATION
     # =====================================================
 
     def validate_datetime(
         self,
-        field,
         value,
     ):
-
-        dt = self.to_datetime(
+        return self.to_datetime(
             value
         )
-
-        min_dt = self.get_min_datetime(
-            field
-        )
-
-        max_dt = self.get_max_datetime(
-            field
-        )
-
-        if dt < min_dt:
-            raise ValidationError(
-                "Дата слишком маленькая"
-            )
-
-        if dt > max_dt:
-            raise ValidationError(
-                "Дата слишком большая"
-            )
-
-        return dt
 
     # =====================================================
     # VALIDATE
@@ -206,16 +135,12 @@ class DateTimeFieldType(BaseFieldType):
         if field.is_multiple:
 
             return [
-                self.validate_datetime(
-                    field,
-                    v,
-                )
+                self.validate_datetime(v)
                 for v in value
             ]
 
         return self.validate_datetime(
-            field,
-            value,
+            value
         )
 
     # =====================================================
@@ -237,16 +162,12 @@ class DateTimeFieldType(BaseFieldType):
         if field.is_multiple:
 
             return [
-                self.validate_datetime(
-                    field,
-                    v,
-                )
+                self.validate_datetime(v)
                 for v in value
             ]
 
         return self.validate_datetime(
-            field,
-            value,
+            value
         )
 
     # =====================================================
@@ -339,38 +260,6 @@ class DateTimeFieldType(BaseFieldType):
             field
         )
 
-        min_dt = self.get_min_datetime(
-            field
-        )
-
-        max_dt = self.get_max_datetime(
-            field
-        )
-
-        schema.update({
-
-            "inputType":
-                "datetime",
-
-            "timezone":
-                "UTC",
-
-            "min":
-                min_dt.isoformat(),
-
-            "max":
-                max_dt.isoformat(),
-
-            "builder": {
-
-                "features":
-                    self.features,
-
-                "defaultValueWidget":
-                    self.default_value_widget,
-
-            }
-
-        })
+        schema["timezone"] = "UTC"
 
         return schema

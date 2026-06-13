@@ -1,7 +1,3 @@
-# =========================================================
-# backend/dynamic/field_types/phone.py
-# =========================================================
-
 import phonenumbers
 
 from django.core.exceptions import (
@@ -33,20 +29,13 @@ class PhoneFieldType(
     filterable = True
 
     features = [
-        "default_value",
         "required",
         "unique",
         "placeholder",
         "help_text",
     ]
 
-    default_value_widget = "phone"
-
-    # =====================================================
-    # DEFAULT REGION
-    # =====================================================
-
-    DEFAULT_REGION = "UA"
+    DEFAULT_REGION = "RU"
 
     # =====================================================
     # CONVERSION
@@ -77,11 +66,9 @@ class PhoneFieldType(
 
         try:
 
-            parsed = (
-                phonenumbers.parse(
-                    raw,
-                    self.DEFAULT_REGION,
-                )
+            parsed = phonenumbers.parse(
+                raw,
+                self.DEFAULT_REGION,
             )
 
         except Exception:
@@ -91,8 +78,7 @@ class PhoneFieldType(
             )
 
         if not (
-            phonenumbers
-            .is_possible_number(
+            phonenumbers.is_possible_number(
                 parsed
             )
         ):
@@ -101,8 +87,7 @@ class PhoneFieldType(
             )
 
         if not (
-            phonenumbers
-            .is_valid_number(
+            phonenumbers.is_valid_number(
                 parsed
             )
         ):
@@ -110,13 +95,11 @@ class PhoneFieldType(
                 "Некорректный номер"
             )
 
-        return (
-            phonenumbers.format_number(
-                parsed,
-                phonenumbers
-                .PhoneNumberFormat
-                .E164,
-            )
+        return phonenumbers.format_number(
+            parsed,
+            phonenumbers
+            .PhoneNumberFormat
+            .E164,
         )
 
     # =====================================================
@@ -177,17 +160,6 @@ class PhoneFieldType(
         return self.to_phone(
             value
         )
-
-    # =====================================================
-    # SERIALIZE
-    # =====================================================
-
-    def serialize(
-        self,
-        field,
-        value,
-    ):
-        return value
 
     # =====================================================
     # DESERIALIZE
@@ -262,14 +234,8 @@ class PhoneFieldType(
 
         schema.update({
 
-            "inputType":
-                "tel",
-
             "autocomplete":
                 "tel",
-
-            "format":
-                "E.164",
 
             "defaultRegion":
                 self.DEFAULT_REGION,

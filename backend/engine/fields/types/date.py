@@ -30,27 +30,10 @@ class DateFieldType(BaseFieldType):
     filterable = True
 
     features = [
-        "default_value",
         "required",
-        "min_value",
-        "max_value",
         "placeholder",
         "help_text",
     ]
-
-    default_value_widget = "date"
-
-    MIN_DATE = date(
-        1900,
-        1,
-        1,
-    )
-
-    MAX_DATE = date(
-        2100,
-        12,
-        31,
-    )
 
     # =====================================================
     # CONVERSION
@@ -61,13 +44,32 @@ class DateFieldType(BaseFieldType):
         value,
     ):
 
-        if isinstance(value, date) and not isinstance(value, datetime):
+        if (
+            isinstance(
+                value,
+                date,
+            )
+            and not isinstance(
+                value,
+                datetime,
+            )
+        ):
             return value
 
-        if isinstance(value, datetime):
+        if isinstance(
+            value,
+            datetime,
+        ):
             return value.date()
 
-        if not isinstance(value, (str, int, float)):
+        if not isinstance(
+            value,
+            (
+                str,
+                int,
+                float,
+            ),
+        ):
             raise ValidationError(
                 "Некорректная дата"
             )
@@ -80,7 +82,9 @@ class DateFieldType(BaseFieldType):
             )
 
         try:
-            return date.fromisoformat(raw)
+            return date.fromisoformat(
+                raw
+            )
 
         except Exception:
             raise ValidationError(
@@ -88,59 +92,16 @@ class DateFieldType(BaseFieldType):
             )
 
     # =====================================================
-    # FIELD LIMITS
-    # =====================================================
-
-    def get_min_date(
-        self,
-        field,
-    ):
-
-        if field.min_value:
-            return self.to_date(
-                field.min_value
-            )
-
-        return self.MIN_DATE
-
-    def get_max_date(
-        self,
-        field,
-    ):
-
-        if field.max_value:
-            return self.to_date(
-                field.max_value
-            )
-
-        return self.MAX_DATE
-
-    # =====================================================
     # VALIDATION
     # =====================================================
 
     def validate_date(
         self,
-        field,
         value,
     ):
-
-        parsed = self.to_date(value)
-
-        min_date = self.get_min_date(field)
-        max_date = self.get_max_date(field)
-
-        if parsed < min_date:
-            raise ValidationError(
-                "Дата слишком маленькая"
-            )
-
-        if parsed > max_date:
-            raise ValidationError(
-                "Дата слишком большая"
-            )
-
-        return parsed
+        return self.to_date(
+            value
+        )
 
     # =====================================================
     # VALIDATE
@@ -165,16 +126,12 @@ class DateFieldType(BaseFieldType):
 
         if field.is_multiple:
             return [
-                self.validate_date(
-                    field,
-                    v,
-                )
+                self.validate_date(v)
                 for v in value
             ]
 
         return self.validate_date(
-            field,
-            value,
+            value
         )
 
     # =====================================================
@@ -195,16 +152,12 @@ class DateFieldType(BaseFieldType):
 
         if field.is_multiple:
             return [
-                self.validate_date(
-                    field,
-                    v,
-                )
+                self.validate_date(v)
                 for v in value
             ]
 
         return self.validate_date(
-            field,
-            value,
+            value
         )
 
     # =====================================================
@@ -220,10 +173,10 @@ class DateFieldType(BaseFieldType):
         if value is None:
             return None
 
-        if isinstance(value, datetime):
-            value = value.date()
-
-        return self.to_date(value).isoformat()
+        return (
+            self.to_date(value)
+            .isoformat()
+        )
 
     # =====================================================
     # DESERIALIZE
@@ -238,7 +191,9 @@ class DateFieldType(BaseFieldType):
         if not value:
             return None
 
-        return self.to_date(value)
+        return self.to_date(
+            value
+        )
 
     # =====================================================
     # FILTER
@@ -260,42 +215,8 @@ class DateFieldType(BaseFieldType):
         return queryset.filter(
             **{
                 field.name:
-                    self.to_date(value)
+                    self.to_date(
+                        value
+                    )
             }
         )
-
-    # =====================================================
-    # UI
-    # =====================================================
-
-    def get_schema(
-        self,
-        field,
-    ):
-
-        schema = super().get_schema(field)
-
-        min_date = self.get_min_date(field)
-        max_date = self.get_max_date(field)
-
-        schema.update({
-
-            "inputType":
-                "date",
-
-            "min":
-                min_date.isoformat(),
-
-            "max":
-                max_date.isoformat(),
-
-            "builder": {
-                "features":
-                    self.features,
-
-                "defaultValueWidget":
-                    self.default_value_widget,
-            },
-        })
-
-        return schema

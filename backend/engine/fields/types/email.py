@@ -1,7 +1,3 @@
-# =========================================================
-# backend/engine/fields/types/email.py
-# =========================================================
-
 import re
 
 from django.core.validators import (
@@ -20,19 +16,11 @@ from backend.engine.fields.types.registry import (
     register_field_type,
 )
 
-# =====================================================
-# CONSTANTS
-# =====================================================
 
 MAX_EMAIL_LENGTH = 254
-
 LOCAL_MAX_LENGTH = 64
-
 DOMAIN_MAX_LENGTH = 253
 
-# =====================================================
-# REGEX
-# =====================================================
 
 EMAIL_RE = re.compile(
     r"^[^\s@]+@[^\s@]+\.[^\s@]+$",
@@ -56,14 +44,11 @@ class EmailFieldType(
     filterable = True
 
     features = [
-        "default_value",
         "required",
         "unique",
         "placeholder",
         "help_text",
     ]
-
-    default_value_widget = "email"
 
     # =====================================================
     # VALIDATION
@@ -74,12 +59,13 @@ class EmailFieldType(
         value,
     ):
 
-        value = str(
-            value
-        ).strip().lower()
+        value = (
+            str(value)
+            .strip()
+            .lower()
+        )
 
         if len(value) > MAX_EMAIL_LENGTH:
-
             raise ValidationError(
                 "Email слишком длинный"
             )
@@ -101,7 +87,6 @@ class EmailFieldType(
             len(local)
             > LOCAL_MAX_LENGTH
         ):
-
             raise ValidationError(
                 "Слишком длинная локальная часть email"
             )
@@ -110,7 +95,6 @@ class EmailFieldType(
             len(domain)
             > DOMAIN_MAX_LENGTH
         ):
-
             raise ValidationError(
                 "Слишком длинный домен"
             )
@@ -118,7 +102,6 @@ class EmailFieldType(
         if not EMAIL_RE.match(
             value
         ):
-
             raise ValidationError(
                 "Некорректный email"
             )
@@ -199,27 +182,6 @@ class EmailFieldType(
         )
 
     # =====================================================
-    # SEARCH
-    # =====================================================
-
-    def apply_search(
-        self,
-        queryset,
-        field,
-        value,
-    ):
-
-        if not value:
-            return queryset
-
-        return queryset.filter(
-            **{
-                f"{field.name}__icontains":
-                    str(value).strip()
-            }
-        )
-
-    # =====================================================
     # FILTER
     # =====================================================
 
@@ -244,41 +206,3 @@ class EmailFieldType(
                     )
             }
         )
-
-    # =====================================================
-    # UI
-    # =====================================================
-
-    def get_schema(
-        self,
-        field,
-    ):
-
-        schema = super().get_schema(
-            field
-        )
-
-        schema.update({
-
-            "inputType":
-                "email",
-
-            "autocomplete":
-                "email",
-
-            "maxLength":
-                MAX_EMAIL_LENGTH,
-
-            "builder": {
-
-                "features":
-                    self.features,
-
-                "defaultValueWidget":
-                    self.default_value_widget,
-
-            },
-
-        })
-
-        return schema

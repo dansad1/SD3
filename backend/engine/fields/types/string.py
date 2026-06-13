@@ -1,8 +1,3 @@
-# =========================================================
-# backend/engine/fields/types/string.py
-# =========================================================
-
-import re
 import unicodedata
 
 from django.core.exceptions import (
@@ -34,58 +29,11 @@ class StringFieldType(
     filterable = True
 
     features = [
-        "default_value",
         "required",
         "unique",
-        "regex",
-        "max_value",
         "placeholder",
         "help_text",
     ]
-
-    default_value_widget = "text"
-
-    # =====================================================
-    # LIMITS
-    # =====================================================
-
-    DEFAULT_MAX_LENGTH = 255
-
-    ABSOLUTE_MAX_LENGTH = 10000
-
-    # =====================================================
-    # CONFIG
-    # =====================================================
-
-    def get_max_length(
-        self,
-        field,
-    ):
-
-        value = (
-            field.max_value
-            or self.DEFAULT_MAX_LENGTH
-        )
-
-        try:
-
-            value = int(
-                value
-            )
-
-        except (
-            TypeError,
-            ValueError,
-        ):
-
-            value = (
-                self.DEFAULT_MAX_LENGTH
-            )
-
-        return min(
-            value,
-            self.ABSOLUTE_MAX_LENGTH,
-        )
 
     # =====================================================
     # CONVERSION
@@ -104,7 +52,6 @@ class StringFieldType(
                 float,
             ),
         ):
-
             raise ValidationError(
                 "Некорректное значение"
             )
@@ -116,43 +63,7 @@ class StringFieldType(
             value,
         )
 
-        return value.strip()
-
-    # =====================================================
-    # STRING VALIDATION HOOK
-    # =====================================================
-
-    def validate_string_value(
-        self,
-        value,
-    ):
-        return value
-
-    # =====================================================
-    # VALIDATION
-    # =====================================================
-
-    def validate_string(
-        self,
-        field,
-        value,
-    ):
-
-        value = self.to_string(
-            value
-        )
-
-        max_length = (
-            self.get_max_length(
-                field
-            )
-        )
-
-        if len(value) > max_length:
-
-            raise ValidationError(
-                f"Максимум {max_length} символов"
-            )
+        value = value.strip()
 
         for char in value:
 
@@ -164,38 +75,14 @@ class StringFieldType(
                     "\t",
                 )
             ):
-
                 raise ValidationError(
                     "Недопустимые символы"
                 )
 
-        if field.regex:
-
-            try:
-
-                matched = re.fullmatch(
-                    field.regex,
-                    value,
-                )
-
-            except re.error:
-
-                raise ValidationError(
-                    "Некорректная regex-конфигурация"
-                )
-
-            if not matched:
-
-                raise ValidationError(
-                    "Некорректный формат"
-                )
-
-        return self.validate_string_value(
-            value
-        )
+        return value
 
     # =====================================================
-    # VALIDATE
+    # VALIDATION
     # =====================================================
 
     def validate(
@@ -213,24 +100,17 @@ class StringFieldType(
             None,
             "",
         ):
-
             return value
 
         if field.is_multiple:
 
             return [
-
-                self.validate_string(
-                    field,
-                    item,
-                )
-
-                for item in value
+                self.to_string(v)
+                for v in value
             ]
 
-        return self.validate_string(
-            field,
-            value,
+        return self.to_string(
+            value
         )
 
     # =====================================================
@@ -244,7 +124,6 @@ class StringFieldType(
     ):
 
         if value is None:
-
             return None
 
         if field.is_multiple:
@@ -269,15 +148,10 @@ class StringFieldType(
     ):
 
         if value is None:
-
             return None
 
         if field.is_multiple:
-
-            return [
-                str(v)
-                for v in value
-            ]
+            return [str(v) for v in value]
 
         return str(value)
 
@@ -292,44 +166,9 @@ class StringFieldType(
     ):
 
         if value is None:
-
             return None
 
         if field.is_multiple:
-
-            return [
-                str(v)
-                for v in value
-            ]
+            return [str(v) for v in value]
 
         return str(value)
-
-    # =====================================================
-    # UI
-    # =====================================================
-
-    def get_schema(
-        self,
-        field,
-    ):
-
-        schema = super().get_schema(
-            field
-        )
-
-        schema.update({
-
-            "inputType":
-                "text",
-
-            "maxLength":
-                self.get_max_length(
-                    field
-                ),
-
-            "multiline":
-                False,
-
-        })
-
-        return schema

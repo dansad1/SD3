@@ -23,24 +23,12 @@ class TextFieldType(
     filterable = False
 
     features = [
-        "default_value",
         "required",
-        "max_value",
         "placeholder",
         "help_text",
     ]
 
-    default_value_widget = "textarea"
-
-    DEFAULT_MAX_LENGTH = 50000
-
-    ABSOLUTE_MAX_LENGTH = 100000
-
     DEFAULT_ROWS = 6
-
-    # =====================================================
-    # UI
-    # =====================================================
 
     def get_schema(
         self,
@@ -53,11 +41,7 @@ class TextFieldType(
 
         schema.update({
 
-            "inputType":
-                "textarea",
-
-            "multiline":
-                True,
+            "multiline": True,
 
             "rows":
                 self.DEFAULT_ROWS,

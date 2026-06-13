@@ -1,4 +1,4 @@
-from rest_framework.exceptions import (
+from django.core.exceptions import (
     ValidationError,
 )
 
@@ -18,6 +18,7 @@ class PasswordAccessor:
         obj,
         field,
     ):
+        # пароль никогда не отдаём
         return None
 
     def set(
@@ -52,8 +53,8 @@ class PasswordFieldType(
     widget = "password"
 
     searchable = False
-    filterable = False
     sortable = False
+    filterable = False
 
     accessor = PasswordAccessor()
 
@@ -61,10 +62,6 @@ class PasswordFieldType(
         "required",
         "help_text",
     ]
-
-    # =====================================================
-    # PASSWORD POLICY
-    # =====================================================
 
     MIN_LENGTH = 8
     MAX_LENGTH = 256
@@ -136,7 +133,7 @@ class PasswordFieldType(
 
         return str(
             value
-        )
+        ).strip()
 
     # =====================================================
     # SERIALIZE
@@ -175,9 +172,6 @@ class PasswordFieldType(
 
         schema.update({
 
-            "inputType":
-                "password",
-
             "autocomplete":
                 "new-password",
 
@@ -186,9 +180,6 @@ class PasswordFieldType(
 
             "maxLength":
                 self.MAX_LENGTH,
-
-            "reveal":
-                False,
 
         })
 

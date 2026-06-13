@@ -12,16 +12,10 @@ class BaseFieldType:
     searchable = False
     filterable = False
 
-    # =====================================================
-    # FIELD BUILDER FEATURES
-    # =====================================================
-
     features = []
 
-    default_value_widget = None
-
     # =====================================================
-    # VALIDATE
+    # VALIDATION
     # =====================================================
 
     def validate(
@@ -57,7 +51,7 @@ class BaseFieldType:
         return value
 
     # =====================================================
-    # NORMALIZE
+    # NORMALIZATION
     # =====================================================
 
     def normalize(
@@ -68,7 +62,7 @@ class BaseFieldType:
         return value
 
     # =====================================================
-    # SERIALIZE
+    # SERIALIZATION
     # =====================================================
 
     def serialize(
@@ -78,45 +72,12 @@ class BaseFieldType:
     ):
         return value
 
-    # =====================================================
-    # DESERIALIZE
-    # =====================================================
-
     def deserialize(
         self,
         field,
         value,
     ):
         return value
-
-    # =====================================================
-    # VALUE ACCESS
-    # =====================================================
-
-    def get_value(
-        self,
-        field,
-        obj,
-    ):
-        return getattr(
-            obj,
-            field.name,
-            None,
-        )
-
-    def set_value(
-        self,
-        field,
-        obj,
-        value,
-    ):
-        setattr(
-            obj,
-            field.name,
-            value,
-        )
-
-        return obj
 
     # =====================================================
     # UI
@@ -137,25 +98,16 @@ class BaseFieldType:
     ):
         return self.features
 
-    def get_default_value_widget(
-        self,
-        field,
-    ):
-        return (
-            self.default_value_widget
-            or self.get_widget(field)
-        )
-
     # =====================================================
-    # UI SCHEMA
+    # SCHEMA
     # =====================================================
 
     def get_schema(
-            self,
-            field,
+        self,
+        field,
     ):
 
-        schema = {
+        return {
 
             "type":
                 self.code,
@@ -178,21 +130,8 @@ class BaseFieldType:
                 self.get_features(
                     field
                 ),
-
-            "default_value_widget":
-                self.get_default_value_widget(
-                    field
-                ),
         }
 
-        print(
-            "FIELD TYPE SCHEMA",
-            field.name,
-            self.__class__.__name__,
-            schema,
-        )
-
-        return schema
     # =====================================================
     # FILTER
     # =====================================================
@@ -212,7 +151,7 @@ class BaseFieldType:
 
         return queryset.filter(
             **{
-                field.name: value
+                field.name: value,
             }
         )
 
@@ -236,7 +175,7 @@ class BaseFieldType:
         return queryset.filter(
             **{
                 f"{field.name}__icontains":
-                    value
+                    value,
             }
         )
 

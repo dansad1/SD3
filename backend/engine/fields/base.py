@@ -1,10 +1,4 @@
 class BaseField:
-    """
-    Runtime field abstraction.
-
-    Это НЕ django model.
-    Это runtime schema object.
-    """
 
     def __init__(self, source):
         self.source = source
@@ -58,7 +52,7 @@ class BaseField:
         )
 
     # =====================================================
-    # UI HINTS
+    # UI
     # =====================================================
 
     @property
@@ -66,7 +60,7 @@ class BaseField:
         return getattr(
             self.source,
             "placeholder",
-            None,
+            "",
         )
 
     @property
@@ -74,66 +68,14 @@ class BaseField:
         return getattr(
             self.source,
             "help_text",
-            None,
+            "",
         )
-
-    # =====================================================
-    # SECTIONS
-    # =====================================================
 
     @property
     def section(self):
         return getattr(
             self.source,
             "section",
-            None,
-        )
-
-    @property
-    def section_title(self):
-        return getattr(
-            self.source,
-            "section_title",
-            None,
-        )
-
-    # =====================================================
-    # VALIDATION
-    # =====================================================
-
-    @property
-    def regex(self):
-        return getattr(
-            self.source,
-            "regex",
-            None,
-        )
-
-    @property
-    def min_value(self):
-        return getattr(
-            self.source,
-            "min_value",
-            None,
-        )
-
-    @property
-    def max_value(self):
-        return getattr(
-            self.source,
-            "max_value",
-            None,
-        )
-
-    # =====================================================
-    # DEFAULT
-    # =====================================================
-
-    @property
-    def default_value(self):
-        return getattr(
-            self.source,
-            "default_value",
             None,
         )
 
@@ -162,13 +104,10 @@ class BaseField:
             None,
         )
 
-        if not value:
-            return {}
-
-        return value
+        return value or {}
 
     # =====================================================
-    # TYPE OBJECT
+    # TYPE
     # =====================================================
 
     @property
@@ -186,44 +125,32 @@ class BaseField:
     # BEHAVIOR
     # =====================================================
 
-    def validate(
-        self,
-        value,
-    ):
+    def validate(self, value):
         return self.field_type.validate(
             self,
             value,
         )
 
-    def normalize(
-        self,
-        value,
-    ):
+    def normalize(self, value):
         return self.field_type.normalize(
             self,
             value,
         )
 
-    def serialize(
-        self,
-        value,
-    ):
+    def serialize(self, value):
         return self.field_type.serialize(
             self,
             value,
         )
 
-    def deserialize(
-        self,
-        value,
-    ):
+    def deserialize(self, value):
         return self.field_type.deserialize(
             self,
             value,
         )
 
     # =====================================================
-    # UI SCHEMA
+    # SCHEMA
     # =====================================================
 
     def get_schema(self):
@@ -233,93 +160,30 @@ class BaseField:
         )
 
         schema.update({
-
-            "name":
-                self.name,
-
-            "label":
-                self.label,
-
-            "required":
-                self.required,
-
-            "placeholder":
-                self.placeholder,
-
-            "help_text":
-                self.help_text,
-
-            "multiple":
-                self.is_multiple,
+            "name": self.name,
+            "label": self.label,
+            "required": self.required,
+            "placeholder": self.placeholder,
+            "help_text": self.help_text,
+            "multiple": self.is_multiple,
+            "unique": self.unique,
         })
-
-        # =============================================
-        # SECTION SUPPORT
-        # =============================================
 
         if self.section:
             schema["ui"] = {
-                "section":
-                    self.section,
+                "section": self.section,
             }
 
-        # =============================================
-        # OPTIONS BRIDGE
-        # =============================================
-
-        if "options" not in schema:
-
-            options = []
-
-            if self.choices:
-
-                options = self.choices
-
-            elif isinstance(
-                    self.options,
-                    list,
-            ):
-
-                options = self.options
-
-            if options:
-                schema["options"] = options
-
-        # =============================================
-        # LEGACY COMPAT
-        # =============================================
-
         if (
-                schema.get("options")
-                and "choices" not in schema
+            "options" not in schema
+            and self.choices
         ):
-            schema["choices"] = (
-                schema["options"]
-            )
-
-        # =============================================
-        # AUTO SELECT
-        # =============================================
-
-        if (
-                schema.get("options")
-                and not schema.get(
-            "entity"
-        )
-                and schema.get(
-            "widget"
-        )
-                in (
-                "text",
-                "string",
-                None,
-        )
-        ):
-            schema["widget"] = (
-                "select"
+            schema["options"] = (
+                self.choices
             )
 
         return schema
+
     # =====================================================
     # FILTER / SEARCH
     # =====================================================
@@ -344,39 +208,4 @@ class BaseField:
             queryset,
             self,
             value,
-        )
-
-    # =====================================================
-    # VALUE ACCESS
-    # =====================================================
-
-    def get_value(
-        self,
-        accessor,
-        obj,
-    ):
-        return accessor.get(
-            obj,
-            self,
-        )
-
-    def set_value(
-        self,
-        accessor,
-        obj,
-        value,
-    ):
-
-        normalized = self.normalize(
-            value
-        )
-
-        self.validate(
-            normalized
-        )
-
-        return accessor.set(
-            obj,
-            self,
-            normalized,
         )

@@ -1,7 +1,3 @@
-# =========================================================
-# django_accessor.py
-# =========================================================
-
 from backend.engine.fields.value import (
     BaseValueAccessor,
 )
@@ -27,13 +23,9 @@ class DjangoFieldAccessor(
             None,
         )
 
-        # ================================================
-        # MANY TO MANY
-        # ================================================
-
         if field.is_multiple:
 
-            if not value:
+            if value is None:
                 return []
 
             return list(
@@ -53,26 +45,16 @@ class DjangoFieldAccessor(
         value,
     ):
 
-        # ================================================
-        # MANY TO MANY
-        # ================================================
-
         if field.is_multiple:
 
-            relation = getattr(
+            getattr(
                 obj,
                 field.name,
-            )
-
-            relation.set(
+            ).set(
                 value or []
             )
 
             return value
-
-        # ================================================
-        # DEFAULT
-        # ================================================
 
         setattr(
             obj,

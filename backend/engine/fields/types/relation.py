@@ -1,7 +1,3 @@
-# =========================================================
-# backend/dynamic/field_types/relation.py
-# =========================================================
-
 from django.core.exceptions import (
     ValidationError,
 )
@@ -40,8 +36,6 @@ class RelationFieldType(
         "is_multiple",
         "help_text",
     ]
-
-    MAX_OPTIONS = 100
 
     # =====================================================
     # ENTITY
@@ -147,7 +141,6 @@ class RelationFieldType(
             "",
             [],
         ):
-
             return value
 
         if field.is_multiple:
@@ -210,9 +203,13 @@ class RelationFieldType(
                 for item in value
             ]
 
+            unique_ids = list(
+                dict.fromkeys(ids)
+            )
+
             queryset = (
                 model.objects.filter(
-                    pk__in=ids
+                    pk__in=unique_ids
                 )
             )
 
@@ -222,7 +219,7 @@ class RelationFieldType(
             }
 
             missing = (
-                set(ids)
+                set(unique_ids)
                 - set(
                     objects.keys()
                 )
@@ -315,54 +312,6 @@ class RelationFieldType(
         )
 
     # =====================================================
-    # OPTIONS
-    # =====================================================
-
-    def get_options(
-        self,
-        field,
-    ):
-
-        entity_name = (
-            self.get_entity_name(
-                field
-            )
-        )
-
-        if not entity_name:
-            return []
-
-        try:
-
-            entity = (
-                entity_registry.get(
-                    entity_name
-                )
-            )
-
-        except Exception:
-
-            return []
-
-        if not entity:
-            return []
-
-        queryset = (
-            entity.model.objects
-            .all()
-            .order_by("pk")
-            [: self.MAX_OPTIONS]
-        )
-
-        return [
-            {
-                "value": obj.pk,
-                "label": str(obj),
-            }
-            for obj in queryset
-        ]
-
-    # =====================================================
     # FILTER
     # =====================================================
 
@@ -405,37 +354,16 @@ class RelationFieldType(
             field
         )
 
-        entity_name = (
-            self.get_entity_name(
-                field
-            )
-        )
-
         schema.update({
 
-            "inputType":
-                "relation",
-
             "entity":
-                entity_name,
-
-            "relation_entity":
-                entity_name,
-
-            "multiple":
-                field.is_multiple,
+                self.get_entity_name(
+                    field
+                ),
 
             "lookup":
                 True,
 
-            "maxOptions":
-                self.MAX_OPTIONS,
-
-            # совместимость
-            "options":
-                self.get_options(
-                    field
-                ),
         })
 
         return schema

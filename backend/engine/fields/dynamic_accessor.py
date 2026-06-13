@@ -1,7 +1,3 @@
-# =========================================================
-# dynamic_accessor.py
-# =========================================================
-
 from django.contrib.contenttypes.models import (
     ContentType,
 )
@@ -26,14 +22,13 @@ class DynamicValueAccessor(
     ):
 
         content_type = (
-            ContentType.objects
-            .get_for_model(
+            ContentType.objects.get_for_model(
                 obj,
                 for_concrete_model=False,
             )
         )
 
-        value = (
+        dynamic_value = (
 
             DynamicValue.objects
 
@@ -46,11 +41,11 @@ class DynamicValueAccessor(
             .first()
         )
 
-        if not value:
+        if not dynamic_value:
             return None
 
         return field.deserialize(
-            value.value
+            dynamic_value.value
         )
 
     def set(
@@ -61,8 +56,7 @@ class DynamicValueAccessor(
     ):
 
         content_type = (
-            ContentType.objects
-            .get_for_model(
+            ContentType.objects.get_for_model(
                 obj,
                 for_concrete_model=False,
             )
@@ -77,11 +71,12 @@ class DynamicValueAccessor(
             field_name=field.name,
 
             defaults={
+
                 "value":
                     field.serialize(
                         value
                     )
-            }
+            },
         )
 
         return value

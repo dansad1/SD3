@@ -1,7 +1,3 @@
-# =========================================================
-# backend/dynamic/field_types/richtext.py
-# =========================================================
-
 import bleach
 
 from django.core.exceptions import (
@@ -33,17 +29,12 @@ class RichTextFieldType(
     filterable = False
 
     features = [
-        "default_value",
         "required",
         "placeholder",
         "help_text",
-        "max_value",
     ]
 
-    default_value_widget = "richtext"
-
     DEFAULT_MAX_LENGTH = 100000
-
     ABSOLUTE_MAX_LENGTH = 500000
 
     ALLOWED_TAGS = [
@@ -102,26 +93,26 @@ class RichTextFieldType(
         field,
     ):
 
-        if field.max_value:
-
-            try:
-
-                value = int(
-                    field.max_value
-                )
-
-            except Exception:
-
-                raise ValidationError(
-                    "Некорректный max_value"
-                )
-
-            return min(
-                value,
-                self.ABSOLUTE_MAX_LENGTH,
+        value = (
+            field.options.get(
+                "max_length",
+                self.DEFAULT_MAX_LENGTH,
             )
+        )
 
-        return self.DEFAULT_MAX_LENGTH
+        try:
+            value = int(value)
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+            value = self.DEFAULT_MAX_LENGTH
+
+        return min(
+            value,
+            self.ABSOLUTE_MAX_LENGTH,
+        )
 
     # =====================================================
     # SANITIZE
@@ -136,9 +127,7 @@ class RichTextFieldType(
         if value is None:
             return None
 
-        raw = str(
-            value
-        )
+        raw = str(value)
 
         if (
             len(raw)
@@ -146,7 +135,6 @@ class RichTextFieldType(
                 field
             )
         ):
-
             raise ValidationError(
                 "Текст слишком длинный"
             )
@@ -156,7 +144,6 @@ class RichTextFieldType(
         for marker in self.DANGEROUS_TEXT:
 
             if marker in lowered:
-
                 raise ValidationError(
                     "HTML содержит недопустимый код"
                 )
@@ -209,9 +196,9 @@ class RichTextFieldType(
             return [
                 self.sanitize(
                     field,
-                    v,
+                    item,
                 )
-                for v in value
+                for item in value
             ]
 
         return self.sanitize(
@@ -240,9 +227,9 @@ class RichTextFieldType(
             return [
                 self.sanitize(
                     field,
-                    v,
+                    item,
                 )
-                for v in value
+                for item in value
             ]
 
         return self.sanitize(
@@ -283,14 +270,9 @@ class RichTextFieldType(
 
         schema.update({
 
-            "html":
-                True,
+            "html": True,
 
-            "sanitize":
-                True,
-
-            "inputType":
-                "richtext",
+            "sanitize": True,
 
             "allowedTags":
                 self.ALLOWED_TAGS,
@@ -299,7 +281,6 @@ class RichTextFieldType(
                 self.get_max_length(
                     field
                 ),
-
         })
 
         return schema

@@ -13,7 +13,6 @@ from backend.engine.fields.types.registry import (
 class BooleanFieldType(BaseFieldType):
 
     code = "boolean"
-
     label = "Boolean"
 
     widget = "checkbox"
@@ -23,12 +22,9 @@ class BooleanFieldType(BaseFieldType):
     filterable = True
 
     features = [
-        "default_value",
         "help_text",
         "required",
     ]
-
-    default_value_widget = "checkbox"
 
     TRUE_VALUES = {
         True,
@@ -58,6 +54,10 @@ class BooleanFieldType(BaseFieldType):
         "OFF",
     }
 
+    # =====================================================
+    # CONVERSION
+    # =====================================================
+
     def to_bool(
         self,
         value,
@@ -72,6 +72,10 @@ class BooleanFieldType(BaseFieldType):
         raise ValidationError(
             "Некорректное булево значение"
         )
+
+    # =====================================================
+    # VALIDATION
+    # =====================================================
 
     def validate(
         self,
@@ -100,6 +104,10 @@ class BooleanFieldType(BaseFieldType):
             value
         )
 
+    # =====================================================
+    # NORMALIZATION
+    # =====================================================
+
     def normalize(
         self,
         field,
@@ -121,6 +129,10 @@ class BooleanFieldType(BaseFieldType):
         return self.to_bool(
             value
         )
+
+    # =====================================================
+    # SERIALIZATION
+    # =====================================================
 
     def serialize(
         self,
@@ -146,6 +158,10 @@ class BooleanFieldType(BaseFieldType):
             value
         )
 
+    # =====================================================
+    # FILTER
+    # =====================================================
+
     def apply_filter(
         self,
         queryset,
@@ -166,6 +182,10 @@ class BooleanFieldType(BaseFieldType):
             }
         )
 
+    # =====================================================
+    # SCHEMA
+    # =====================================================
+
     def get_schema(
         self,
         field,
@@ -175,21 +195,8 @@ class BooleanFieldType(BaseFieldType):
             field
         )
 
-        schema.update({
-
-            "inputType":
-                "checkbox",
-
-            "builder": {
-
-                "features":
-                    self.features,
-
-                "defaultValueWidget":
-                    self.default_value_widget,
-
-            }
-
-        })
+        schema["inputType"] = (
+            "checkbox"
+        )
 
         return schema

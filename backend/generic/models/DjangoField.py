@@ -1,9 +1,6 @@
 from django.db import models
 
-from backend.engine.fields.base import (
-    BaseField,
-)
-
+from backend.engine.fields.base import BaseField
 from backend.engine.fields.django_accessor import (
     DjangoFieldAccessor,
 )
@@ -11,32 +8,15 @@ from backend.engine.fields.django_accessor import (
 
 class DjangoField(BaseField):
 
-    # =====================================================
-    # ACCESSOR
-    # =====================================================
-
     @property
     def accessor(self):
-
-        field_type_accessor = getattr(
-            self.field_type,
-            "accessor",
-            None,
-        )
-
-        if field_type_accessor:
-            return field_type_accessor
-
         return DjangoFieldAccessor()
 
     # =====================================================
     # VALUE API
     # =====================================================
 
-    def get_value(
-        self,
-        obj,
-    ):
+    def get_value(self, obj):
         return self.accessor.get(
             obj,
             self,
@@ -66,6 +46,15 @@ class DjangoField(BaseField):
 
         field = self.source
 
+        TYPE_MAP = {
+            models.TextField: "text",
+            models.EmailField: "email",
+            models.BooleanField: "boolean",
+            models.DateTimeField: "datetime",
+            models.DateField: "date",
+            models.JSONField: "json",
+        }
+
         if (
             field.name == "password"
             and isinstance(
@@ -86,18 +75,6 @@ class DjangoField(BaseField):
 
         if isinstance(
             field,
-            models.TextField,
-        ):
-            return "text"
-
-        if isinstance(
-            field,
-            models.EmailField,
-        ):
-            return "email"
-
-        if isinstance(
-            field,
             (
                 models.CharField,
                 models.SlugField,
@@ -115,29 +92,9 @@ class DjangoField(BaseField):
         ):
             return "number"
 
-        if isinstance(
-            field,
-            models.BooleanField,
-        ):
-            return "boolean"
-
-        if isinstance(
-            field,
-            models.DateTimeField,
-        ):
-            return "datetime"
-
-        if isinstance(
-            field,
-            models.DateField,
-        ):
-            return "date"
-
-        if isinstance(
-            field,
-            models.JSONField,
-        ):
-            return "json"
+        for cls, code in TYPE_MAP.items():
+            if isinstance(field, cls):
+                return code
 
         return "string"
 
@@ -158,6 +115,10 @@ class DjangoField(BaseField):
             self.source.help_text
             or ""
         )
+
+    @property
+    def placeholder(self):
+        return ""
 
     # =====================================================
     # VALIDATION
@@ -213,3 +174,15 @@ class DjangoField(BaseField):
             }
             for value, label in choices
         ]
+
+    # =====================================================
+    # OPTIONALS
+    # =====================================================
+
+    @property
+    def section(self):
+        return None
+
+    @property
+    def options(self):
+        return {}

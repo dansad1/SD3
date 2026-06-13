@@ -68,11 +68,6 @@ from django.db import models
 
 
 class BaseField(models.Model):
-
-    # =====================================================
-    # IDENTITY
-    # =====================================================
-
     name = models.SlugField(
         max_length=100,
     )
@@ -88,110 +83,46 @@ class BaseField(models.Model):
         db_index=True,
     )
 
-    # =====================================================
-    # DEFAULT VALUE
-    # =====================================================
-
-    default_value = models.CharField(
-        max_length=1000,
-        blank=True,
-        null=True,
-    )
-
-    # =====================================================
-    # VALIDATION
-    # =====================================================
-
     required = models.BooleanField(
         default=False,
     )
-
-    unique = models.BooleanField(
-        default=False,
-    )
-
-    regex = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-    )
-
-    min_value = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-    )
-
-    max_value = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-    )
-
-    # =====================================================
-    # MULTI VALUE
-    # =====================================================
 
     is_multiple = models.BooleanField(
         default=False,
     )
 
-    # =====================================================
-    # UX HINTS
-    # =====================================================
-
     placeholder = models.CharField(
         max_length=255,
         blank=True,
-        null=True,
+        default="",
     )
 
     help_text = models.CharField(
         max_length=1000,
         blank=True,
-        null=True,
+        default="",
     )
-
-    # =====================================================
-    # ENUM VALUES
-    # =====================================================
 
     choices = models.JSONField(
         default=list,
         blank=True,
     )
 
-    # =====================================================
-    # TYPE CONFIG
-    # =====================================================
-
     options = models.JSONField(
         default=dict,
         blank=True,
     )
 
-    # =====================================================
-    # GROUPING
-    # =====================================================
-
     section = models.CharField(
         max_length=100,
         blank=True,
-        null=True,
+        default="",
         db_index=True,
     )
-
-    # =====================================================
-    # SYSTEM
-    # =====================================================
 
     is_system = models.BooleanField(
         default=False,
     )
-
-    # =====================================================
-    # AUDIT
-    # =====================================================
 
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -200,6 +131,12 @@ class BaseField(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True,
     )
-
+    unique = models.BooleanField(
+        default=False,
+    )
     class Meta:
         abstract = True
+        indexes = [
+            models.Index(fields=["field_type"]),
+            models.Index(fields=["section"]),
+        ]

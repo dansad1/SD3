@@ -1,7 +1,3 @@
-# =========================================================
-# backend/dynamic/field_types/json_type.py
-# =========================================================
-
 import json
 import math
 
@@ -32,16 +28,9 @@ class JSONFieldType(BaseFieldType):
     filterable = False
 
     features = [
-        "default_value",
         "required",
         "help_text",
     ]
-
-    default_value_widget = "json"
-
-    # =====================================================
-    # LIMITS
-    # =====================================================
 
     MAX_DEPTH = 10
     MAX_STRING_LENGTH = 10000
@@ -163,28 +152,21 @@ class JSONFieldType(BaseFieldType):
 
         if isinstance(
             value,
-            bool,
+            (
+                bool,
+                int,
+            ),
         ):
             return
 
         if isinstance(
             value,
-            (
-                int,
-                float,
-            ),
+            float,
         ):
 
-            if (
-                isinstance(
-                    value,
-                    float,
-                )
-                and not math.isfinite(
-                    value
-                )
+            if not math.isfinite(
+                value
             ):
-
                 raise ValidationError(
                     "Некорректное число"
                 )
@@ -200,7 +182,6 @@ class JSONFieldType(BaseFieldType):
                 len(value)
                 > self.MAX_STRING_LENGTH
             ):
-
                 raise ValidationError(
                     "Слишком длинная строка"
                 )
@@ -216,7 +197,6 @@ class JSONFieldType(BaseFieldType):
                 len(value)
                 > self.MAX_LIST_ITEMS
             ):
-
                 raise ValidationError(
                     "Слишком большой список"
                 )
@@ -239,7 +219,6 @@ class JSONFieldType(BaseFieldType):
                 len(value)
                 > self.MAX_OBJECT_KEYS
             ):
-
                 raise ValidationError(
                     "Слишком большой объект"
                 )
@@ -250,13 +229,11 @@ class JSONFieldType(BaseFieldType):
                     key,
                     str,
                 ):
-
                     raise ValidationError(
                         "Ключ JSON должен быть строкой"
                     )
 
                 if len(key) > 255:
-
                     raise ValidationError(
                         "Слишком длинный ключ"
                     )
@@ -265,7 +242,6 @@ class JSONFieldType(BaseFieldType):
                     key
                     in self.DANGEROUS_KEYS
                 ):
-
                     raise ValidationError(
                         "Недопустимый ключ JSON"
                     )
@@ -300,56 +276,3 @@ class JSONFieldType(BaseFieldType):
         return self.parse_json(
             value
         )
-
-    # =====================================================
-    # SERIALIZE
-    # =====================================================
-
-    def serialize(
-        self,
-        field,
-        value,
-    ):
-        return value
-
-    # =====================================================
-    # DESERIALIZE
-    # =====================================================
-
-    def deserialize(
-        self,
-        field,
-        value,
-    ):
-        return value
-
-    # =====================================================
-    # UI
-    # =====================================================
-
-    def get_schema(
-        self,
-        field,
-    ):
-
-        schema = super().get_schema(
-            field
-        )
-
-        schema.update({
-
-            "json":
-                True,
-
-            "inputType":
-                "json",
-
-            "maxDepth":
-                self.MAX_DEPTH,
-
-            "maxSize":
-                self.MAX_TOTAL_SIZE,
-
-        })
-
-        return schema

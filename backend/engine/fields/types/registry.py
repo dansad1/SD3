@@ -44,19 +44,11 @@ def register_field_type(cls):
 
 def get_field_type(code):
 
-    # =============================================
-    # ALREADY RESOLVED
-    # =============================================
-
     if hasattr(
         code,
         "code",
     ):
         return code
-
-    # =============================================
-    # EMPTY
-    # =============================================
 
     if not code:
 
@@ -64,23 +56,19 @@ def get_field_type(code):
             "Field type is empty"
         )
 
-    # =============================================
-    # LOOKUP
-    # =============================================
+    try:
 
-    field_type = FIELD_TYPES.get(
-        code
-    )
+        return FIELD_TYPES[
+            code
+        ]
 
-    if field_type:
+    except KeyError:
 
-        return field_type
-
-    raise RuntimeError(
-        f"Unknown field type: {code}. "
-        f"Available: "
-        f"{', '.join(sorted(FIELD_TYPES.keys()))}"
-    )
+        raise RuntimeError(
+            f"Unknown field type: {code}. "
+            f"Available: "
+            f"{', '.join(sorted(FIELD_TYPES))}"
+        )
 
 
 # =========================================================
@@ -98,7 +86,9 @@ def has_field_type(code):
 
 def get_all_field_types():
 
-    return FIELD_TYPES
+    return dict(
+        FIELD_TYPES
+    )
 
 
 # =========================================================
@@ -107,7 +97,7 @@ def get_all_field_types():
 
 def get_field_type_codes():
 
-    return list(
+    return sorted(
         FIELD_TYPES.keys()
     )
 
@@ -118,14 +108,17 @@ def get_field_type_codes():
 
 def get_field_type_choices():
 
-    return [
+    return sorted(
 
-        (
-            field_type.code,
-            field_type.label,
-        )
+        [
+            (
+                field_type.code,
+                field_type.label,
+            )
 
-        for field_type
+            for field_type
+            in FIELD_TYPES.values()
+        ],
 
-        in FIELD_TYPES.values()
-    ]
+        key=lambda item: item[1],
+    )
