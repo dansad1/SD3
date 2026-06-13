@@ -1,4 +1,6 @@
-from django.core.exceptions import ValidationError
+from django.core.exceptions import (
+    ValidationError,
+)
 
 
 def normalize(ctx):
@@ -7,27 +9,26 @@ def normalize(ctx):
 
     normalized = {}
 
-    for field in ctx.runtime_fields or []:
-
-        # ============================================
-        # SECURITY
-        # ============================================
-
-        if field.readonly:
-            continue
+    for field in (
+        ctx.runtime_fields
+        or []
+    ):
 
         name = field.name
 
-        # поле не прислали
         if name not in data:
             continue
 
-        value = data.get(name)
+        value = data.get(
+            name
+        )
 
         try:
 
             normalized_value = (
-                field.normalize(value)
+                field.normalize(
+                    value
+                )
             )
 
         except ValidationError:

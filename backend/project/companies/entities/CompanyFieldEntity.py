@@ -1,5 +1,10 @@
-from backend.engine.entity.Base.BaseEntity import BaseEntity
-from backend.project.companies.models import CompanyField
+from backend.engine.entity.Base.BaseEntity import (
+    BaseEntity,
+)
+
+from backend.project.companies.models import (
+    CompanyField,
+)
 
 
 class CompanyFieldEntity(BaseEntity):
@@ -11,11 +16,11 @@ class CompanyFieldEntity(BaseEntity):
     exclude_fields = [
 
         "fieldset",
-
-        "created_at",
-
-        "updated_at",
     ]
+
+    # =====================================================
+    # UI
+    # =====================================================
 
     list_display = [
 
@@ -51,11 +56,29 @@ class CompanyFieldEntity(BaseEntity):
         "id",
     ]
 
+    # =====================================================
+    # ACCESS
+    # =====================================================
+
     capabilities = {
 
         "list": "company_fields.view",
+
         "view": "company_fields.view",
+
         "create": "company_fields.create",
+
         "edit": "company_fields.edit",
+
         "delete": "company_fields.delete",
     }
+
+    # =====================================================
+    # QUERYSET
+    # =====================================================
+
+    def get_select_related(self):
+
+        return [
+            "fieldset",
+        ]

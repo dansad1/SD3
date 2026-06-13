@@ -14,62 +14,16 @@ class UserFieldEntity(BaseEntity):
     entity = "user-fields"
 
     # =====================================================
-    # FORM
-    # =====================================================
-
-    form_sections = [
-
-        (
-            "Основное",
-            [
-                "fieldset",
-                "name",
-                "label",
-                "field_type",
-            ],
-        ),
-
-        (
-            "UI",
-            [
-                "placeholder",
-                "help_text",
-                "default_value",
-                "choices",
-            ],
-        ),
-
-        (
-            "Валидация",
-            [
-                "required",
-                "unique",
-                "regex",
-                "min_value",
-                "max_value",
-            ],
-        ),
-
-        (
-            "Системное",
-            [
-                "is_multiple",
-                "is_system",
-            ],
-        ),
-    ]
-
-    # =====================================================
     # LIST
     # =====================================================
 
     list_display = [
-        "fieldset",
         "name",
         "label",
         "field_type",
         "required",
-        "readonly",
+        "unique",
+        "is_system",
     ]
 
     search_fields = [
@@ -78,10 +32,8 @@ class UserFieldEntity(BaseEntity):
     ]
 
     filter_fields = [
-        "fieldset",
         "field_type",
     ]
-
 
     # =====================================================
     # PERMISSIONS
@@ -104,3 +56,14 @@ class UserFieldEntity(BaseEntity):
         return [
             "fieldset",
         ]
+
+    # =====================================================
+    # FORM
+    # =====================================================
+
+    exclude_fields = [
+
+        "fieldset",
+
+
+    ]

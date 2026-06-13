@@ -71,9 +71,9 @@ class PasswordFieldType(
     # =====================================================
 
     def validate(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
 
         value = super().validate(
@@ -82,39 +82,20 @@ class PasswordFieldType(
         )
 
         if value in (
-            None,
-            "",
+                None,
+                "",
         ):
             return value
 
         if not isinstance(
-            value,
-            str,
+                value,
+                str,
         ):
             raise ValidationError(
                 "Некорректное значение"
             )
 
-        value = value.strip()
-
-        if (
-            len(value)
-            < self.MIN_LENGTH
-        ):
-            raise ValidationError(
-                f"Минимум {self.MIN_LENGTH} символов"
-            )
-
-        if (
-            len(value)
-            > self.MAX_LENGTH
-        ):
-            raise ValidationError(
-                f"Максимум {self.MAX_LENGTH} символов"
-            )
-
-        return value
-
+        return value.strip()
     # =====================================================
     # NORMALIZE
     # =====================================================

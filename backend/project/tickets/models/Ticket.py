@@ -18,22 +18,6 @@ class Ticket(models.Model):
     # AUDIT
     # =====================================================
 
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="created_tickets",
-    )
-
-    assigned_to = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="assigned_tickets",
-    )
-
     # =====================================================
     # SYSTEM
     # =====================================================
@@ -41,23 +25,21 @@ class Ticket(models.Model):
     archived = models.BooleanField(
         default=False,
     )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        editable=False,
+    )
 
     # =====================================================
     # DATES
     # =====================================================
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
-
-    closed_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
 
     # =====================================================
     # META
@@ -77,11 +59,7 @@ class Ticket(models.Model):
                 ]
             ),
 
-            models.Index(
-                fields=[
-                    "assigned_to",
-                ]
-            ),
+
 
             models.Index(
                 fields=[

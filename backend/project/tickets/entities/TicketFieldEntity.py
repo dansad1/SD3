@@ -1,5 +1,10 @@
-from backend.engine.entity.Base.BaseEntity import BaseEntity
-from backend.project.tickets.models import TicketField
+from backend.engine.entity.Base.BaseEntity import (
+    BaseEntity,
+)
+
+from backend.project.tickets.models import (
+    TicketField,
+)
 
 
 class TicketFieldEntity(
@@ -11,70 +16,10 @@ class TicketFieldEntity(
     entity = "ticket-fields"
 
     # =====================================================
-    # FORM
-    # =====================================================
-
-    form_sections = [
-
-        {
-            "title": "Основное",
-
-            "fields": [
-                "fieldset",
-                "name",
-                "label",
-                "field_type",
-            ],
-        },
-
-        {
-            "title": "UI",
-
-            "fields": [
-                "placeholder",
-                "help_text",
-                "default_value",
-                "choices",
-            ],
-        },
-
-        {
-            "title": "Валидация",
-
-            "fields": [
-                "required",
-                "unique",
-                "regex",
-                "min_value",
-                "max_value",
-            ],
-        },
-
-        {
-            "title": "Отображение",
-
-            "fields": [
-                "show_in_list",
-            ],
-        },
-
-        {
-            "title": "Системное",
-
-            "fields": [
-                "is_multiple",
-                "is_system",
-            ],
-        },
-    ]
-
-    # =====================================================
     # UI
     # =====================================================
 
     list_display = [
-
-        "fieldset",
 
         "name",
 
@@ -84,9 +29,7 @@ class TicketFieldEntity(
 
         "required",
 
-        "readonly",
-
-        "hidden",
+        "unique",
 
         "show_in_list",
 
@@ -99,12 +42,10 @@ class TicketFieldEntity(
     ]
 
     filter_fields = [
-        "fieldset",
         "field_type",
     ]
 
     ordering = [
-        "fieldset",
         "order",
         "id",
     ]
@@ -140,3 +81,40 @@ class TicketFieldEntity(
         return [
             "fieldset",
         ]
+
+    # =====================================================
+    # FORM
+    # =====================================================
+
+    def get_fields(
+        self,
+        request,
+        obj=None,
+    ):
+
+        fields = super().get_fields(
+            request,
+            obj,
+        )
+
+        return [
+
+            field
+
+            for field in fields
+
+            if field.name != "fieldset"
+        ]
+
+    # =====================================================
+    # SCHEMA
+    # =====================================================
+
+    exclude_fields = [
+
+        "fieldset",
+
+        "created_at",
+
+        "updated_at",
+    ]

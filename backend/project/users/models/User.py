@@ -57,17 +57,10 @@ class User(
         related_name="users",
     )
 
+
     # =====================================================
     # SYSTEM
     # =====================================================
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
 
     # =====================================================
     # DJANGO AUTH

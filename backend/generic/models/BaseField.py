@@ -62,12 +62,43 @@ FIELD_TYPES = [
     ("status", "Status"),
     ("priority", "Priority"),
 ]
+class TimeStampedModel(models.Model):
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        editable=False,
+    )
+
+    class Meta:
+        abstract = True
 
 
 from django.db import models
 
 
-class BaseField(models.Model):
+class TimeStampedModel(models.Model):
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        editable=False,
+    )
+
+    class Meta:
+        abstract = True
+
+
+class BaseField(TimeStampedModel):
+
     name = models.SlugField(
         max_length=100,
     )
@@ -124,16 +155,10 @@ class BaseField(models.Model):
         default=False,
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
     unique = models.BooleanField(
         default=False,
     )
+
     class Meta:
         abstract = True
         indexes = [

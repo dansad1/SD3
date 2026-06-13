@@ -2,7 +2,6 @@ from django.db import models
 
 
 class CompanyFieldValue(models.Model):
-
     company = models.ForeignKey(
         "companies.Company",
         on_delete=models.CASCADE,
@@ -45,13 +44,14 @@ class CompanyFieldValue(models.Model):
         null=True,
         blank=True,
     )
-
     created_at = models.DateTimeField(
         auto_now_add=True,
+        editable=False,
     )
 
     updated_at = models.DateTimeField(
         auto_now=True,
+        editable=False,
     )
 
     class Meta:

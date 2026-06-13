@@ -42,13 +42,14 @@ class WorkSchedule(models.Model):
     archived = models.BooleanField(
         default=False,
     )
-
     created_at = models.DateTimeField(
         auto_now_add=True,
+        editable=False,
     )
 
     updated_at = models.DateTimeField(
         auto_now=True,
+        editable=False,
     )
 
     class Meta:

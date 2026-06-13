@@ -26,16 +26,14 @@ class TicketComment(models.Model):
 
     created_at = models.DateTimeField(
         auto_now_add=True,
+        editable=False,
     )
 
     updated_at = models.DateTimeField(
         auto_now=True,
+        editable=False,
     )
 
-    edited_at = models.DateTimeField(
-        null=True,
-        blank=True,
-    )
 
     class Meta:
 
