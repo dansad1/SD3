@@ -175,15 +175,12 @@ class BaseField:
             }
 
         if (
-            "options" not in schema
-            and self.choices
+                "options" not in schema
+                and self.choices
         ):
-            schema["options"] = (
-                self.choices
-            )
+            schema["options"] = self.choices
 
         return schema
-
     # =====================================================
     # FILTER / SEARCH
     # =====================================================

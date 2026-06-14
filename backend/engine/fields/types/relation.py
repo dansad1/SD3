@@ -369,10 +369,14 @@ class RelationFieldType(
     def get_schema(
             self,
             field,
+            request=None,
+            instance=None,
     ):
 
         schema = super().get_schema(
-            field
+            field,
+            request=request,
+            instance=instance,
         )
 
         schema.update({

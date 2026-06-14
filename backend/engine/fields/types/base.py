@@ -1,3 +1,4 @@
+
 from django.core.exceptions import ValidationError
 
 
@@ -13,6 +14,18 @@ class BaseFieldType:
     filterable = False
 
     features = []
+
+    # =====================================================
+    # OPTIONS
+    # =====================================================
+
+    def get_options(
+        self,
+        field,
+        request=None,
+        instance=None,
+    ):
+        return []
 
     # =====================================================
     # VALIDATION
@@ -105,9 +118,11 @@ class BaseFieldType:
     def get_schema(
         self,
         field,
+        request=None,
+        instance=None,
     ):
 
-        return {
+        schema = {
 
             "type":
                 self.code,
@@ -131,6 +146,17 @@ class BaseFieldType:
                     field
                 ),
         }
+
+        options = self.get_options(
+            field,
+            request=request,
+            instance=instance,
+        )
+
+        if options:
+            schema["options"] = options
+
+        return schema
 
     # =====================================================
     # FILTER

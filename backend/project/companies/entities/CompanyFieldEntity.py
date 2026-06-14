@@ -51,10 +51,6 @@ class CompanyFieldEntity(BaseEntity):
         "field_type",
     ]
 
-    ordering = [
-
-        "id",
-    ]
 
     # =====================================================
     # ACCESS

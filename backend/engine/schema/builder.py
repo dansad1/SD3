@@ -2,8 +2,6 @@ from django.core.exceptions import (
     PermissionDenied,
 )
 
-import json
-
 from backend.engine.entity.EntityRegistry import (
     entity_registry,
 )
@@ -21,15 +19,15 @@ class EntitySchemaBuilder:
     # =====================================================
 
     def build(
-            self,
-            request,
-            action="view",
+        self,
+        request,
+        action="view",
     ):
 
         if action not in (
-                "view",
-                "create",
-                "edit",
+            "view",
+            "create",
+            "edit",
         ):
             raise PermissionDenied
 
@@ -39,10 +37,10 @@ class EntitySchemaBuilder:
         )
 
         fields = (
-                self.entity.get_fields(
-                    request
-                )
-                or []
+            self.entity.get_fields(
+                request
+            )
+            or []
         )
 
         fields_schema = []
@@ -67,26 +65,21 @@ class EntitySchemaBuilder:
             # RELATION OPTIONS
             # =========================================
 
-            if (
-                    schema.get("type")
-                    == "relation"
-            ):
+            entity_name = schema.get(
+                "entity"
+            )
 
-                entity_name = (
-                    schema.get(
-                        "entity"
-                    )
-                )
+            if entity_name:
 
-                if entity_name:
+                try:
 
-                    try:
-
-                        relation_entity = (
-                            entity_registry.get(
-                                entity_name
-                            )
+                    relation_entity = (
+                        entity_registry.get(
+                            entity_name
                         )
+                    )
+
+                    if relation_entity:
 
                         schema["options"] = [
 
@@ -104,26 +97,34 @@ class EntitySchemaBuilder:
 
                         ]
 
-                    except Exception as e:
+                    else:
 
                         schema["options"] = []
 
-                else:
+                except Exception as e:
+
+                    print(
+                        "[OPTIONS ERROR]",
+                        field.name,
+                        entity_name,
+                        e,
+                    )
 
                     schema["options"] = []
 
             # =========================================
-            # DEBUG
+            # VIEW MODE
             # =========================================
 
             if action == "view":
+
                 schema["readonly"] = True
 
             fields_schema.append(
                 schema
             )
 
-        response = {
+        return {
 
             "entity":
                 self.entity.entity,
@@ -135,12 +136,8 @@ class EntitySchemaBuilder:
                 fields_schema,
 
             "capabilities":
-                (
-                    self.entity
-                    .get_capabilities_for_user(
-                        request
-                    )
+                self.entity
+                .get_capabilities_for_user(
+                    request
                 ),
         }
-
-        return response
