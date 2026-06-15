@@ -31,7 +31,6 @@ from backend.project.audit.utils.logging import log_entity_event, serialize_inst
 
 
 class BaseEntity:
-
     # =====================================================
     # CORE
     # =====================================================
@@ -57,11 +56,12 @@ class BaseEntity:
     form_sections = None
 
     def get_form_sections(
-        self,
-        request,
-        obj=None,
+            self,
+            request,
+            obj=None,
     ):
         return self.form_sections
+
     # =====================================================
     # FIELD POLICY
     # =====================================================
@@ -92,9 +92,9 @@ class BaseEntity:
     # =====================================================
 
     def ctx(
-        self,
-        request,
-        **kwargs,
+            self,
+            request,
+            **kwargs,
     ):
 
         return EntityContext(
@@ -108,9 +108,9 @@ class BaseEntity:
     # =====================================================
 
     def has_permission(
-        self,
-        request,
-        action,
+            self,
+            request,
+            action,
     ):
 
         return has_permission(
@@ -122,16 +122,15 @@ class BaseEntity:
         )
 
     def check_permission(
-        self,
-        request,
-        action,
+            self,
+            request,
+            action,
     ):
 
         if not self.has_permission(
-            request,
-            action,
+                request,
+                action,
         ):
-
             raise PermissionDenied
 
     def get_capabilities_for_user(
@@ -151,13 +150,14 @@ class BaseEntity:
                     or {}
             ).keys()
         }
+
     # =====================================================
     # QUERYSET
     # =====================================================
 
     def get_queryset(
-        self,
-        request,
+            self,
+            request,
     ):
 
         return get_queryset(
@@ -165,9 +165,9 @@ class BaseEntity:
         )
 
     def apply_user_scope(
-        self,
-        request,
-        qs,
+            self,
+            request,
+            qs,
     ):
 
         return qs
@@ -185,10 +185,10 @@ class BaseEntity:
     # =====================================================
 
     def represent(
-        self,
-        obj,
-        field,
-        mode="list",
+            self,
+            obj,
+            field,
+            mode="list",
     ):
 
         return represent(
@@ -203,8 +203,8 @@ class BaseEntity:
         )
 
     def represent_option(
-        self,
-        obj,
+            self,
+            obj,
     ):
 
         return {
@@ -217,8 +217,8 @@ class BaseEntity:
     # =====================================================
 
     def get_options(
-        self,
-        request,
+            self,
+            request,
     ):
 
         return get_options(
@@ -291,17 +291,16 @@ class BaseEntity:
         # SORT
         # =================================================
 
-
-
         return fields
+
     # =====================================================
     # DYNAMIC FIELDS
     # =====================================================
 
     def get_dynamic_fields(
-        self,
-        request,
-        obj=None,
+            self,
+            request,
+            obj=None,
     ):
 
         return []
@@ -311,8 +310,8 @@ class BaseEntity:
     # =====================================================
 
     def include_model_field(
-        self,
-        field,
+            self,
+            field,
     ):
 
         name = field.name
@@ -322,10 +321,9 @@ class BaseEntity:
         # =================================================
 
         if (
-            self.include_fields
-            and name not in self.include_fields
+                self.include_fields
+                and name not in self.include_fields
         ):
-
             return False
 
         # =================================================
@@ -333,10 +331,9 @@ class BaseEntity:
         # =================================================
 
         if (
-            self.exclude_fields
-            and name in self.exclude_fields
+                self.exclude_fields
+                and name in self.exclude_fields
         ):
-
             return False
 
         # =================================================
@@ -344,7 +341,6 @@ class BaseEntity:
         # =================================================
 
         if name in self.system_exclude_fields:
-
             return False
 
         # =================================================
@@ -352,10 +348,9 @@ class BaseEntity:
         # =================================================
 
         if (
-            field.auto_created
-            and not field.concrete
+                field.auto_created
+                and not field.concrete
         ):
-
             return False
 
         # =================================================
@@ -363,14 +358,13 @@ class BaseEntity:
         # =================================================
 
         if (
-            getattr(
-                field,
-                "many_to_many",
-                False,
-            )
-            and field.auto_created
+                getattr(
+                    field,
+                    "many_to_many",
+                    False,
+                )
+                and field.auto_created
         ):
-
             return False
 
         return True
@@ -476,9 +470,9 @@ class BaseEntity:
         )
 
     def perform_delete(
-        self,
-        request,
-        instance,
+            self,
+            request,
+            instance,
     ):
 
         return perform_delete(
@@ -488,9 +482,9 @@ class BaseEntity:
         )
 
     def delete_instance(
-        self,
-        request,
-        instance,
+            self,
+            request,
+            instance,
     ):
 
         self.check_permission(
@@ -508,10 +502,10 @@ class BaseEntity:
     # =====================================================
 
     def validate(
-        self,
-        request,
-        payload,
-        instance=None,
+            self,
+            request,
+            payload,
+            instance=None,
     ):
 
         """
@@ -519,3 +513,12 @@ class BaseEntity:
         """
 
         return payload
+
+    def customize_field_schema(
+            self,
+            field,
+            schema,
+            request=None,
+            obj=None,
+    ):
+        return schema

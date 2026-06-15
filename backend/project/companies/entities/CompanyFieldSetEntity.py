@@ -31,10 +31,7 @@ class CompanyFieldSetEntity(BaseEntity):
         "is_default",
     ]
 
-    ordering = [
-        "order",
-        "id",
-    ]
+
 
     capabilities = {
         "list": "company_fieldsets.view",

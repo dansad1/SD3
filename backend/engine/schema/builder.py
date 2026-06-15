@@ -113,6 +113,19 @@ class EntitySchemaBuilder:
                     schema["options"] = []
 
             # =========================================
+            # ENTITY FIELD CUSTOMIZATION
+            # =========================================
+
+            schema = (
+                self.entity
+                .customize_field_schema(
+                    field=field,
+                    schema=schema,
+                    request=request,
+                )
+            )
+
+            # =========================================
             # VIEW MODE
             # =========================================
 

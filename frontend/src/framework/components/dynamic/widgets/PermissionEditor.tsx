@@ -1,11 +1,13 @@
-import { useMemo } from "react"
-
+import {
+  useMemo,
+  useState,
+} from "react"
 
 import type {
   WidgetProps,
   FieldSchema,
-  Value,
 } from "../types"
+
 import { BaseWidget } from "./Base"
 
 type PermissionOption = {
@@ -26,6 +28,23 @@ type PermissionFieldSchema =
     groups?: PermissionGroup[]
   }
 
+type PermissionValue = {
+  value: number | string
+  label?: string
+}
+
+function isPermissionValue(
+  item: unknown,
+): item is PermissionValue {
+
+  return (
+    typeof item === "object"
+    && item !== null
+    && "value" in item
+  )
+
+}
+
 export function PermissionEditorWidget(
   props: WidgetProps,
 ) {
@@ -42,6 +61,23 @@ export function PermissionEditorWidget(
       field as PermissionFieldSchema
     ).groups ?? []
 
+  const [activeTab, setActiveTab] =
+    useState<string | null>(
+      null
+    )
+
+  const currentTab =
+    activeTab
+    ?? groups[0]?.name
+    ?? ""
+
+  const currentGroup =
+    groups.find(
+      group =>
+        group.name === currentTab
+    )
+    ?? groups[0]
+
   const selected = useMemo(
     () => {
 
@@ -56,14 +92,36 @@ export function PermissionEditorWidget(
 
       for (const item of value) {
 
+        if (
+          isPermissionValue(item)
+        ) {
+
+          const id =
+            Number(item.value)
+
+          if (
+            Number.isFinite(id)
+          ) {
+
+            result.add(id)
+
+          }
+
+          continue
+
+        }
+
         const id =
           Number(item)
 
         if (
           Number.isFinite(id)
         ) {
+
           result.add(id)
+
         }
+
       }
 
       return result
@@ -71,6 +129,18 @@ export function PermissionEditorWidget(
     },
     [value]
   )
+
+  function updateSelection(
+    ids: Set<number>,
+  ) {
+
+    onChange(
+      Array
+        .from(ids)
+        .map(String)
+    )
+
+  }
 
   function toggle(
     permissionId: number,
@@ -97,13 +167,66 @@ export function PermissionEditorWidget(
 
     }
 
-    const payload =
-      Array.from(next)
-        .map(String)
-
-    onChange(
-      payload as Value
+    updateSelection(
+      next
     )
+
+  }
+
+  function selectAllCurrent() {
+
+    if (
+      !currentGroup
+    ) {
+      return
+    }
+
+    const next =
+      new Set(selected)
+
+    for (
+      const permission
+      of currentGroup.permissions
+    ) {
+
+      next.add(
+        permission.id
+      )
+
+    }
+
+    updateSelection(
+      next
+    )
+
+  }
+
+  function clearCurrent() {
+
+    if (
+      !currentGroup
+    ) {
+      return
+    }
+
+    const next =
+      new Set(selected)
+
+    for (
+      const permission
+      of currentGroup.permissions
+    ) {
+
+      next.delete(
+        permission.id
+      )
+
+    }
+
+    updateSelection(
+      next
+    )
+
   }
 
   return (
@@ -115,116 +238,205 @@ export function PermissionEditorWidget(
 
       {({ disabled }) => (
 
-        <div>
+        <div className="ui-tabs ui-tabs-line">
 
-          {groups.map(
-            group => (
+          <div className="ui-tabs-header">
 
-              <div
-                key={group.name}
-                style={{
-                  marginBottom: 24,
-                }}
+            {groups.map(
+              group => {
+
+                const count =
+                  group.permissions.filter(
+                    permission =>
+                      selected.has(
+                        permission.id
+                      )
+                  ).length
+
+                return (
+
+                  <button
+                    key={group.name}
+                    type="button"
+                    disabled={disabled}
+                    className={
+                      group.name === currentTab
+                        ? "ui-tab active"
+                        : "ui-tab"
+                    }
+                    onClick={() =>
+                      setActiveTab(
+                        group.name
+                      )
+                    }
+                  >
+
+                    {group.name}
+
+                    {count > 0 && (
+                      <>
+                        {" "}
+                        (
+                        {count}
+                        )
+                      </>
+                    )}
+
+                  </button>
+
+                )
+
+              }
+            )}
+
+          </div>
+
+          <div className="ui-tabs-body">
+
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                marginBottom: 12,
+              }}
+            >
+
+              <button
+                type="button"
+                className="ui-btn"
+                disabled={disabled}
+                onClick={
+                  selectAllCurrent
+                }
               >
+                Выбрать всё
+              </button>
 
-                <div
-                  style={{
-                    fontWeight: 600,
-                    marginBottom: 8,
-                  }}
-                >
-                  {group.name}
-                </div>
+              <button
+                type="button"
+                className="ui-btn"
+                disabled={disabled}
+                onClick={
+                  clearCurrent
+                }
+              >
+                Снять всё
+              </button>
 
-                <table className="table table-bordered">
+            </div>
 
-                  <tbody>
+            <div className="ui-table-wrapper">
 
-                    {group.permissions.map(
-                      permission => (
+              <table className="ui-table">
 
-                        <tr
-                          key={
-                            permission.id
-                          }
+                <thead>
+
+                  <tr>
+
+                    <th
+                      style={{
+                        width: 60,
+                        textAlign:
+                          "center",
+                      }}
+                    >
+                      ✓
+                    </th>
+
+                    <th>
+                      Право
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody>
+
+                  {currentGroup?.permissions.map(
+                    permission => (
+
+                      <tr
+                        key={
+                          permission.id
+                        }
+                      >
+
+                        <td
+                          style={{
+                            textAlign:
+                              "center",
+                          }}
                         >
 
-                          <td
+                          <input
+                            type="checkbox"
+                            disabled={
+                              disabled
+                            }
+                            checked={
+                              selected.has(
+                                permission.id
+                              )
+                            }
+                            onChange={() =>
+                              toggle(
+                                permission.id
+                              )
+                            }
+                          />
+
+                        </td>
+
+                        <td>
+
+                          <div>
+                            {
+                              permission.label
+                            }
+                          </div>
+
+                          <div
                             style={{
-                              width: 50,
-                              textAlign:
-                                "center",
+                              fontSize: 12,
+                              opacity: 0.7,
                             }}
                           >
+                            {
+                              permission.code
+                            }
+                          </div>
 
-                            <input
-                              type="checkbox"
-                              disabled={
-                                disabled
-                              }
-                              checked={
-                                selected.has(
-                                  permission.id
-                                )
-                              }
-                              onChange={() =>
-                                toggle(
-                                  permission.id
-                                )
-                              }
-                            />
+                          {permission.description && (
 
-                          </td>
-
-                          <td>
-
-                            <div>
-                              {
-                                permission.label
-                              }
-                            </div>
-
-                            <small
+                            <div
                               style={{
-                                opacity: 0.65,
+                                fontSize: 12,
+                                opacity: 0.7,
+                                marginTop: 4,
                               }}
                             >
                               {
-                                permission.code
+                                permission.description
                               }
-                            </small>
+                            </div>
 
-                            {permission.description && (
+                          )}
 
-                              <div
-                                style={{
-                                  fontSize: 12,
-                                  opacity: 0.7,
-                                  marginTop: 2,
-                                }}
-                              >
-                                {
-                                  permission.description
-                                }
-                              </div>
+                        </td>
 
-                            )}
+                      </tr>
 
-                          </td>
+                    )
+                  )}
 
-                        </tr>
+                </tbody>
 
-                      )
-                    )}
+              </table>
 
-                  </tbody>
+            </div>
 
-                </table>
-
-              </div>
-
-            )
-          )}
+          </div>
 
         </div>
 
@@ -233,4 +445,5 @@ export function PermissionEditorWidget(
     </BaseWidget>
 
   )
+
 }
