@@ -4,6 +4,17 @@ import type {
   TimelineViewModel,
 } from "./useTimelineController"
 
+
+const HIDDEN_FIELDS = new Set([
+  "id",
+  "pk",
+  "created",
+  "updated",
+  "created_at",
+  "updated_at",
+  "deleted_at",
+])
+
 function formatDate(value?: string) {
   if (!value) return ""
 
@@ -82,33 +93,58 @@ function getActionTitle(item: TimelineItem) {
   }
 }
 
-function getChangeBefore(
-  change: TimelineChange
-) {
-  return (
-    change.before ??
-    change.old_value
-  )
+function getActionIcon(action: string) {
+  switch (action) {
+    case "create":
+      return "+"
+
+    case "update":
+      return "↻"
+
+    case "delete":
+      return "×"
+
+    case "comment":
+      return "💬"
+
+    case "attachment":
+      return "📎"
+
+    case "email":
+      return "✉"
+
+    case "system":
+      return "⚙"
+
+    default:
+      return "•"
+  }
 }
 
-function getChangeAfter(
-  change: TimelineChange
+function getChangeBefore(change: TimelineChange) {
+  return change.before ?? change.old_value
+}
+
+function getChangeAfter(change: TimelineChange) {
+  return change.after ?? change.new_value
+}
+
+function getVisibleChanges(
+  changes?: Record<string, TimelineChange>
 ) {
-  return (
-    change.after ??
-    change.new_value
+  return Object.entries(changes || {}).filter(
+    ([field]) => !HIDDEN_FIELDS.has(field)
   )
 }
 
 function renderChanges(
-  changes?: Record<
-    string,
-    TimelineChange
-  >
+  item: TimelineItem
 ) {
-  const entries = Object.entries(
-    changes || {}
-  )
+  if (item.action === "create") {
+    return null
+  }
+
+  const entries = getVisibleChanges(item.changes)
 
   if (!entries.length) {
     return null
@@ -116,58 +152,100 @@ function renderChanges(
 
   return (
     <div className="timeline-changes">
+      {entries.map(([field, change]) => {
+        const before = getChangeBefore(change)
+        const after = getChangeAfter(change)
 
-      {entries.map(
-        ([field, change]) => (
-
+        return (
           <div
             key={field}
             className="timeline-change"
           >
-
             <div className="timeline-change-label">
               {change.label || field}
             </div>
 
-            <div className="timeline-change-values">
+            <div className="timeline-change-body">
+              <div className="timeline-value timeline-value-old">
+                <span className="timeline-value-caption">
+                  Было
+                </span>
 
-              <span>
-                {formatValue(
-                  getChangeBefore(change)
-                )}
-              </span>
+                <span className="timeline-value-text">
+                  {formatValue(before)}
+                </span>
+              </div>
 
-              <span>→</span>
+              <div className="timeline-value-arrow">
+                ↓
+              </div>
 
-              <span>
-                {formatValue(
-                  getChangeAfter(change)
-                )}
-              </span>
+              <div className="timeline-value timeline-value-new">
+                <span className="timeline-value-caption">
+                  Стало
+                </span>
 
+                <span className="timeline-value-text">
+                  {formatValue(after)}
+                </span>
+              </div>
             </div>
-
           </div>
         )
-      )}
-
+      })}
     </div>
   )
 }
 
-function renderMeta(
+function renderCreateSummary(
   item: TimelineItem
 ) {
-  const text = item.meta?.text
+  if (item.action !== "create") {
+    return null
+  }
 
-  const description =
-    item.meta?.description
+  const entries = getVisibleChanges(item.changes)
+
+  if (!entries.length) {
+    return (
+      <div className="timeline-description">
+        Объект был создан.
+      </div>
+    )
+  }
+
+  return (
+    <div className="timeline-create-summary">
+      {entries.map(([field, change]) => {
+        const value = getChangeAfter(change)
+
+        return (
+          <div
+            key={field}
+            className="timeline-create-row"
+          >
+            <span className="timeline-create-label">
+              {change.label || field}
+            </span>
+
+            <span className="timeline-create-value">
+              {formatValue(value)}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function renderMeta(item: TimelineItem) {
+  const text = item.meta?.text
+  const description = item.meta?.description
 
   const value =
     typeof text === "string"
       ? text
-      : typeof description ===
-        "string"
+      : typeof description === "string"
       ? description
       : null
 
@@ -189,51 +267,63 @@ function TimelineEntry({
   item: TimelineItem
   compact: boolean
 }) {
-  const date =
-    item.created || item.date
+  const date = item.created || item.date
 
   return (
     <div
       className={[
         "timeline-item",
-
-        compact
-          ? "timeline-item-compact"
-          : "",
-
+        compact ? "timeline-item-compact" : "",
         `timeline-action-${item.action}`,
       ].join(" ")}
     >
-
-      <div className="timeline-marker" />
-
-      <div className="timeline-content">
-
-        <div className="timeline-header">
-
-          <div className="timeline-title">
-            {getActionTitle(item)}
-          </div>
-
-          <div className="timeline-date">
-            {formatDate(date)}
-          </div>
-
+      <div className="timeline-rail">
+        <div className="timeline-marker">
+          {getActionIcon(item.action)}
         </div>
-
-        <div className="timeline-actor">
-          {item.actor?.label ||
-            "Система"}
-        </div>
-
-        {renderMeta(item)}
-
-        {renderChanges(
-          item.changes
-        )}
-
       </div>
 
+      <article className="timeline-card">
+        <header className="timeline-card-header">
+          <div>
+            <div className="timeline-title">
+              {getActionTitle(item)}
+            </div>
+
+            <div className="timeline-meta">
+              <span>
+                {item.actor?.label || "Система"}
+              </span>
+
+              {date && (
+                <>
+                  <span className="timeline-dot">
+                    •
+                  </span>
+
+                  <span>
+                    {formatDate(date)}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="timeline-badge">
+            {item.action}
+          </div>
+        </header>
+
+        {item.object_repr && (
+          <div className="timeline-object">
+            {item.object_repr}
+          </div>
+        )}
+
+        {renderMeta(item)}
+        {renderCreateSummary(item)}
+        {renderChanges(item)}
+      </article>
     </div>
   )
 }
@@ -248,44 +338,35 @@ export function TimelineView({
   groupByDate,
   reload,
 }: TimelineViewModel) {
-
   const ordered = reverse
     ? [...items].reverse()
     : items
 
-  const rows = ordered.map(
-    (item, index) => {
+  const rows = ordered.map((item, index) => {
+    const day = formatDay(item.created || item.date)
 
-      const day = formatDay(
-        item.created || item.date
-      )
-
-      const prev =
-        index > 0
-          ? ordered[index - 1]
-          : null
-
-      const prevDay = prev
-        ? formatDay(
-            prev.created ||
-              prev.date
-          )
+    const prev =
+      index > 0
+        ? ordered[index - 1]
         : null
 
-      return {
-        item,
-        day,
-        showDay:
-          Boolean(groupByDate) &&
-          Boolean(day) &&
-          day !== prevDay,
-      }
+    const prevDay = prev
+      ? formatDay(prev.created || prev.date)
+      : null
+
+    return {
+      item,
+      day,
+      showDay:
+        Boolean(groupByDate) &&
+        Boolean(day) &&
+        day !== prevDay,
     }
-  )
+  })
 
   if (loading) {
     return (
-      <div className="timeline timeline-loading">
+      <div className="timeline-state">
         Загрузка истории...
       </div>
     )
@@ -293,24 +374,23 @@ export function TimelineView({
 
   if (error) {
     return (
-      <div className="timeline timeline-error">
-
+      <div className="timeline-state timeline-state-error">
         <div>{error}</div>
 
         <button
           type="button"
           onClick={reload}
+          className="timeline-retry"
         >
           Повторить
         </button>
-
       </div>
     )
   }
 
   if (!rows.length) {
     return (
-      <div className="timeline timeline-empty">
+      <div className="timeline-state">
         {emptyText}
       </div>
     )
@@ -318,30 +398,20 @@ export function TimelineView({
 
   return (
     <div className="timeline">
+      {rows.map(({ item, day, showDay }) => (
+        <div key={item.id}>
+          {showDay && (
+            <div className="timeline-day">
+              {day}
+            </div>
+          )}
 
-      {rows.map(
-        ({
-          item,
-          day,
-          showDay,
-        }) => (
-          <div key={item.id}>
-
-            {showDay && (
-              <div className="timeline-day">
-                {day}
-              </div>
-            )}
-
-            <TimelineEntry
-              item={item}
-              compact={compact}
-            />
-
-          </div>
-        )
-      )}
-
+          <TimelineEntry
+            item={item}
+            compact={compact}
+          />
+        </div>
+      ))}
     </div>
   )
 }
