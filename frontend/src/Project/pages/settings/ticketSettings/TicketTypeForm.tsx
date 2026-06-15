@@ -7,8 +7,11 @@ import {
   Stack,
   Heading,
   Text,
+  Tabs,
   Form,
+  Table,
   Action,
+  If,
 } from "@/framework"
 
 const TicketTypeFormPage = page(
@@ -24,30 +27,28 @@ const TicketTypeFormPage = page(
 
       <Stack gap="lg">
 
-        {/* ===================================== */}
+        {/* ================================================= */}
         {/* HEADER */}
-        {/* ===================================== */}
+        {/* ================================================= */}
 
         <Stack gap="sm">
 
           <Heading
             level={1}
-            text="📂 Тип заявки: $ticket-type.name"
+            text="Тип заявки"
             fallback="Новый тип заявки"
           />
 
           <Text
-            value="Создание и редактирование типа заявки"
+            value="Создание и настройка типа заявки"
             variant="muted"
-            size="md"
-            weight="regular"
           />
 
         </Stack>
 
-        {/* ===================================== */}
+        {/* ================================================= */}
         {/* ACTIONS */}
-        {/* ===================================== */}
+        {/* ================================================= */}
 
         <Stack gap="sm">
 
@@ -59,35 +60,154 @@ const TicketTypeFormPage = page(
 
         </Stack>
 
-        {/* ===================================== */}
-        {/* FORM */}
-        {/* ===================================== */}
+        {/* ================================================= */}
+        {/* TABS */}
+        {/* ================================================= */}
 
-        <Form
+        <Tabs variant="line">
 
-          entity="ticket-type"
+          {/* ============================================= */}
+          {/* MAIN */}
+          {/* ============================================= */}
 
-          objectId="$query.id"
+          <Section title="Основное">
 
-          submit={{
+            <Stack gap="lg">
 
-            label: "Сохранить",
+              <Form
 
-            redirect: {
-              to: "ticket_type:list",
-            },
+                entity="ticket-type"
 
-          }}
+                objectId="$query.id"
 
-          formLayout={{
+                submit={{
 
-            preset: "single-column",
+                  label: "Сохранить",
 
-            density: "comfortable",
+                  redirect: {
+                    to: "ticket_type:list",
+                  },
 
-          }}
+                }}
 
-        />
+                formLayout={{
+
+                  preset: "single-column",
+
+                  density: "comfortable",
+
+                }}
+
+              />
+
+            </Stack>
+
+          </Section>
+
+          {/* ============================================= */}
+          {/* FIELDS */}
+          {/* ============================================= */}
+
+          <If when="$query.id">
+
+            <Section title="Поля">
+
+              <Stack gap="md">
+
+                <Action
+
+                  label="Добавить поле"
+
+                  variant="primary"
+
+                  to="ticket_field:form"
+
+                  ctx={{
+                    ticket_type: "$query.id",
+                  }}
+
+                />
+
+                <Table
+
+                  entity="ticket-field"
+
+                  filter={{
+                    ticket_type: "$query.id",
+                  }}
+
+                  features={{
+
+                    search: true,
+
+                    selection: false,
+
+                    rowClick: true,
+
+                    rowActions: true,
+
+                  }}
+
+                  rowClick={{
+
+                    to: "ticket_field:form",
+
+                    ctx: {
+                      id: "$row.id",
+                    },
+
+                  }}
+
+                  rowActions={[
+
+                    {
+
+                      key: "edit",
+
+                      label: "Редактировать",
+
+                      variant: "secondary",
+
+                      to: "ticket_field:form",
+
+                      ctx: {
+                        id: "$row.id",
+                      },
+
+                    },
+
+                    {
+
+                      key: "delete",
+
+                      label: "Удалить",
+
+                      variant: "danger",
+
+                      action: "entity.delete",
+
+                      ctx: {
+                        entity: "ticket-field",
+                        id: "$row.id",
+                      },
+
+                      confirm: {
+                        message: "Удалить поле?",
+                      },
+
+                    },
+
+                  ]}
+
+                />
+
+              </Stack>
+
+            </Section>
+
+          </If>
+
+        </Tabs>
 
       </Stack>
 

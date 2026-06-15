@@ -25,32 +25,33 @@ import type { TableApiBlock } from "../Blocks/Table/types/api";
 import type { LinkBlock } from "../Blocks/Atom/types";
 import type { MenuBlock } from "../Blocks/Structural/Menu/types";
 import type { AccordionBlock } from "../Blocks/Structural/Accordion/types";
+import type { TimelineBlock } from "../Blocks/Content/Timeline/types";
 
 /**
  * Единый union всех декларативных блоков страницы
  */
 export type ApiPageBlock =
   | ContainerBlock
-              | StackBlock
-              | SectionBlock
-              | SplitBlock
-              | HeadingBlock
-              | TextBlock
-              | DividerBlock
-              | SpacerBlock
-              | ActionBlock
-              | UploadBlock
-              | TableApiBlock
-              | FormApiBlock
-              | BadgeBlock
-              | IfBlock
-              | ForBlock
-              | TabsBlock
-              | ResourceBlock
-              | ChatThreadBlock
-              | ChatListBlock
-              | CustomBlock
-              | DocumentBlock | LinkBlock | MenuBlock | AccordionBlock
+                  | StackBlock
+                  | SectionBlock
+                  | SplitBlock
+                  | HeadingBlock
+                  | TextBlock
+                  | DividerBlock
+                  | SpacerBlock
+                  | ActionBlock
+                  | UploadBlock
+                  | TableApiBlock
+                  | FormApiBlock
+                  | BadgeBlock
+                  | IfBlock
+                  | ForBlock
+                  | TabsBlock
+                  | ResourceBlock
+                  | ChatThreadBlock
+                  | ChatListBlock
+                  | CustomBlock
+                  | DocumentBlock | LinkBlock | MenuBlock | AccordionBlock | TimelineBlock
 
 
 // =====================================================

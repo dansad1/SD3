@@ -45,6 +45,7 @@ import { normalizeCustom } from "../Blocks/Custom/normalize"
 import { normalizeDocument } from "../Blocks/Document/normalize"
 import { normalizeMenu } from "../Blocks/Structural/Menu/normalize";
 import { normalizeAccordion } from "../Blocks/Structural/Accordion/normalize";
+import { normalizeTimeline } from "../Blocks/Timeline/normalize"
 
 /**
  * Строго типизированная карта нормалайзеров.
@@ -93,7 +94,8 @@ chat_list: normalizeChatList,
     document: normalizeDocument,
     link: normalizeLink,
     menu: normalizeMenu,
-    accordion: normalizeAccordion
+    accordion: normalizeAccordion,
+    timeline: normalizeTimeline
 }
 
 /**

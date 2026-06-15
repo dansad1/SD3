@@ -503,3 +503,16 @@ export const Document: DSLComponent<DocumentDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
+export type TimelineDSL =
+  LayoutDSL &
+  {
+  source?: string | `$${string}`
+  params?: Record<string, unknown> | `$${string}`
+}
+
+export const Timeline: DSLComponent<TimelineDSL> = (props) =>
+  Block(
+    { __type: "timeline", ...props },
+    normalizeChildren(props.children)
+  )
+

@@ -672,6 +672,12 @@ document: {
     fullscreen: "boolean" as Primitive,
   },
 },
+timeline: {
+  props: {
+    source: "string",
+    params: "object",
+  }
+},
 } as const
 export const Control = {
   if: {
@@ -701,6 +707,7 @@ export const Data = {
       watch: "array" as Primitive,
     },
   },
+  
 } as const
 /* =========================
    ROOT REGISTRY

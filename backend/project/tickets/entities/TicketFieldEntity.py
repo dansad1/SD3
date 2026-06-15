@@ -13,7 +13,7 @@ class TicketFieldEntity(
 
     model = TicketField
 
-    entity = "ticket-fields"
+    entity = "ticket-field"
 
     # =====================================================
     # UI
@@ -45,10 +45,7 @@ class TicketFieldEntity(
         "field_type",
     ]
 
-    ordering = [
-        "order",
-        "id",
-    ]
+
 
     # =====================================================
     # ACCESS

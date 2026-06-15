@@ -9,6 +9,9 @@ import {
   Text,
   Form,
   Action,
+  Tabs,
+  If,
+  Timeline,
 } from "@/framework"
 
 const TicketPriorityFormPage = page(
@@ -30,11 +33,11 @@ const TicketPriorityFormPage = page(
 
         <Stack gap="sm">
 
-         <Heading
-  level={1}
-  text="⚠️ Приоритет заявки: $ticket_priorities.name"
-  fallback="Новый приоритет заявки"
-/>
+          <Heading
+            level={1}
+            text="⚠️ Приоритет заявки: $ticket_priorities.name"
+            fallback="Новый приоритет заявки"
+          />
 
           <Text
             value="Создание и редактирование приоритета заявки"
@@ -60,34 +63,78 @@ const TicketPriorityFormPage = page(
         </Stack>
 
         {/* ===================================== */}
-        {/* FORM */}
+        {/* CONTENT */}
         {/* ===================================== */}
 
-        <Form
+        <Tabs variant="line">
 
-          entity="ticket_priorities"
+          {/* ===================================== */}
+          {/* MAIN */}
+          {/* ===================================== */}
 
-          objectId="$query.id"
+          <Section title="Основное">
 
-          submit={{
+            <Stack gap="lg">
 
-            label: "Сохранить",
+              <Form
 
-            redirect: {
-              to: "ticket_priority:list",
-            },
+                entity="ticket_priorities"
 
-          }}
+                objectId="$query.id"
 
-          formLayout={{
+                submit={{
 
-            preset: "single-column",
+                  label: "Сохранить",
 
-            density: "comfortable",
+                  redirect: {
+                    to: "ticket_priority:list",
+                  },
 
-          }}
+                }}
 
-        />
+                formLayout={{
+
+                  preset: "single-column",
+
+                  density: "comfortable",
+
+                }}
+
+              />
+
+            </Stack>
+
+          </Section>
+
+          {/* ===================================== */}
+          {/* HISTORY */}
+          {/* ===================================== */}
+
+          <If when="$query.id">
+
+            <Section title="История">
+
+              <Timeline
+
+                source="entity.history"
+
+                params={{
+
+                  entity:
+                    "ticket_priorities",
+
+                  id:
+                    "$query.id",
+
+                }}
+
+              />
+
+            </Section>
+
+          </If>
+
+        </Tabs>
 
       </Stack>
 

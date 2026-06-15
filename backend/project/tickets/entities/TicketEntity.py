@@ -205,10 +205,7 @@ class TicketEntity(
                         fieldset=fieldset,
                     )
 
-                    .order_by(
-                        "order",
-                        "id",
-                    )
+
                 )
 
         for field in dynamic_fields:
