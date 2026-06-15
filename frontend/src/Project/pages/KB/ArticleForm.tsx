@@ -10,13 +10,13 @@ import {
   Form,
 } from "@/framework"
 
-const RoleFormPage = page(
+const ArticleFormPage = page(
 
-  "roles:form",
+  "article:form",
 
   <Container
     padding="lg"
-    maxWidth="md"
+    maxWidth="xl"
   >
 
     <Section>
@@ -30,51 +30,40 @@ const RoleFormPage = page(
         <Stack gap="sm">
 
           <Heading
-  level={1}
-  text="Роль: $roles.name"
-  fallback="Новая роль"
-/>
-
+            level={1}
+            text="Статья: $article.title"
+            fallback="Новая статья"
+          />
           <Text
-            value="Создание и редактирование роли"
+            value="Создание и редактирование статьи базы знаний"
             variant="muted"
           />
-
         </Stack>
-
         {/* ================================= */}
         {/* FORM                              */}
         {/* ================================= */}
 
         <Form
-
-          entity="roles"
-
+          entity="article"
           objectId="$query.id"
 
           submit={{
-
             label: "Сохранить",
-
             redirect: {
-              to: "role:list",
+              to: "article:list",
             },
 
           }}
           formLayout={{
-    preset: "single-column",
-    density: "comfortable",
-  }}
-          
+            preset: "single-column",
+            density: "comfortable",
+
+          }}
 
         />
-        
-
       </Stack>
-
     </Section>
-
   </Container>
 )
 
-export default RoleFormPage
+export default ArticleFormPage
