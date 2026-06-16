@@ -2,8 +2,10 @@
 
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class EmailSettings(models.Model):
+
+class EmailSettings(TimeStampedModel):
 
     host = models.CharField(
         max_length=255,

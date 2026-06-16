@@ -2,12 +2,13 @@
 
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 from backend.project.tickets.utils.upload_paths import (
     ticket_attachment_upload_path,
 )
 
 
-class TicketAttachment(models.Model):
+class TicketAttachment(TimeStampedModel):
 
     ticket = models.ForeignKey(
         "tickets.Ticket",

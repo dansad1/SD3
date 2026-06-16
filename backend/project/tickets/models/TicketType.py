@@ -1,7 +1,9 @@
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class TicketType(models.Model):
+
+class TicketType(TimeStampedModel):
 
     name = models.CharField(
         max_length=100,

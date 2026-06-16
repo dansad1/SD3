@@ -1,5 +1,13 @@
 class BaseField:
 
+    META_FIELDS = {
+        "created_at",
+        "updated_at",
+        "deleted_at",
+        "created_by",
+        "updated_by",
+    }
+
     def __init__(self, source):
         self.source = source
 
@@ -14,6 +22,18 @@ class BaseField:
     @property
     def type(self):
         raise NotImplementedError
+
+    # =====================================================
+    # PRESENTATION
+    # =====================================================
+
+    @property
+    def presentation(self):
+
+        if self.name in self.META_FIELDS:
+            return "meta"
+
+        return None
 
     # =====================================================
     # COMMON
@@ -162,25 +182,41 @@ class BaseField:
         schema.update({
             "name": self.name,
             "label": self.label,
+
             "required": self.required,
             "placeholder": self.placeholder,
             "help_text": self.help_text,
+
             "multiple": self.is_multiple,
             "unique": self.unique,
         })
 
+        if self.presentation:
+            schema["presentation"] = (
+                self.presentation
+            )
+
         if self.section:
-            schema["ui"] = {
-                "section": self.section,
-            }
+
+            schema.setdefault(
+                "ui",
+                {}
+            )
+
+            schema["ui"]["section"] = (
+                self.section
+            )
 
         if (
-                "options" not in schema
-                and self.choices
+            "options" not in schema
+            and self.choices
         ):
-            schema["options"] = self.choices
+            schema["options"] = (
+                self.choices
+            )
 
         return schema
+
     # =====================================================
     # FILTER / SEARCH
     # =====================================================

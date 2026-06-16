@@ -1,7 +1,9 @@
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class TicketSLA(models.Model):
+
+class TicketSLA(TimeStampedModel):
 
     type = models.ForeignKey(
         "tickets.TicketType",

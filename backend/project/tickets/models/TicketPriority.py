@@ -1,7 +1,9 @@
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class TicketPriority(models.Model):
+
+class TicketPriority(TimeStampedModel):
 
     name = models.CharField(
         max_length=100,

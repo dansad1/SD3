@@ -2,8 +2,10 @@
 
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class NotificationTemplate(models.Model):
+
+class NotificationTemplate(TimeStampedModel):
 
     CHANNEL_EMAIL = "email"
     CHANNEL_PUSH = "push"

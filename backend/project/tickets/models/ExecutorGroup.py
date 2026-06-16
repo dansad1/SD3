@@ -1,8 +1,10 @@
 from django.conf import settings
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class ExecutorGroup(models.Model):
+
+class ExecutorGroup(TimeStampedModel):
 
     name = models.CharField(
         max_length=100,

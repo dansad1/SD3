@@ -1,8 +1,10 @@
 from django.conf import settings
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class TicketComment(models.Model):
+
+class TicketComment(TimeStampedModel):
 
     ticket = models.ForeignKey(
         "tickets.Ticket",
@@ -24,33 +26,10 @@ class TicketComment(models.Model):
         default=False,
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        editable=False,
-    )
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        editable=False,
-    )
 
 
     class Meta:
-
-        ordering = [
-            "created_at",
-        ]
-
-        indexes = [
-
-            models.Index(
-                fields=[
-                    "ticket",
-                    "created_at",
-                ]
-            ),
-        ]
-
         verbose_name = (
             "Комментарий заявки"
         )

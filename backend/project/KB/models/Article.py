@@ -1,10 +1,13 @@
 from ckeditor.fields import RichTextField
 from django.db import models
+from backend.generic.models import TimeStampedModel
 
 
-class Article(models.Model):
+class Article(TimeStampedModel):
 
-    title = models.CharField(max_length=500)
+    title = models.CharField(
+        max_length=500,
+    )
 
     section = models.ForeignKey(
         "KB.ArticleSection",
@@ -14,11 +17,9 @@ class Article(models.Model):
 
     content = RichTextField()
 
-    is_published = models.BooleanField(default=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    updated_at = models.DateTimeField(auto_now=True)
+    is_published = models.BooleanField(
+        default=True,
+    )
 
     class Meta:
         ordering = ["title"]

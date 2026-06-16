@@ -1,7 +1,9 @@
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class ArticleSection(models.Model):
+
+class ArticleSection(TimeStampedModel):
 
     name = models.CharField(max_length=255)
 

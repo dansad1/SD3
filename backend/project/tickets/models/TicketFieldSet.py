@@ -9,10 +9,7 @@ class TicketFieldSet(
 
     class Meta:
 
-        ordering = [
-            "order",
-            "id",
-        ]
+
 
         verbose_name = (
             "Набор полей заявки"

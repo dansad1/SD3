@@ -3,12 +3,13 @@ from django.db import models
 
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 from backend.project.users.models.Permission import (
     Permission
 )
 
 
-class UserRole(models.Model):
+class UserRole(TimeStampedModel):
 
     code = models.SlugField(
         max_length=100,

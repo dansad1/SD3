@@ -1,8 +1,10 @@
 from django.conf import settings
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class Ticket(models.Model):
+
+class Ticket(TimeStampedModel):
 
     # =====================================================
     # SCHEMA
@@ -24,15 +26,6 @@ class Ticket(models.Model):
 
     archived = models.BooleanField(
         default=False,
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        editable=False,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        editable=False,
     )
 
     # =====================================================

@@ -2,8 +2,10 @@
 
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class NotificationEvent(models.Model):
+
+class NotificationEvent(TimeStampedModel):
 
     code = models.SlugField(
         max_length=100,

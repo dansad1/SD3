@@ -2,8 +2,10 @@
 
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class NotificationRule(models.Model):
+
+class NotificationRule(TimeStampedModel):
 
     event = models.ForeignKey(
         "notifications.NotificationEvent",

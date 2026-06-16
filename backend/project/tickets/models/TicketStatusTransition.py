@@ -1,7 +1,9 @@
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class TicketStatusTransition(models.Model):
+
+class TicketStatusTransition(TimeStampedModel):
 
     source = models.ForeignKey(
         "tickets.TicketStatus",

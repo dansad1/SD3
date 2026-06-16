@@ -1,7 +1,9 @@
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class Backup(models.Model):
+
+class Backup(TimeStampedModel):
 
     id = models.CharField(
         primary_key=True,
