@@ -117,18 +117,61 @@ class BaseMatrix:
 
         ctx = MatrixContext(
             matrix=self,
-            request=request
+            request=request,
         )
 
         for step in BUILD_PIPELINE:
             step(ctx)
 
-        return {
-            **(ctx.data or {}),
-            "schema": ctx.schema,
-            "capabilities": ctx.capabilities,  # ✅ всегда есть
-        }
+        schema = ctx.schema or {}
+        data = ctx.data or {}
 
+        cells = {}
+
+        for item in data.get("items", []):
+            row = str(item["row"])
+            column = str(item["column"])
+
+            cells[f"{row}:{column}"] = {
+                "value": item.get("value")
+            }
+
+        return {
+
+            "meta": {
+                "type": self.code,
+            },
+
+            "layout": {
+
+                "x": [
+                    {
+                        "id": str(col["id"]),
+                        "label": col["label"],
+                    }
+                    for col in schema.get(
+                        "columns",
+                        []
+                    )
+                ],
+
+                "y": [
+                    {
+                        "id": str(row["id"]),
+                        "label": row["label"],
+                    }
+                    for row in schema.get(
+                        "rows",
+                        []
+                    )
+                ],
+            },
+
+            "cells": cells,
+
+            "capabilities":
+                ctx.capabilities,
+        }
     # -------------------------
     # SUBMIT
     # -------------------------

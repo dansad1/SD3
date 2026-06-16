@@ -2,33 +2,16 @@
 // src/framework/Blocks/Matrix/MatrixBlock.tsx
 // ============================================================
 
-import {
-  CapabilityBoundary,
-} from "@/framework/security/CapabilityBoundary"
+import { CapabilityBoundary } from "@/framework/security/CapabilityBoundary"
 
-import {
-  useCan,
-} from "@/framework/security/useCan"
+import { useMatrix } from "./runtime/useMatrix"
+import { MatrixGrid } from "./MatrixGrid"
 
-import {
-  useMatrix,
-} from "./runtime/useMatrix"
-
-import {
-  MatrixGrid,
-} from "./MatrixGrid"
-
-import {
-  usePageRuntimeContext,
-} from "@/framework/page/runtime/usePageRuntimeContext"
-
-import {
-  resolveObject,
-} from "@/framework/bind/expression/resolveUnified"
-
-import type {
-  MatrixBlock as MatrixBlockType,
-} from "./types"
+type MatrixBlockType = {
+  code: string
+  params?: Record<string, unknown>
+  context?: Record<string, unknown>
+}
 
 type Props = {
   block: MatrixBlockType
@@ -37,88 +20,82 @@ type Props = {
 export const MatrixBlock = ({
   block,
 }: Props) => {
-
-  const runtimeCtx =
-    usePageRuntimeContext()
-
-  /* =====================================================
-     RESOLVE CONTEXT
-     ===================================================== */
-
-  const raw =
-    block.params ??
-    block.context
-
-  const resolvedContext =
-    raw
-      ? resolveObject(
-          raw,
-          runtimeCtx
-        )
-      : raw
-
-  console.log(
-    "MATRIX RAW:",
-    raw
-  )
-
-  console.log(
-    "MATRIX RESOLVED:",
-    resolvedContext
-  )
-
-  /* =====================================================
-     MATRIX RUNTIME
-     ===================================================== */
-
   const {
     data,
+    loading,
+    saving,
+    error,
+    dirty,
     updateCell,
+    submit,
   } = useMatrix(
     block.code,
-    resolvedContext
+    block.params ?? block.context
   )
 
-  /* =====================================================
-     CAPABILITIES
-     ===================================================== */
-
-  const canEdit =
-    useCan("edit", false)
-
-  /* =====================================================
-     LOADING
-     ===================================================== */
-
-  if (!data) {
-    return <div>Loading...</div>
+  if (loading) {
+    return <div>Загрузка...</div>
   }
 
-  /* =====================================================
-     RENDER
-     ===================================================== */
+  if (!data) {
+    return (
+      <div>
+        Не удалось загрузить матрицу
+      </div>
+    )
+  }
+
+  const canEdit =
+    data.capabilities?.edit === true
 
   return (
-
     <CapabilityBoundary
       capabilities={
         data.capabilities
       }
     >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+        <MatrixGrid
+          layout={data.layout}
+          cells={data.cells}
+          onChange={
+            canEdit
+              ? updateCell
+              : (() => {})
+          }
+        />
 
-      <MatrixGrid
+        {canEdit && (
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                void submit()
+              }}
+              disabled={
+                !dirty ||
+                saving
+              }
+            >
+              {saving
+                ? "Сохранение..."
+                : "Сохранить"}
+            </button>
+          </div>
+        )}
 
-        layout={data.layout}
-
-        cells={data.cells}
-
-        onChange={
-          canEdit
-            ? updateCell
-            : undefined
-        }
-      />
-
+        {error && (
+          <div>
+            {error}
+          </div>
+        )}
+      </div>
     </CapabilityBoundary>
   )
 }

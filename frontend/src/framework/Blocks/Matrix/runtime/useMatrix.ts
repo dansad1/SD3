@@ -1,74 +1,166 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+
 import { loadMatrix } from "@/framework/api/matrix/loadMatrix"
+import { submitMatrix } from "@/framework/api/matrix/submitMatrix"
+
 import { buildMatrixChanges } from "./matrixDiff"
 import { getCellKey } from "./matrixKey"
-import { useMatrixAutosave } from "./useMatrixAutosave"
-import { submitMatrix } from "@/framework/api/matrix/submitMatrix"
-import type { MatrixCellValue, MatrixData } from "../types"
+
+import type {
+  MatrixCellValue,
+  MatrixData,
+} from "../types"
+
 import { usePageRuntimeContext } from "@/framework/page/runtime/usePageRuntimeContext"
 import { resolveObject } from "@/framework/bind/expression/resolveUnified"
-
-// 🔥 ДОБАВИЛИ
 
 export function useMatrix(
   code: string,
   context?: Record<string, unknown>
 ) {
-  // 🔥 runtime DSL context
-  const runtimeCtx = usePageRuntimeContext()
+  const runtimeCtx =
+    usePageRuntimeContext()
 
-  // 🔥 RESOLVE DSL → реальные значения
   const resolvedContext = context
-    ? resolveObject(context, runtimeCtx)
+    ? resolveObject(
+        context,
+        runtimeCtx
+      )
     : context
 
-  console.log("🔥 MATRIX RAW:", context)
-  console.log("🔥 MATRIX RESOLVED:", resolvedContext)
+  const [data, setData] =
+    useState<MatrixData | null>(null)
 
-  const [data, setData] = useState<MatrixData | null>(null)
+  const [initialCells, setInitialCells] =
+    useState<
+      Record<
+        string,
+        MatrixCellValue
+      >
+    >({})
 
-  const initialRef = useRef<Record<string, MatrixCellValue>>({})
+  const [loading, setLoading] =
+    useState(true)
 
-  // 🔥 ВАЖНО: зависимость от resolved, а не raw
-  const ctxKey = JSON.stringify(resolvedContext ?? {})
+  const [saving, setSaving] =
+    useState(false)
+
+  const [error, setError] =
+    useState<string | null>(
+      null
+    )
+
+  const ctxKey = JSON.stringify(
+    resolvedContext ?? {}
+  )
 
   // =========================
   // LOAD
   // =========================
-  useEffect(() => {
-    loadMatrix(code, resolvedContext).then(res => {
-      setData(res)
-      initialRef.current = res.cells || {}
-    })
-  }, [code, ctxKey])
 
-  // =========================
-  // AUTOSAVE
-  // =========================
-  useMatrixAutosave({
-    code,
-    data,
-    initialRef,
-  })
+  const reload = useCallback(
+    async () => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const res =
+          await loadMatrix(
+            code,
+            resolvedContext
+          )
+
+        setData(res)
+
+        setInitialCells(
+          res.cells || {}
+        )
+      } catch (e) {
+        setError(
+          e instanceof Error
+            ? e.message
+            : "Ошибка загрузки"
+        )
+      } finally {
+        setLoading(false)
+      }
+    },
+    [code, ctxKey]
+  )
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function run() {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const res =
+          await loadMatrix(
+            code,
+            resolvedContext
+          )
+
+        if (cancelled) {
+          return
+        }
+
+        setData(res)
+
+        setInitialCells(
+          res.cells || {}
+        )
+      } catch (e) {
+        if (cancelled) {
+          return
+        }
+
+        setError(
+          e instanceof Error
+            ? e.message
+            : "Ошибка загрузки"
+        )
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    void run()
+
+    return () => {
+      cancelled = true
+    }
+  }, [code, ctxKey])
 
   // =========================
   // UPDATE CELL
   // =========================
+
   const updateCell = (
     x: string,
     y: string,
     patch: Partial<MatrixCellValue>
   ) => {
     setData(prev => {
-      if (!prev) return prev
+      if (!prev) {
+        return prev
+      }
 
-      const key = getCellKey(x, y)
-      const current = prev.cells[key] || {}
+      const key =
+        getCellKey(x, y)
+
+      const current =
+        prev.cells[key] || {}
 
       return {
         ...prev,
+
         cells: {
           ...prev.cells,
+
           [key]: {
             ...current,
             ...patch,
@@ -79,25 +171,77 @@ export function useMatrix(
   }
 
   // =========================
-  // MANUAL SUBMIT
+  // DIRTY
   // =========================
-  const submit = async () => {
-    if (!data) return
 
-    const changes = buildMatrixChanges(
+  const dirty =
+    data != null &&
+    buildMatrixChanges(
       data.cells,
-      initialRef.current
-    )
+      initialCells
+    ).length > 0
 
-    if (!changes.length) return
+  // =========================
+  // SAVE
+  // =========================
 
-    await submitMatrix(code, changes)
-    initialRef.current = data.cells
-  }
+  const submit =
+    async () => {
+      if (!data) {
+        return
+      }
+
+      const changes =
+        buildMatrixChanges(
+          data.cells,
+          initialCells
+        )
+
+      if (
+        changes.length === 0
+      ) {
+        return
+      }
+
+      setSaving(true)
+      setError(null)
+
+      try {
+        await submitMatrix(
+          code,
+          changes
+        )
+
+        setInitialCells({
+          ...data.cells,
+        })
+      } catch (e) {
+        setError(
+          e instanceof Error
+            ? e.message
+            : "Ошибка сохранения"
+        )
+
+        throw e
+      } finally {
+        setSaving(false)
+      }
+    }
 
   return {
     data,
+
+    loading,
+    saving,
+
+    error,
+
+    dirty,
+
     updateCell,
+
     submit,
+
+    reload,
   }
 }

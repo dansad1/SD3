@@ -75,7 +75,7 @@ const TicketSettingsHomePage = page(
 
           <Link
             label="⏱ Время выполнения"
-            to="/page/ticket_sla:list"
+            to="/page/ticket_slas:matrix"
             variant="menu"
           />
 
