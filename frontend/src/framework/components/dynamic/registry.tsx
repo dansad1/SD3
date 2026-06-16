@@ -18,6 +18,7 @@ import type {
   WidgetRenderer,
 } from "./types"
 import { PermissionEditorWidget } from "./widgets/PermissionEditor"
+import { MetaWidget } from "./widgets/meta"
 
 /* =========================================================
    TYPES
@@ -172,6 +173,14 @@ Textarea: {
     ],
 
   },
+  Meta: {
+  component: MetaWidget,
+
+  aliases: [
+    "meta",
+    "Meta",
+  ],
+},
 } satisfies Record<
   string,
   WidgetDefinition
