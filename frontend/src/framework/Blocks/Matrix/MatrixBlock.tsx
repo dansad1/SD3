@@ -17,9 +17,11 @@ type Props = {
   block: MatrixBlockType
 }
 
+
 export const MatrixBlock = ({
   block,
 }: Props) => {
+
   const {
     data,
     loading,
@@ -49,11 +51,13 @@ export const MatrixBlock = ({
     data.capabilities?.edit === true
 
   return (
+
     <CapabilityBoundary
       capabilities={
         data.capabilities
       }
     >
+
       <div
         style={{
           display: "flex",
@@ -61,14 +65,26 @@ export const MatrixBlock = ({
           gap: 12,
         }}
       >
+
         <MatrixGrid
-          layout={data.layout}
-          cells={data.cells}
+          layout={
+            data.layout
+          }
+
+          cells={
+            data.cells
+          }
+
+          schema={
+            data.schema
+          }
           onChange={
             canEdit
               ? updateCell
               : (() => {})
+
           }
+
         />
 
         {canEdit && (
@@ -78,9 +94,9 @@ export const MatrixBlock = ({
               onClick={() => {
                 void submit()
               }}
+
               disabled={
-                !dirty ||
-                saving
+                !dirty ||saving
               }
             >
               {saving
@@ -94,6 +110,7 @@ export const MatrixBlock = ({
           <div>
             {error}
           </div>
+
         )}
       </div>
     </CapabilityBoundary>

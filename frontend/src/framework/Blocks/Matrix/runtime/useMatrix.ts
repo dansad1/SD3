@@ -185,7 +185,80 @@ export function useMatrix(
   // SAVE
   // =========================
 
-  const submit =
+ const submit =
+  async () => {
+
+    if (!data) {
+      return
+    }
+
+    const changes =
+
+      buildMatrixChanges(
+
+        data.cells,
+
+        initialCells,
+
+      )
+
+    if (
+
+      changes.length === 0
+
+    ) {
+
+      return
+
+    }
+
+    setSaving(true)
+
+    setError(null)
+
+    try {
+
+      await submitMatrix(
+
+        code,
+
+        changes,
+
+        resolvedContext,
+
+      )
+
+      setInitialCells({
+
+        ...data.cells,
+
+      })
+
+    }
+
+    catch (e) {
+
+      setError(
+
+        e instanceof Error
+
+          ? e.message
+
+          : "Ошибка сохранения"
+
+      )
+
+      throw e
+
+    }
+
+    finally {
+
+      setSaving(false)
+
+    }
+
+  }
     async () => {
       if (!data) {
         return

@@ -1,3 +1,5 @@
+import json
+
 from rest_framework.exceptions import PermissionDenied
 
 from backend.engine.matrix.Base.MatrixContext import MatrixContext
@@ -8,10 +10,6 @@ from backend.engine.matrix.Base.schema import build_schema
 from backend.engine.utils.permissions import has_permission
 
 
-# =========================
-# PERMISSION
-# =========================
-
 def build_capabilities(ctx: MatrixContext):
     matrix = ctx.matrix
     request = ctx.request
@@ -20,15 +18,23 @@ def build_capabilities(ctx: MatrixContext):
 
     ctx.capabilities = {
         action: has_permission(
-            type("PermCtx", (), {
-                "request": request,
-                "entity": type("EntityStub", (), {
-                    "capabilities": {
-                        action: matrix.capabilities.get(action)
-                    }
-                })()
-            }),
-            action
+            type(
+                "PermCtx",
+                (),
+                {
+                    "request": request,
+                    "entity": type(
+                        "EntityStub",
+                        (),
+                        {
+                            "capabilities": {
+                                action: matrix.capabilities.get(action)
+                            }
+                        },
+                    )(),
+                },
+            ),
+            action,
         )
         for action in actions
     }
@@ -40,7 +46,6 @@ def check_permission(ctx: MatrixContext, action: str):
 
     perm_code = matrix.capabilities.get(action)
 
-    # 🔥 если permission не задан — просто считаем доступным
     if not perm_code:
         return
 
@@ -49,41 +54,33 @@ def check_permission(ctx: MatrixContext, action: str):
     perm_ctx.entity = type("EntityStub", (), {})()
 
     perm_ctx.entity.capabilities = {
-        action: perm_code
+        action: perm_code,
     }
 
     if not has_permission(perm_ctx, action):
         raise PermissionDenied
 
 
-# =========================
-# PIPELINES
-# =========================
-
 BUILD_PIPELINE = [
-    build_capabilities,          # 🔥 ВСЕГДА первым
+    build_capabilities,
     lambda ctx: check_permission(ctx, "view"),
     load_data,
     build_schema,
 ]
 
 SUBMIT_PIPELINE = [
-    build_capabilities,          # 🔥 тоже здесь
+    build_capabilities,
     lambda ctx: check_permission(ctx, "edit"),
     extract_changes,
     save,
 ]
 
 
-# =========================
-# BASE MATRIX
-# =========================
-
 class BaseMatrix:
 
     class Meta:
-        code: str | None = None
-        capabilities: dict | None = None
+        code = None
+        capabilities = None
 
     def __init__(self):
         meta = getattr(self, "Meta", None)
@@ -96,9 +93,41 @@ class BaseMatrix:
         self.code = meta.code
         self.capabilities = getattr(meta, "capabilities", {}) or {}
 
-    # -------------------------
-    # ABSTRACT
-    # -------------------------
+    def get_context(self, request):
+        runtime_ctx = getattr(request, "_matrix_context", None)
+
+        if isinstance(runtime_ctx, dict):
+            return runtime_ctx
+
+        raw = request.GET.get("ctx")
+
+        if not raw:
+            return {}
+
+        try:
+            ctx = json.loads(raw)
+        except Exception:
+            return {}
+
+        if isinstance(ctx, dict):
+            return ctx
+
+        return {}
+
+    def get_param(self, request, name, default=None):
+        value = request.GET.get(name)
+
+        if value is not None:
+            return value
+
+        value = getattr(request, "data", {}).get(name)
+
+        if value is not None:
+            return value
+
+        ctx = self.get_context(request)
+
+        return ctx.get(name, default)
 
     def build_schema(self, request):
         raise NotImplementedError
@@ -106,15 +135,10 @@ class BaseMatrix:
     def load_data(self, request):
         raise NotImplementedError
 
-    def save_changes(self, request, changes: list):
+    def save_changes(self, request, changes):
         raise NotImplementedError
 
-    # -------------------------
-    # BUILD
-    # -------------------------
-
     def build(self, request):
-
         ctx = MatrixContext(
             matrix=self,
             request=request,
@@ -133,55 +157,50 @@ class BaseMatrix:
             column = str(item["column"])
 
             cells[f"{row}:{column}"] = {
-                "value": item.get("value")
+                "value": item.get("value"),
             }
 
         return {
-
             "meta": {
                 "type": self.code,
             },
-
             "layout": {
-
                 "x": [
                     {
                         "id": str(col["id"]),
                         "label": col["label"],
                     }
-                    for col in schema.get(
-                        "columns",
-                        []
-                    )
+                    for col in schema.get("columns", [])
                 ],
-
                 "y": [
                     {
                         "id": str(row["id"]),
                         "label": row["label"],
                     }
-                    for row in schema.get(
-                        "rows",
-                        []
-                    )
+                    for row in schema.get("rows", [])
                 ],
             },
-
             "cells": cells,
-
-            "capabilities":
-                ctx.capabilities,
+            "schema": {
+                "defaultCell": schema.get("defaultCell"),
+                "cells": schema.get("cells"),
+                "columns": schema.get("columns"),
+                "rows": schema.get("rows"),
+            },
+            "capabilities": ctx.capabilities,
         }
-    # -------------------------
-    # SUBMIT
-    # -------------------------
 
-    def submit(self, request, payload: dict):
+    def submit(self, request, payload):
+        request._matrix_context = (
+            payload.get("context")
+            or payload.get("ctx")
+            or {}
+        )
 
         ctx = MatrixContext(
             matrix=self,
             request=request,
-            payload=payload
+            payload=payload,
         )
 
         for step in SUBMIT_PIPELINE:

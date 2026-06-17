@@ -12,10 +12,14 @@ import { SelectCell }
 import { TextCell }
   from "./Cells/TextCell"
 
+import { CheckboxCell }
+  from "./Cells/CheckboxCell"
+
 import type {
   MatrixCellSchema,
   MatrixCellValue,
 } from "./types"
+
 
 type Props = {
   schema?: MatrixCellSchema
@@ -26,6 +30,7 @@ type Props = {
     patch: Partial<MatrixCellValue>
   ) => void
 }
+
 
 /* =========================================================
    BUILTIN WIDGET RESOLUTION
@@ -40,16 +45,18 @@ function resolveBuiltinWidget(
     return schema.widget
   }
 
+  if (typeof value?.value === "boolean") {
+    return "checkbox"
+  }
   if (typeof value?.value === "number") {
     return "number"
   }
-
   if (typeof value?.value === "string") {
     return "text"
   }
-
   return "text"
 }
+
 
 /* =========================================================
    MATRIX CELL
@@ -64,12 +71,9 @@ export const MatrixCell = ({
   /* ========================================
      semantic renderer
   ======================================== */
-
   const semanticType =
     schema?.semantic?.type
-
   if (semanticType) {
-
     const renderer =
       getSemanticRenderer(
         semanticType,
@@ -78,12 +82,10 @@ export const MatrixCell = ({
       )
 
     if (renderer) {
-
       return React.createElement(
         renderer,
         {
           value,
-
           onChange: (
             next: unknown
           ) => {
@@ -91,16 +93,20 @@ export const MatrixCell = ({
             onChange(
               next as Partial<MatrixCellValue>
             )
+
           },
 
-          context: "matrix",
+          context:
+            "matrix",
 
-          platform: "desktop",
+          platform:
+            "desktop",
 
           presentation:
             schema?.presentation,
         }
       )
+
     }
   }
 
@@ -113,8 +119,14 @@ export const MatrixCell = ({
       schema,
       value,
     )
-
   switch (widget) {
+    case "checkbox":
+      return (
+        <CheckboxCell
+          value={value}
+          onChange={onChange}
+        />
+      )
 
     case "select":
       return (
@@ -122,23 +134,25 @@ export const MatrixCell = ({
           schema={schema}
           value={value}
           onChange={onChange}
-        />
-      )
 
+        />
+
+      )
     case "number":
       return (
         <NumberCell
           value={value}
           onChange={onChange}
+
         />
       )
-
     case "text":
     default:
       return (
         <TextCell
           value={value}
           onChange={onChange}
+
         />
       )
   }

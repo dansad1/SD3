@@ -7,15 +7,22 @@ import {
   Stack,
   Heading,
   Text,
+  Tabs,
   Form,
   Action,
+  If,
+  Matrix,
 } from "@/framework"
+
 
 const UserFieldFormPage = page(
 
   "userfield:form",
 
-  <Container padding="lg">
+  <Container
+    maxWidth="xl"
+    padding="lg"
+  >
 
     <Section>
 
@@ -28,21 +35,27 @@ const UserFieldFormPage = page(
         <Stack gap="sm">
 
           <Heading
+
             level={1}
+
             text="Поле пользователя"
+
           />
 
-         <Text
-  value="Создание и редактирование поля пользователя"
+          <Text
 
-  variant="muted"
+            value="Создание и редактирование поля пользователя"
 
-  size="md"
+            variant="muted"
 
-  weight="regular"
-/>
+            size="md"
+
+            weight="regular"
+
+          />
 
         </Stack>
+
 
         {/* ===================================== */}
         {/* ACTIONS */}
@@ -51,41 +64,106 @@ const UserFieldFormPage = page(
         <Stack gap="sm">
 
           <Action
-            label="Назад к списку"
+
+            label="← Назад к списку"
+
             to="userfield:list"
+
             variant="secondary"
+
           />
 
         </Stack>
 
+
         {/* ===================================== */}
-        {/* FORM */}
+        {/* TABS */}
         {/* ===================================== */}
 
-      <Form
-  entity="user-fields"
+        <Tabs variant="line">
 
-  objectId="$query.id"
 
-  submit={{
-    label: "Сохранить",
+          {/* ================================= */}
+          {/* MAIN */}
+          {/* ================================= */}
 
-    redirect: {
-      to: "userfields:list",
-    },
-  }}
+          <Section title="Основное">
 
-  formLayout={{
-    preset: "two-columns",
-    density: "comfortable",
-  }}
-/>
+            <Form
+
+              entity="user-fields"
+
+              objectId="$query.id"
+
+              submit={{
+
+                label: "Сохранить",
+
+                redirect: {
+
+                  to: "userfields:list",
+
+                },
+
+              }}
+
+              formLayout={{
+
+                preset:
+
+                  "two-columns",
+
+                density:
+
+                  "comfortable",
+
+              }}
+
+            />
+
+          </Section>
+
+
+
+          {/* ================================= */}
+          {/* ACCESS */}
+          {/* ================================= */}
+
+          <If when="$query.id">
+
+            <Section title="Доступ">
+
+              <Stack gap="md">
+
+                <Matrix
+
+                  source="user-field.access"
+
+                  params={{
+
+                    field:
+
+                      "$query.id",
+
+                  }}
+
+                />
+
+              </Stack>
+
+            </Section>
+
+          </If>
+
+
+        </Tabs>
 
       </Stack>
 
     </Section>
 
   </Container>
+
 )
 
 export default UserFieldFormPage

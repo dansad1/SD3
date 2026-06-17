@@ -131,51 +131,121 @@ class SLAMatrix(
         request,
         changes,
     ):
+
         for change in changes:
 
-            type_id = change["row"]
+            # -----------------------------------------
+            # SUPPORT OLD AND NEW API
+            # -----------------------------------------
 
-            priority_id = change["column"]
+            type_id = (
 
-            value = change.get(
+                change.get(
+                    "row"
+                )
+
+                or
+
+                change.get(
+                    "y"
+                )
+            )
+
+            priority_id = (
+
+                change.get(
+                    "column"
+                )
+
+                or
+
+                change.get(
+                    "x"
+                )
+            )
+
+            raw_value = change.get(
                 "value"
             )
 
-            # пустое значение = удалить SLA
+            if isinstance(
+                raw_value,
+                dict,
+            ):
+                value = raw_value.get(
+                    "value"
+                )
+
+            else:
+                value = raw_value
+
+            # -----------------------------------------
+            # DELETE
+            # -----------------------------------------
+
             if value in (
                 None,
                 "",
             ):
+
                 TicketSLA.objects.filter(
-                    type_id=type_id,
-                    priority_id=priority_id,
+
+                    type_id=
+                    type_id,
+
+                    priority_id=
+                    priority_id,
+
                 ).delete()
 
                 continue
 
+            # -----------------------------------------
+            # PARSE
+            # -----------------------------------------
+
             try:
+
                 hours = int(
                     value
                 )
 
             except (
+
                 TypeError,
+
                 ValueError,
+
             ):
+
                 continue
 
             if hours < 0:
+
                 hours = 0
 
+            # -----------------------------------------
+            # UPSERT
+            # -----------------------------------------
+
             TicketSLA.objects.update_or_create(
-                type_id=type_id,
-                priority_id=priority_id,
+
+                type_id=
+                type_id,
+
+                priority_id=
+                priority_id,
+
                 defaults={
+
                     "hours":
                         hours,
+
                 },
             )
 
         return {
-            "success": True,
+
+            "success":
+                True,
         }

@@ -108,7 +108,7 @@ export type MatrixPrimitiveWidget =
   | "select"
   | "number"
   | "text"
-
+  | "checkbox"
 export type MatrixOption = {
   value: string | number
   label: string
