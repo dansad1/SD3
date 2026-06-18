@@ -63,6 +63,7 @@ class UserEntity(BaseEntity):
         "last_login",
         "created_at",
         "updated_at",
+        "fieldset"
     }
 
     # =====================================================
