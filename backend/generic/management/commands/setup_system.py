@@ -1,31 +1,11 @@
-from django.core.management import (
-    call_command,
-)
+from django.core.management import call_command
+from django.core.management.base import BaseCommand
 
-from django.core.management.base import (
-    BaseCommand,
-)
-
-from backend.bootstrap import (
-    bootstrap,
-)
-
-from backend.engine.action.ActionRegistry import (
-    actions,
-)
-
-from backend.engine.entity.EntityRegistry import (
-    entity_registry,
-)
-
-from backend.engine.matrix.MatrixRegistry import (
-    matrix_registry,
-)
-
-from backend.project.permissions.collect import (
-    collect_permissions,
-)
-
+from backend.bootstrap import bootstrap
+from backend.engine.action.ActionRegistry import actions
+from backend.engine.entity.EntityRegistry import entity_registry
+from backend.engine.matrix.MatrixRegistry import matrix_registry
+from backend.project.permissions.collect import collect_permissions
 from backend.project.users.models import (
     Permission,
     User,
@@ -295,6 +275,44 @@ class Command(BaseCommand):
         self.stdout.write(
 
             "   ✔ ticket"
+
+        )
+
+        self.stdout.write("")
+
+        # =====================================
+        # TICKETS
+        # =====================================
+
+        self.stdout.write(
+
+            "🎫 SYNC TICKET DATA"
+
+        )
+
+        call_command(
+
+            "seed_tickets",
+
+            verbosity=0,
+
+        )
+
+        self.stdout.write(
+
+            "   ✔ priorities"
+
+        )
+
+        self.stdout.write(
+
+            "   ✔ statuses"
+
+        )
+
+        self.stdout.write(
+
+            "   ✔ types"
 
         )
 
