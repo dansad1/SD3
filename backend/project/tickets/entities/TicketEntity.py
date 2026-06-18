@@ -14,9 +14,7 @@ from backend.project.tickets.models import (
 )
 
 
-class TicketEntity(
-    BaseEntity
-):
+class TicketEntity(BaseEntity):
 
     model = Ticket
 
@@ -31,18 +29,14 @@ class TicketEntity(
         "id",
 
         "type",
-
         "status",
-
         "priority",
-
         "company",
-
         "executor_group",
-
         "assigned_to",
 
         "created_at",
+
     ]
 
     search_fields = [
@@ -54,7 +48,6 @@ class TicketEntity(
         "type",
 
         "status",
-
         "priority",
 
         "company",
@@ -64,10 +57,7 @@ class TicketEntity(
         "assigned_to",
 
         "archived",
-    ]
 
-    ordering = [
-        "-id",
     ]
 
     # =====================================================
@@ -100,19 +90,26 @@ class TicketEntity(
 
         return [
 
-            "type",
+            field.name
 
-            "status",
+            for field in (
+                self.model._meta.get_fields()
+            )
 
-            "priority",
+            if (
 
-            "company",
+                getattr(
+                    field,
+                    "many_to_one",
+                    False,
+                )
 
-            "executor_group",
+                and
 
-            "assigned_to",
+                not field.auto_created
 
-            "created_by",
+            )
+
         ]
 
     def get_prefetch_related(self):
@@ -122,6 +119,7 @@ class TicketEntity(
             "dynamic_values",
 
             "dynamic_values__field",
+
         ]
 
     # =====================================================
@@ -129,14 +127,20 @@ class TicketEntity(
     # =====================================================
 
     def get_fields(
-        self,
-        request,
-        obj=None,
+            self,
+            request,
+            obj=None,
     ):
 
         fields = []
 
-        for field in self.model._meta.get_fields():
+        for field in (
+
+                self.model
+                ._meta
+                .get_fields()
+
+        ):
 
             name = getattr(
                 field,
@@ -148,30 +152,42 @@ class TicketEntity(
                 continue
 
             if not self.include_model_field(
-                field
+                    field
             ):
                 continue
 
             fields.append(
-                DjangoField(field)
+
+                DjangoField(
+                    field
+                )
+
             )
 
         existing_names = {
+
             field.name
+
             for field in fields
+
         }
 
         # =============================================
-        # FORM MODE
+        # EXISTING TICKET
         # =============================================
 
         if obj is not None:
 
             dynamic_fields = (
+
                 self.get_dynamic_fields(
+
                     request,
+
                     obj=obj,
+
                 )
+
             )
 
         # =============================================
@@ -185,39 +201,60 @@ class TicketEntity(
                 TicketFieldSet.objects
 
                 .filter(
+
                     code="default"
+
                 )
 
                 .first()
+
             )
 
-            if not fieldset:
-
-                dynamic_fields = []
-
-            else:
+            if fieldset:
 
                 dynamic_fields = (
 
                     TicketField.objects
 
                     .filter(
+
                         fieldset=fieldset,
+
                     )
 
+                    .order_by(
+
+
+                        "id",
+
+                    )
 
                 )
+
+            else:
+
+                dynamic_fields = []
 
         for field in dynamic_fields:
 
             if (
-                field.name
-                in existing_names
+
+                    field.name
+
+                    in existing_names
+
             ):
+
                 continue
 
             fields.append(
-                DynamicField(field)
+
+                DynamicField(
+
+                    field
+
+                )
+
             )
 
         return fields
@@ -227,9 +264,13 @@ class TicketEntity(
     # =====================================================
 
     def get_dynamic_fields(
-        self,
-        request,
-        obj=None,
+
+            self,
+
+            request,
+
+            obj=None,
+
     ):
 
         fieldset = None
@@ -239,13 +280,19 @@ class TicketEntity(
         # =============================================
 
         if (
-            obj
-            and obj.type_id
-            and obj.type
+
+                obj
+
+                and obj.type_id
+
+                and obj.type
+
         ):
 
             fieldset = (
+
                 obj.type.fieldset
+
             )
 
         # =============================================
@@ -255,7 +302,9 @@ class TicketEntity(
         else:
 
             type_id = request.GET.get(
+
                 "type"
+
             )
 
             if not type_id:
@@ -264,38 +313,61 @@ class TicketEntity(
             try:
 
                 type_id = int(
+
                     type_id
+
                 )
 
             except (
-                TypeError,
-                ValueError,
+
+                    TypeError,
+
+                    ValueError,
+
             ):
 
                 return []
 
             ticket_type = (
 
-                self.model.type.field
-                .remote_field.model
+                self.model
+
+                ._meta
+
+                .get_field(
+
+                    "type"
+
+                )
+
+                .remote_field
+
+                .model
 
                 .objects
 
                 .filter(
+
                     pk=type_id
+
                 )
 
                 .select_related(
+
                     "fieldset"
+
                 )
 
                 .first()
+
             )
 
             if ticket_type:
 
                 fieldset = (
+
                     ticket_type.fieldset
+
                 )
 
         if not fieldset:
@@ -306,13 +378,13 @@ class TicketEntity(
             TicketField.objects
 
             .filter(
+
                 fieldset=fieldset,
+
             )
 
-            .order_by(
-                "order",
-                "id",
-            )
+
+
         )
 
     # =====================================================
@@ -320,13 +392,21 @@ class TicketEntity(
     # =====================================================
 
     def represent_option(
-        self,
-        obj,
+
+            self,
+
+            obj,
+
     ):
 
         return {
 
-            "value": obj.pk,
+            "value":
 
-            "label": str(obj),
+                obj.pk,
+
+            "label":
+
+                str(obj),
+
         }

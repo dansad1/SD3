@@ -41,23 +41,18 @@ class Command(BaseCommand):
                 "label": "Название",
                 "field_type": "string",
                 "required": True,
-
             },
 
             {
                 "name": "description",
                 "label": "Описание",
                 "field_type": "richtext",
-                "required": False,
-
             },
 
             {
                 "name": "due_date",
                 "label": "Срок",
                 "field_type": "datetime",
-                "required": False,
-
             },
 
             # =====================================================
@@ -65,19 +60,39 @@ class Command(BaseCommand):
             # =====================================================
 
             {
-                "name": "category",
-                "label": "Категория заявки",
+                "name": "type",
+                "label": "Тип заявки",
                 "field_type": "relation",
-                "required": False,
+            },
 
+            {
+                "name": "status",
+                "label": "Статус",
+                "field_type": "status",
+            },
+
+            {
+                "name": "priority",
+                "label": "Приоритет",
+                "field_type": "priority",
+            },
+
+            {
+                "name": "category",
+                "label": "Категория",
+                "field_type": "relation",
+            },
+
+            {
+                "name": "service",
+                "label": "Сервис",
+                "field_type": "relation",
             },
 
             {
                 "name": "lifecycle",
                 "label": "Жизненный цикл",
                 "field_type": "relation",
-                "required": False,
-
             },
 
             # =====================================================
@@ -88,8 +103,18 @@ class Command(BaseCommand):
                 "name": "requester",
                 "label": "Заявитель",
                 "field_type": "user",
-                "required": False,
+            },
 
+            {
+                "name": "creator",
+                "label": "Создатель",
+                "field_type": "user",
+            },
+
+            {
+                "name": "assigned_to",
+                "label": "Ответственный",
+                "field_type": "user",
             },
 
             {
@@ -97,17 +122,12 @@ class Command(BaseCommand):
                 "label": "Исполнители",
                 "field_type": "user",
                 "is_multiple": True,
-                "required": False,
-
             },
 
             {
-                "name": "executor_groups",
+                "name": "executor_group",
                 "label": "Группа исполнителей",
                 "field_type": "relation",
-                "is_multiple": True,
-                "required": False,
-
             },
 
             {
@@ -115,34 +135,50 @@ class Command(BaseCommand):
                 "label": "Наблюдатели",
                 "field_type": "user",
                 "is_multiple": True,
-                "required": False,
             },
 
             {
-                "name": "creator",
-                "label": "Создатель",
-                "field_type": "user",
-                "required": False,
+                "name": "company",
+                "label": "Компания",
+                "field_type": "company",
             },
 
             # =====================================================
-            # КОММУНИКАЦИИ
+            # SLA
             # =====================================================
 
             {
-                "name": "comment",
-                "label": "Комментарий",
-                "field_type": "richtext",
-                "required": False,
-
+                "name": "reaction_deadline",
+                "label": "Дедлайн реакции",
+                "field_type": "datetime",
             },
 
             {
-                "name": "hide_comment_from_client",
-                "label": "Скрыть комментарий от клиента",
-                "field_type": "boolean",
-                "required": False,
+                "name": "resolve_deadline",
+                "label": "Дедлайн решения",
+                "field_type": "datetime",
+            },
 
+            {
+                "name": "closed_at",
+                "label": "Закрыта",
+                "field_type": "datetime",
+            },
+
+            # =====================================================
+            # ОЦЕНКА
+            # =====================================================
+
+            {
+                "name": "rating",
+                "label": "Оценка",
+                "field_type": "number",
+            },
+
+            {
+                "name": "feedback",
+                "label": "Отзыв",
+                "field_type": "text",
             },
 
             # =====================================================
@@ -151,23 +187,9 @@ class Command(BaseCommand):
 
             {
                 "name": "attachments",
-                "label": "Вложенные файлы",
+                "label": "Вложения",
                 "field_type": "relation",
                 "is_multiple": True,
-                "required": False,
-
-            },
-
-            # =====================================================
-            # СИСТЕМНЫЕ
-            # =====================================================
-
-            {
-                "name": "system_fields",
-                "label": "Системные поля",
-                "field_type": "json",
-                "required": False,
-
             },
 
         ]
