@@ -32,7 +32,7 @@ const SettingsHomePage = page(
 
           <Link
             label="Настройки SMTP"
-            to="/page/settings.smtp:form"
+            to="/page/email-settings:form"
             variant="menu"
           />
 

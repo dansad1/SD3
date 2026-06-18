@@ -1,32 +1,29 @@
-# backend/project/notifications/entities/EmailSettingsEntity.py
+from django.core.exceptions import ValidationError
 
-from backend.engine.entity.Base.BaseEntity import (
-    BaseEntity,
-)
+from backend.engine.entity.Base.BaseEntity import BaseEntity
 
-from backend.project.notifications.models import (
-    EmailSettings,
-)
+from backend.project.notifications.models import EmailSettings
 
 
-class EmailSettingsEntity(
-    BaseEntity
-):
+class EmailSettingsEntity(BaseEntity):
 
     model = EmailSettings
 
     entity = "email-settings"
 
-    list_display = [
+    include_fields = [
 
         "host",
-
         "port",
+
+        "username",
+        "password",
 
         "default_from",
 
-        "use_tls",
+        "timeout",
 
+        "use_tls",
         "use_ssl",
 
         "is_active",
@@ -55,11 +52,12 @@ class EmailSettingsEntity(
     }
 
     def validate(
-        self,
-        request,
-        payload,
-        instance=None,
+            self,
+            request,
+            payload,
+            instance=None,
     ):
+
         payload = super().validate(
             request,
             payload,
@@ -67,11 +65,19 @@ class EmailSettingsEntity(
         )
 
         if (
-            instance is None
-            and self.model.objects.exists()
+                instance is None
+                and self.model.objects.exists()
         ):
-            raise ValueError(
-                "Email settings already exists"
+            raise ValidationError(
+                "SMTP настройки уже существуют"
+            )
+
+        if (
+                payload.get("use_tls")
+                and payload.get("use_ssl")
+        ):
+            raise ValidationError(
+                "Нельзя одновременно использовать TLS и SSL"
             )
 
         return payload
