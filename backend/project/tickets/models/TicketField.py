@@ -15,16 +15,6 @@ class TicketField(
         related_name="fields",
     )
 
-    show_in_list = models.BooleanField(
-        default=False,
-    )
-
-    default_expression = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-    )
-
     class Meta:
 
 

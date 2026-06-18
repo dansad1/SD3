@@ -31,7 +31,6 @@ class TicketFieldEntity(
 
         "unique",
 
-        "show_in_list",
 
         "order",
     ]
