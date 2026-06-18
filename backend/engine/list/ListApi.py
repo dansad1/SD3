@@ -25,7 +25,14 @@ from backend.engine.list.ListRegistry import (
 from backend.engine.form.Base.errors import (
     validation_error_to_dict,
 )
-from backend.project.users.models.UserListSettings import UserListSettings
+
+from backend.project.users.models.UserListSettings import (
+    UserListSettings,
+)
+
+from backend.project.audit.utils.error_logging import (
+    log_error,
+)
 
 
 # =========================================================
@@ -33,27 +40,55 @@ from backend.project.users.models.UserListSettings import UserListSettings
 # =========================================================
 
 def api_error(
-    *,
-    message: str,
-    type: str = "error",
-    status: int = 400,
-    field_errors=None,
+        *,
+        request=None,
+        message: str,
+        type: str = "error",
+        status: int = 400,
+        field_errors=None,
+        exc=None,
 ):
 
+    if exc:
+
+        try:
+
+            log_error(
+
+                request=request,
+
+                exc=exc,
+
+            )
+
+        except Exception:
+
+            pass
+
     payload = {
+
         "status": "error",
+
         "type": type,
+
         "message": message,
+
     }
 
     if field_errors:
+
         payload["field_errors"] = (
+
             field_errors
+
         )
 
     return JsonResponse(
+
         payload,
+
         status=status,
+
     )
 
 
@@ -63,21 +98,29 @@ def api_error(
 
 @require_GET
 def entity_list_api(
-    request,
-    entity: str,
+        request,
+        entity,
 ):
 
     try:
 
         list_obj = list_registry.get(
+
             f"{entity}.list"
+
         )
 
         result = list_obj.build(
+
             request
+
         )
 
-        return JsonResponse(result)
+        return JsonResponse(
+
+            result
+
+        )
 
     # =====================================================
     # VALIDATION
@@ -86,12 +129,25 @@ def entity_list_api(
     except ValidationError as e:
 
         return api_error(
+
+            request=request,
+
             type="validation",
+
             message="Ошибка валидации",
+
             field_errors=(
-                validation_error_to_dict(e)
+
+                validation_error_to_dict(
+
+                    e
+
+                )
+
             ),
+
             status=400,
+
         )
 
     # =====================================================
@@ -101,13 +157,23 @@ def entity_list_api(
     except PermissionDenied:
 
         return api_error(
+
+            request=request,
+
             type="permission",
+
             message=(
+
                 "У вас недостаточно "
+
                 "прав для выполнения "
+
                 "данного действия."
+
             ),
+
             status=403,
+
         )
 
     # =====================================================
@@ -117,16 +183,22 @@ def entity_list_api(
     except Exception as e:
 
         return api_error(
+
+            request=request,
+
             type="server_error",
-            message=str(e),
+
+            message=str(
+
+                e
+
+            ),
+
             status=500,
+
+            exc=e,
+
         )
-
-
-# =========================================================
-# SETTINGS
-# =========================================================
-
 
 
 # =========================================================
@@ -135,40 +207,48 @@ def entity_list_api(
 
 @require_GET
 def entity_list_meta_api(
-    request,
-    entity,
+        request,
+        entity,
 ):
 
     try:
 
         list_obj = list_registry.get(
+
             f"{entity}.list"
+
         )
 
         fields = list_obj.get_fields(
-            request
-        )
 
-        # =============================================
-        # ENTITY LIST
-        # =============================================
+            request
+
+        )
 
         try:
 
             entity_obj = entity_registry.get(
+
                 entity
+
             )
 
             entity_obj.check_permission(
+
                 request,
+
                 "list",
+
             )
 
             default_visible = (
 
                 list_obj
+
                 .get_default_visible_fields(
+
                     request
+
                 )
 
                 or [
@@ -176,61 +256,91 @@ def entity_list_meta_api(
                     f["key"]
 
                     for f in fields
+
                 ]
+
             )
 
             settings = (
+
                 UserListSettings.objects
+
                 .filter(
+
                     user=request.user,
+
                     entity=entity,
+
                 )
+
                 .first()
+
             )
 
             if (
-                settings and
-                settings.visible_fields
+
+                    settings
+
+                    and
+
+                    settings.visible_fields
+
             ):
 
                 visible = (
+
                     settings.visible_fields
+
                 )
 
             else:
 
                 visible = (
+
                     default_visible
+
                 )
 
             capabilities = (
+
                 entity_obj
+
                 .get_capabilities_for_user(
+
                     request
+
                 )
+
             )
 
         except KeyError:
 
-            # =========================================
-            # RESOURCE LIST
-            # =========================================
-
             list_obj.check_permission(
+
                 request
+
             )
 
             visible = [
+
                 f["key"]
+
                 for f in fields
+
             ]
 
             capabilities = {
+
                 "list": True,
+
                 "view": False,
+
                 "create": False,
+
                 "edit": False,
+
                 "delete": False,
+
             }
 
         return JsonResponse({
@@ -242,26 +352,49 @@ def entity_list_meta_api(
             "visible_fields": visible,
 
             "capabilities": capabilities,
+
         })
 
     except PermissionDenied:
 
         return api_error(
+
+            request=request,
+
             type="permission",
+
             message=(
+
                 "У вас недостаточно "
+
                 "прав для выполнения "
+
                 "данного действия."
+
             ),
+
             status=403,
+
         )
 
     except Exception as e:
 
         return api_error(
+
+            request=request,
+
             type="server_error",
-            message=str(e),
+
+            message=str(
+
+                e
+
+            ),
+
             status=500,
+
+            exc=e,
+
         )
 
 
@@ -271,46 +404,57 @@ def entity_list_meta_api(
 
 @require_POST
 def entity_list_settings_api(
-    request,
-    entity,
+        request,
+        entity,
 ):
 
     try:
 
         data = json.loads(
-            request.body or "{}"
-        )
 
+            request.body
+
+            or
+
+            "{}"
+
+        )
         visible_fields = data.get(
             "fields",
+
             [],
+
         )
 
         entity_obj = entity_registry.get(
             entity
-        )
 
+        )
         entity_obj.check_permission(
             request,
             "list",
         )
-
         UserListSettings.objects.update_or_create(
             user=request.user,
             entity=entity,
             defaults={
                 "visible_fields":
+
                     visible_fields
+
             },
+
         )
 
         return JsonResponse({
+
             "status": "ok"
+
         })
 
     except PermissionDenied:
-
         return api_error(
+            request=request,
             type="permission",
             message=(
                 "У вас недостаточно "
@@ -319,11 +463,9 @@ def entity_list_settings_api(
             ),
             status=403,
         )
-
     except Exception as e:
-
         return api_error(
+            request=request,
             type="server_error",
             message=str(e),
-            status=500,
-        )
+            status=500,exc=e)

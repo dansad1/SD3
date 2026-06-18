@@ -62,7 +62,7 @@ const SettingsHomePage = page(
 
           <Link
             label="Ошибки системы"
-            to="/page/system_error_logs:list"
+            to="/page/audit:error"
             variant="menu"
           />
 
