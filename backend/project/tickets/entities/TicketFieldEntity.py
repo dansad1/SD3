@@ -32,7 +32,6 @@ class TicketFieldEntity(
         "unique",
 
 
-        "order",
     ]
 
     search_fields = [
@@ -44,7 +43,13 @@ class TicketFieldEntity(
         "field_type",
     ]
 
-
+    exclude_fields = [
+        "fieldset",
+        "created_at",
+        "updated_at",
+        "choices",
+        "options"
+    ]
 
     # =====================================================
     # ACCESS
@@ -101,16 +106,3 @@ class TicketFieldEntity(
 
             if field.name != "fieldset"
         ]
-
-    # =====================================================
-    # SCHEMA
-    # =====================================================
-
-    exclude_fields = [
-
-        "fieldset",
-
-        "created_at",
-
-        "updated_at",
-    ]

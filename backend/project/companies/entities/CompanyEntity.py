@@ -56,6 +56,8 @@ class CompanyEntity(BaseEntity):
         "fieldset",
         "created_at",
         "updated_at",
+        "choices",
+        "options"
     ]
 
     # =====================================================

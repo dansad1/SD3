@@ -14,8 +14,11 @@ class CompanyFieldEntity(BaseEntity):
     entity = "company-fields"
 
     exclude_fields = [
-
         "fieldset",
+        "created_at",
+        "updated_at",
+        "choices",
+        "options"
     ]
 
     # =====================================================

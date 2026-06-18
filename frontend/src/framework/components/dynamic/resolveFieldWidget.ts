@@ -30,6 +30,7 @@ export function resolveFieldWidget(
       name: field.name,
       type: field.type,
       widget: field.widget,
+      presentation: field.presentation,
       options: field.options,
       entity: field.entity,
       multiple: field.multiple,
@@ -37,6 +38,22 @@ export function resolveFieldWidget(
       semantic: field.semantic,
     }
   )
+
+  /* ========================================
+     presentation layer
+  ======================================== */
+
+  if (field.presentation === "meta") {
+
+    console.log(
+      "🟡 resolveFieldWidget META",
+      {
+        name: field.name,
+      }
+    )
+
+    return "Meta"
+  }
 
   /* ========================================
      interaction
