@@ -7,29 +7,20 @@ import {
   Stack,
   Heading,
   Text,
+  Tabs,
   Form,
   Action,
+  If,
+  Matrix,
 } from "@/framework"
 
 const CompanyFieldFormPage = page(
-
   "company_field:form",
 
-  <Container
-    maxWidth="xl"
-    padding="lg"
-  >
-
+  <Container maxWidth="xl" padding="lg">
     <Section>
-
       <Stack gap="lg">
-
-        {/* ===================================== */}
-        {/* HEADER */}
-        {/* ===================================== */}
-
         <Stack gap="sm">
-
           <Heading
             level={1}
             text="Поле компании: $company_field.name"
@@ -42,59 +33,50 @@ const CompanyFieldFormPage = page(
             size="md"
             weight="regular"
           />
-
         </Stack>
 
-        {/* ===================================== */}
-        {/* ACTIONS */}
-        {/* ===================================== */}
-
         <Stack gap="sm">
-
           <Action
             label="← Назад к списку"
             to="company_field:list"
             variant="secondary"
           />
-
         </Stack>
 
-        {/* ===================================== */}
-        {/* FORM */}
-        {/* ===================================== */}
+        <Tabs variant="line">
+          <Section title="Основное">
+            <Form
+              entity="company-fields"
+              objectId="$query.id"
+              submit={{
+                label: "Сохранить",
+                redirect: {
+                  to: "company_field:list",
+                },
+              }}
+              formLayout={{
+                preset: "two-columns",
+                density: "comfortable",
+              }}
+            />
+          </Section>
 
-        <Form
-
-          entity="company-fields"
-
-          objectId="$query.id"
-
-          submit={{
-
-            label: "Сохранить",
-
-            redirect: {
-              to: "company_field:list",
-            },
-
-          }}
-
-          formLayout={{
-
-            preset: "two-columns",
-
-            density: "comfortable",
-
-          }}
-
-        />
-
+          <If when="$query.id">
+            <Section title="Доступ">
+              <Stack gap="md">
+                <Matrix
+                  source="company-field.access"
+                  params={{
+                    field: "$query.id",
+                  }}
+                />
+              </Stack>
+            </Section>
+          </If>
+        </Tabs>
       </Stack>
-
     </Section>
-
   </Container>
-
 )
 
 export default CompanyFieldFormPage
