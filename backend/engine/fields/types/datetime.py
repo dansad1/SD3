@@ -84,9 +84,18 @@ class DateTimeFieldType(BaseFieldType):
 
             except Exception:
 
-                raise ValidationError(
-                    "Некорректная дата"
-                )
+                try:
+
+                    dt = datetime.strptime(
+                        raw,
+                        "%Y-%m-%d %H:%M:%S",
+                    )
+
+                except Exception:
+
+                    raise ValidationError(
+                        "Некорректная дата"
+                    )
 
         if dj_timezone.is_naive(dt):
 
@@ -191,17 +200,18 @@ class DateTimeFieldType(BaseFieldType):
                 timezone.utc,
             )
 
-        value = value.astimezone(
-            timezone.utc
+        value = (
+            value
+            .astimezone(
+                timezone.utc
+            )
+            .replace(
+                microsecond=0,
+            )
         )
 
-        return (
-            value
-            .isoformat()
-            .replace(
-                "+00:00",
-                "Z",
-            )
+        return value.strftime(
+            "%Y-%m-%d %H:%M:%S"
         )
 
     # =====================================================

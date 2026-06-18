@@ -5,18 +5,43 @@ import { BaseWidget } from "./Base"
 export const DateTimeInputWidget: WidgetRenderer = (
   props
 ) => {
-  const { value, onChange } = props
+
+  const {
+    value,
+    onChange,
+  } = props
+
+  const normalized =
+    value == null
+      ? ""
+      : String(value)
+          .replace("Z", "")
+          .slice(0, 16)
 
   return (
+
     <BaseWidget {...props}>
+
       {({ disabled }) => (
+
         <Input
+
           type="datetime-local"
-          value={value == null ? "" : String(value)}
+
+          step={60}
+
+          value={normalized}
+
           onChange={onChange}
+
           disabled={disabled}
+
         />
+
       )}
+
     </BaseWidget>
+
   )
+
 }
