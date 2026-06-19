@@ -1,59 +1,76 @@
-from django.core.mail import get_connection
-
 from backend.engine.action.Base.BaseAction import BaseAction
-
-from backend.project.notifications.models import (
-    EmailSettings,
-)
+from backend.engine.fields.types.email import EmailFieldType
+from backend.project.notifications.channels.SendEmailAction import SendEmailAction
 
 
-class TestEmailAction(
+class SendTestEmailAction(BaseAction):
 
-    BaseAction
-
-):
-
-    code = "email.test"
+    code = "email.send_test"
 
     permission = (
-        "notifications.settings.edit"
+        "notifications.smtp.test"
     )
 
     success_message = (
-        "SMTP подключение успешно"
+        "Тестовое письмо отправлено"
     )
 
-    def run(self,request,payload,ctx,):
+    def get_fields(
+        self,
+        request,
+        ctx,
+    ):
+        return [
 
-        settings = (
-            EmailSettings.objects
-            .filter(
-                is_active=True
-            )
-            .first()
+            EmailFieldType(
+
+                name="email",
+
+                label="Email",
+
+                required=True,
+
+            ),
+
+        ]
+
+    def run(
+        self,
+        request,
+        payload,
+        ctx,
+    ):
+
+        SendEmailAction().submit(
+
+            request=request,
+
+            payload={
+
+                "subject":
+                    "SMTP test",
+
+                "body":
+                    "SMTP configured successfully.",
+
+                "html": """
+                    <h2>
+                        SMTP configured successfully.
+                    </h2>
+
+                    <p>
+                        This is a test message.
+                    </p>
+                """,
+
+                "recipients": [
+
+                    payload["email"],
+
+                ],
+
+            },
+
+            ctx=ctx,
+
         )
-
-        if not settings:
-            raise ValueError(
-                "SMTP настройки отсутствуют"
-            )
-
-        connection = get_connection(
-            host=settings.host,
-            port=settings.port,
-            username=settings.username,
-            password=settings.password,
-            use_tls=settings.use_tls,
-            use_ssl=settings.use_ssl,
-            timeout=settings.timeout,
-
-        )
-
-        connection.open()
-        connection.close()
-
-        return {
-
-            "status": "ok",
-
-        }

@@ -1,18 +1,8 @@
-# backend/project/notifications/channels/EmailChannel.py
-
-import re
-
 from django.core.mail import (
     EmailMultiAlternatives,
 )
-
 from django.core.mail.backends.smtp import (
     EmailBackend,
-)
-
-from django.template import (
-    Context,
-    Template,
 )
 
 from backend.project.notifications.models import (
@@ -23,95 +13,73 @@ from backend.project.notifications.models import (
 class EmailChannel:
 
     @classmethod
-    def send(
-        cls,
-        template,
-        context,
-        users,
-    ):
-        emails = [
+    def get_settings(cls):
 
-            user.email
-
-            for user in users
-
-            if getattr(
-                user,
-                "email",
-                None,
-            )
-        ]
-
-        if not emails:
-            return
-
-        settings_obj = (
+        settings = (
             EmailSettings.objects
+            .filter(
+                is_active=True,
+            )
             .first()
         )
 
-        if not settings_obj:
-            return
+        if not settings:
+            raise ValueError(
+                "SMTP settings not configured"
+            )
 
-        subject = (
-            Template(
-                template.subject
-            )
-            .render(
-                Context(
-                    context
-                )
-            )
+        return settings
+
+    @classmethod
+    def get_connection(cls):
+
+        settings = cls.get_settings()
+        return EmailBackend(
+            host=settings.host,
+            port=settings.port,
+            username=settings.username,
+            password=settings.password,
+            use_tls=settings.use_tls,
+            use_ssl=settings.use_ssl,
+            timeout=settings.timeout,
+
         )
 
-        body_html = (
-            Template(
-                template.body
-            )
-            .render(
-                Context(
-                    context
-                )
-            )
-        )
+    @classmethod
+    def send_message(
+        cls,
+        subject,
+        body,
+        recipients,
+        html=None,
+        from_email=None,
 
-        body_text = re.sub(
-            r"<[^>]+>",
-            "",
-            body_html,
-        )
+    ):
 
-        connection = EmailBackend(
-
-            host=settings_obj.host,
-
-            port=settings_obj.port,
-
-            username=settings_obj.host_user,
-
-            password=settings_obj.host_password,
-
-            use_tls=settings_obj.use_tls,
-
-            use_ssl=settings_obj.use_ssl,
-        )
-
+        settings = cls.get_settings()
         msg = EmailMultiAlternatives(
-
             subject=subject,
+            body=body,
+            from_email=(
+                from_email
+                or settings.default_from
+            ),
 
-            body=body_text,
+            to=recipients,
+            connection=cls.get_connection(),
 
-            from_email=settings_obj.default_from,
-
-            to=emails,
-
-            connection=connection,
         )
+        if html:
+            msg.attach_alternative(
+                html,
+                "text/html",
 
-        msg.attach_alternative(
-            body_html,
-            "text/html",
-        )
+            )
 
         msg.send()
+
+    @classmethod
+    def test(cls):
+        connection = cls.get_connection()
+        connection.open()
+        connection.close()
