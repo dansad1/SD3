@@ -1,0 +1,124 @@
+.status-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.status-flow__card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.status-flow__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.status-flow__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.status-flow__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.status-flow__table th,
+.status-flow__table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.status-flow__table th:not(:first-child),
+.status-flow__table td:not(:first-child) {
+  text-align: center;
+}.status-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: white;
+    max-height: 75vh;
+    overflow-y: auto;
+
+}
+
+
+.status-flow__card {
+    padding: 12px;
+    border: 1px solid #ececec;
+    border-radius: 6px;
+
+}
+
+.status-flow__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+
+}
+
+
+.status-flow__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+
+}
+
+
+.status-flow__table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+}
+
+
+.status-flow__table th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 1;
+    padding-bottom: 6px;
+    font-size: 12px;
+    font-weight: 600;
+
+}
+
+
+.status-flow__table td {
+    padding: 4px 0;
+    border-top: 1px solid #f3f3f3;
+
+}
+
+
+.status-flow__table td:first-child,
+.status-flow__table th:first-child {
+
+    width: 220px;
+    text-align: left;
+
+}
+
+
+.status-flow__checkbox {
+    text-align: center;
+
+}
+
+.status-flow__checkbox input {
+    cursor: pointer;
+    transform: scale(0.9);
+
+}

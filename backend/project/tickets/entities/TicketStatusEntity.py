@@ -16,17 +16,11 @@ class TicketStatusEntity(
     entity = "ticket_statuses"
 
     list_display = [
-
         "name",
-
         "code",
-
         "color",
-
         "comment_required",
-
         "blocks_time",
-
         "blocks_editing",
     ]
 
@@ -35,9 +29,6 @@ class TicketStatusEntity(
         "code",
     ]
 
-    ordering = [
-        "name",
-    ]
 
     capabilities = {
 

@@ -6,15 +6,21 @@ import {
   Section,
   Stack,
   Heading,
-  Matrix,
+  Custom,
 } from "@/framework"
 
+
 const NotificationOverviewPage = page(
+
   "notification:overview",
 
-  <Container maxWidth="xl" padding="lg">
+  <Container
+    maxWidth="xl"
+    padding="lg"
+  >
 
     <Section>
+
       <Stack gap="lg">
 
         <Heading
@@ -22,14 +28,18 @@ const NotificationOverviewPage = page(
           text="Уведомления — обзор"
         />
 
-        <Matrix
-          source="notification-overview"
-        />
-
+       <Custom
+  component="NotificationOverview"
+  props={{
+    process: "$query.id",
+  }}
+/>
       </Stack>
+
     </Section>
 
   </Container>
+
 )
 
 export default NotificationOverviewPage

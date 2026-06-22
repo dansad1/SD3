@@ -44,7 +44,7 @@ const SettingsHomePage = page(
 
           <Link
             label="Шаблоны уведомлений"
-            to="/page/notification_matrix:list"
+            to="/page/notification:overview"
             variant="menu"
           />
 

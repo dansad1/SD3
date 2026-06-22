@@ -1,5 +1,7 @@
+import NotificationOverview from "@/Project/notifications/NotificationOverview/overview"
 
 const registry: Record<string, any> = {
+    NotificationOverview,
 }
 
 export const CustomBlock = ({ block }: any) => {

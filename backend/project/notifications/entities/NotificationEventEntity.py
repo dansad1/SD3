@@ -18,36 +18,24 @@ class NotificationEventEntity(
     entity = "notification-events"
 
     list_display = [
-
         "code",
-
         "name",
-
         "group",
-
         "is_active",
     ]
 
     search_fields = [
-
         "code",
-
         "name",
     ]
 
     filter_fields = [
 
         "group",
-
         "is_active",
     ]
 
-    ordering = [
 
-        "group",
-
-        "name",
-    ]
 
     capabilities = {
 

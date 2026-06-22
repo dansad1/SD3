@@ -284,6 +284,10 @@ class Command(BaseCommand):
         # TICKETS
         # =====================================
 
+        # =====================================
+        # TICKETS
+        # =====================================
+
         self.stdout.write(
 
             "🎫 SYNC TICKET DATA"
@@ -313,6 +317,32 @@ class Command(BaseCommand):
         self.stdout.write(
 
             "   ✔ types"
+
+        )
+
+        self.stdout.write("")
+
+        # =====================================
+        # NOTIFICATIONS
+        # =====================================
+
+        self.stdout.write(
+
+            "🔔 SYNC NOTIFICATIONS"
+
+        )
+
+        call_command(
+
+            "seed_notifications",
+
+            verbosity=0,
+
+        )
+
+        self.stdout.write(
+
+            "   ✔ events"
 
         )
 
