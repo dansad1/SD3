@@ -678,6 +678,21 @@ timeline: {
     params: "object",
   }
 },
+status_flow: {
+  props: {
+    source: "string" as Primitive,
+    params: "object" as Primitive,
+    editable: "boolean" as Primitive,
+  },
+
+  features: {
+    create: "boolean" as Primitive,
+    update: "boolean" as Primitive,
+    delete: "boolean" as Primitive,
+    badges: "boolean" as Primitive,
+    colors: "boolean" as Primitive,
+  },
+},
 } as const
 export const Control = {
   if: {

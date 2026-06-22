@@ -81,7 +81,7 @@ const TicketSettingsHomePage = page(
 
           <Link
             label="🔁 Переходы статусов"
-            to="/page/ticket_status_transition:matrix"
+            to="/page/ticket:workflow"
             variant="menu"
           />
 

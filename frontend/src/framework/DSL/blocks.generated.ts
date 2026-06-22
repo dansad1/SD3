@@ -516,3 +516,24 @@ export const Timeline: DSLComponent<TimelineDSL> = (props) =>
     normalizeChildren(props.children)
   )
 
+export type Status_flowDSL =
+  LayoutDSL &
+  {
+  source?: string | `$${string}`
+  params?: Record<string, unknown> | `$${string}`
+  editable?: boolean | `$${string}`
+  features?: {
+  create?: boolean | `$${string}`
+  update?: boolean | `$${string}`
+  delete?: boolean | `$${string}`
+  badges?: boolean | `$${string}`
+  colors?: boolean | `$${string}`
+}
+}
+
+export const Status_flow: DSLComponent<Status_flowDSL> = (props) =>
+  Block(
+    { __type: "status_flow", ...props },
+    normalizeChildren(props.children)
+  )
+
