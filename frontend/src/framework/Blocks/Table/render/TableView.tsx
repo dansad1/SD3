@@ -1,11 +1,18 @@
 // src/framework/Blocks/Table/render/TableView.tsx
 
 import Table from "@/framework/Blocks/Table/render/Table"
-import VisibleFieldsModal from "@/framework/components/modals/VisibleFieldsModal/VisibleFieldsModal"
-import { BlockToolbar } from "@/framework/components/ToolBars/ListToolbar"
+import VisibleFieldsModal
+  from "@/framework/components/modals/VisibleFieldsModal/VisibleFieldsModal"
+import { BlockToolbar }
+  from "@/framework/components/ToolBars/ListToolbar"
 
-import type { TableFeatureContext } from "../features/types"
-import type { BaseRow } from "../types/runtime"
+import type {
+  TableFeatureContext,
+} from "../features/types"
+
+import type {
+  BaseRow,
+} from "../types/runtime"
 
 import { useActionExecutor }
   from "../../Action/executor/useActionExecutor"
@@ -44,9 +51,42 @@ export function TableView<
   const error =
     list?.error ?? null
 
+  const selected =
+    ctrl.selection?.selected
+    ?? new Set()
+
+  const selectedRows =
+    rows.filter(
+      row => selected.has(
+        row.id
+      )
+    )
+
+  const selectedCount =
+    selectedRows.length
+
   const handleSaved = () => {
 
     void list?.reload?.()
+
+  }
+
+  async function handleBulkAction(
+    key: string,
+  ) {
+
+    await ctrl
+      .onBulkAction?.(
+
+        key,
+
+        selectedRows as T[],
+
+      )
+
+    ctrl
+      .selection
+      ?.clear()
 
   }
 
@@ -54,6 +94,7 @@ export function TableView<
     <>
 
       <BlockToolbar
+
         actions={
           toolbar.actions ?? []
         }
@@ -72,13 +113,123 @@ export function TableView<
           }
 
           void runAction(
+
             target,
-            a.ctx
+
+            a.ctx,
+
           )
+
         }}
+
       />
 
+      {
+
+        selectedCount > 0
+
+        &&
+
+        ctrl.bulkActions?.length
+
+        && (
+
+          <div
+            className="table-selection-panel"
+          >
+
+            <div>
+
+              Выбрано
+
+              {" "}
+
+              <b>
+
+                {
+
+                  selectedCount
+
+                }
+
+              </b>
+
+            </div>
+
+            <div
+
+              style={{
+
+                display:
+                  "flex",
+
+                gap:
+                  8,
+
+              }}
+
+            >
+
+              {
+
+                ctrl.bulkActions.map(
+
+                  action => (
+
+                    <button
+
+                      key={
+                        action.key
+                      }
+
+                      type="button"
+
+                      className={
+
+                        `ui-btn ui-btn-${
+                          action.variant
+                          ??
+                          "secondary"
+                        }`
+
+                      }
+
+                      onClick={() => {
+
+                        void handleBulkAction(
+
+                          action.key,
+
+                        )
+
+                      }}
+
+                    >
+
+                      {
+
+                        action.label
+
+                      }
+
+                    </button>
+
+                  )
+
+                )
+
+              }
+
+            </div>
+
+          </div>
+
+        )
+
+      }
+
       <Table
+
         ctrl={{
 
           ...ctrl,
@@ -92,39 +243,60 @@ export function TableView<
           error,
 
         }}
+
       />
 
-      {ctx.modals?.visibleFields && (
+      {
 
-        <VisibleFieldsModal
+        ctx.modals
+          ?.visibleFields
 
-          isOpen={
-            ctx.modals
-              .visibleFields
-              .isOpen
-          }
+        && (
 
-          onClose={
-            ctx.modals
-              .visibleFields
-              .close
-          }
+          <VisibleFieldsModal
 
-          entity={
-            ctx.entity
-          }
+            isOpen={
 
-          fieldset={
-            ctx.fieldset
-          }
+              ctx.modals
+                .visibleFields
+                .isOpen
 
-          onSaved={
-            handleSaved
-          }
-        />
+            }
 
-      )}
+            onClose={
+
+              ctx.modals
+                .visibleFields
+                .close
+
+            }
+
+            entity={
+
+              ctx.entity
+
+            }
+
+            fieldset={
+
+              ctx.fieldset
+
+            }
+
+            onSaved={
+
+              handleSaved
+
+            }
+
+          />
+
+        )
+
+      }
 
     </>
+
   )
+
 }

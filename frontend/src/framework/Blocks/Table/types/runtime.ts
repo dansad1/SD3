@@ -69,6 +69,7 @@ export interface RowAction<T = unknown> {
 /* ================= TABLE CTRL ================= */
 
 export interface TableCtrlBase<T extends BaseRow> {
+
   fields: ListFieldMeta[]
   rows: T[]
 
@@ -85,16 +86,47 @@ export interface TableCtrlBase<T extends BaseRow> {
 
   selection?: {
     selected: Set<string | number>
-    toggle: (id: string | number) => void
+
+    toggle: (
+      id: string | number
+    ) => void
+
     toggleAll: () => void
+
     clear: () => void
+
     isAllSelected: boolean
   }
 
   rowActions?: RowAction<T>[]
 
-  onRowAction?: (key: string, row: T) => void
-  onRowClick?: (row: T) => void
-  onToolbarAction?: (key: string) => void
+  /*
+   * NEW
+   */
+
+  bulkActions?: {
+    key: string
+    label: string
+    variant?: string
+  }[]
+
+  onBulkAction?: (
+    key: string,
+    rows: T[],
+  ) => Promise<void>
+
+  onRowAction?: (
+    key: string,
+    row: T
+  ) => void
+
+  onRowClick?: (
+    row: T
+  ) => void
+
+  onToolbarAction?: (
+    key: string
+  ) => void
+
   rowVariant?: TableRowVariant
 }

@@ -39,10 +39,25 @@ export function DefaultTableRow<
           ? "clickable-row"
           : undefined
       }
-      onClick={() =>
-        hasRowClick &&
+      onClick={(e) => {
+
+        if (!hasRowClick) {
+          return
+        }
+
+        const target =
+          e.target as HTMLElement
+
+        if (
+          target.closest(
+            "input,button,a,label,select,textarea,[role='checkbox']"
+          )
+        ) {
+          return
+        }
+
         onRowClick?.(row)
-      }
+      }}
     >
       {hasSelection &&
         selection && (
@@ -52,9 +67,7 @@ export function DefaultTableRow<
               checked={selection.selected.has(
                 row.id
               )}
-              onChange={(e) => {
-                e.stopPropagation()
-
+              onChange={() => {
                 selection.toggle(
                   row.id
                 )
@@ -93,7 +106,9 @@ export function DefaultTableRow<
                   <button
                     key={action.key}
                     type="button"
-                    className={`ui-btn ui-btn-${action.variant ?? "secondary"}`}
+                    className={
+                      `ui-btn ui-btn-${action.variant ?? "secondary"}`
+                    }
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
