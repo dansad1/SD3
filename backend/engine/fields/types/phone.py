@@ -57,9 +57,12 @@ class PhoneFieldType(
                 "Некорректный номер"
             )
 
-        raw = str(value).strip()
+        raw = str(
+            value
+        ).strip()
 
         if not raw:
+
             raise ValidationError(
                 "Некорректный номер"
             )
@@ -67,8 +70,11 @@ class PhoneFieldType(
         try:
 
             parsed = phonenumbers.parse(
+
                 raw,
+
                 self.DEFAULT_REGION,
+
             )
 
         except Exception:
@@ -78,28 +84,47 @@ class PhoneFieldType(
             )
 
         if not (
+
             phonenumbers.is_possible_number(
+
                 parsed
+
             )
+
         ):
+
             raise ValidationError(
+
                 "Некорректный номер"
+
             )
 
         if not (
+
             phonenumbers.is_valid_number(
+
                 parsed
+
             )
+
         ):
+
             raise ValidationError(
+
                 "Некорректный номер"
+
             )
 
         return phonenumbers.format_number(
+
             parsed,
+
             phonenumbers
+
             .PhoneNumberFormat
+
             .E164,
+
         )
 
     # =====================================================
@@ -107,31 +132,47 @@ class PhoneFieldType(
     # =====================================================
 
     def validate(
+
         self,
+
         field,
+
         value,
+
     ):
 
         value = super().validate(
+
             field,
+
             value,
+
         )
 
         if value in (
+
             None,
+
             "",
+
         ):
+
             return value
 
         if field.is_multiple:
 
             return [
+
                 self.to_phone(v)
+
                 for v in value
+
             ]
 
         return self.to_phone(
+
             value
+
         )
 
     # =====================================================
@@ -139,73 +180,183 @@ class PhoneFieldType(
     # =====================================================
 
     def normalize(
+
         self,
+
         field,
+
         value,
+
     ):
 
         if value in (
+
             None,
+
             "",
+
         ):
+
             return None
 
-        if field.is_multiple:
+        try:
 
-            return [
-                self.to_phone(v)
-                for v in value
-            ]
+            if field.is_multiple:
 
-        return self.to_phone(
-            value
-        )
+                return [
+
+                    self.to_phone(v)
+
+                    for v in value
+
+                ]
+
+            return self.to_phone(
+
+                value
+
+            )
+
+        except ValidationError:
+
+            return value
+
+    # =====================================================
+    # SERIALIZATION
+    # =====================================================
+
+    def serialize(
+
+        self,
+
+        field,
+
+        value,
+
+    ):
+
+        if value in (
+
+            None,
+
+            "",
+
+        ):
+
+            return None
+
+        try:
+
+            if field.is_multiple:
+
+                return [
+
+                    self.to_phone(v)
+
+                    for v in value
+
+                ]
+
+            return self.to_phone(
+
+                value
+
+            )
+
+        except ValidationError:
+
+            return str(
+
+                value
+
+            )
 
     # =====================================================
     # DESERIALIZE
     # =====================================================
 
     def deserialize(
+
         self,
+
         field,
+
         value,
+
     ):
 
-        if not value:
+        if value in (
+
+            None,
+
+            "",
+
+        ):
+
             return None
 
-        if field.is_multiple:
+        try:
 
-            return [
-                self.to_phone(v)
-                for v in value
-            ]
+            if field.is_multiple:
 
-        return self.to_phone(
-            value
-        )
+                return [
+
+                    self.to_phone(v)
+
+                    for v in value
+
+                ]
+
+            return self.to_phone(
+
+                value
+
+            )
+
+        except ValidationError:
+
+            #
+            # Не валим список компаний
+            #
+
+            return str(
+
+                value
+
+            )
 
     # =====================================================
     # FILTER
     # =====================================================
 
     def apply_filter(
+
         self,
+
         queryset,
+
         field,
+
         value,
+
     ):
 
         if value in (
+
             None,
+
             "",
+
         ):
+
             return queryset
 
         try:
 
             value = self.to_phone(
+
                 value
+
             )
 
         except ValidationError:
@@ -213,10 +364,15 @@ class PhoneFieldType(
             return queryset.none()
 
         return queryset.filter(
+
             **{
+
                 field.name:
+
                     value
+
             }
+
         )
 
     # =====================================================
@@ -224,20 +380,27 @@ class PhoneFieldType(
     # =====================================================
 
     def get_schema(
+
         self,
+
         field,
+
     ):
 
         schema = super().get_schema(
+
             field
+
         )
 
         schema.update({
 
             "autocomplete":
+
                 "tel",
 
             "defaultRegion":
+
                 self.DEFAULT_REGION,
 
         })

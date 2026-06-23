@@ -3,11 +3,11 @@
 # =========================================================
 
 from django.core.exceptions import (
-    ValidationError
+    ValidationError,
 )
 
 from backend.engine.entity.Base.BaseEntity import (
-    BaseEntity
+    BaseEntity,
 )
 
 from backend.project.companies.models import (
@@ -32,32 +32,54 @@ class CompanyEntity(BaseEntity):
 
     list_display = [
 
-        # static
         "id",
+
         "archived",
+
         "created_at",
 
-        # dynamic
         "name",
+
         "phone",
+
         "email",
+
     ]
 
     search_fields = [
+
         "name",
+
         "phone",
+
         "email",
+
     ]
 
     filter_fields = [
+
         "archived",
+
     ]
+
+    ordering = [
+
+        "-created_at",
+
+    ]
+
     exclude_fields = [
+
         "fieldset",
+
         "created_at",
+
         "updated_at",
+
         "choices",
-        "options"
+
+        "options",
+
     ]
 
     # =====================================================
@@ -80,6 +102,7 @@ class CompanyEntity(BaseEntity):
 
         "delete":
             "companies.delete",
+
     }
 
     # =====================================================
@@ -89,14 +112,21 @@ class CompanyEntity(BaseEntity):
     def get_select_related(self):
 
         return [
+
             "fieldset",
+
         ]
 
     def get_prefetch_related(self):
 
+        #
+        # DynamicValue не имеет FK field
+        #
+
         return [
+
             "dynamic_values",
-            "dynamic_values__field",
+
         ]
 
     # =====================================================
@@ -104,9 +134,13 @@ class CompanyEntity(BaseEntity):
     # =====================================================
 
     def get_dynamic_fields(
+
         self,
+
         request,
+
         obj=None,
+
     ):
 
         # =============================================
@@ -114,8 +148,11 @@ class CompanyEntity(BaseEntity):
         # =============================================
 
         if (
+
             obj
+
             and obj.fieldset_id
+
         ):
 
             return (
@@ -123,9 +160,36 @@ class CompanyEntity(BaseEntity):
                 CompanyField.objects
 
                 .filter(
+
                     fieldset=obj.fieldset,
+
                 )
 
+                .order_by(
+
+                    "id",
+
+                )
+
+            )
+
+        # =============================================
+        # NO REQUEST
+        # =============================================
+
+        if request is None:
+
+            return (
+
+                CompanyField.objects
+
+                .all()
+
+                .order_by(
+
+                    "id",
+
+                )
 
             )
 
@@ -133,17 +197,26 @@ class CompanyEntity(BaseEntity):
         # CREATE MODE
         # =============================================
 
-        fieldset = request.GET.get(
-            "fieldset"
+        fieldset = (
+
+            request.GET.get(
+
+                "fieldset",
+
+            )
+
         )
 
         # =============================================
-        # DEFAULT / EMPTY
+        # DEFAULT
         # =============================================
 
         if (
+
             not fieldset
+
             or fieldset == "default"
+
         ):
 
             return (
@@ -152,6 +225,11 @@ class CompanyEntity(BaseEntity):
 
                 .all()
 
+                .order_by(
+
+                    "id",
+
+                )
 
             )
 
@@ -162,12 +240,17 @@ class CompanyEntity(BaseEntity):
         try:
 
             fieldset_id = int(
+
                 fieldset
+
             )
 
         except (
+
             TypeError,
+
             ValueError,
+
         ):
 
             return []
@@ -181,10 +264,18 @@ class CompanyEntity(BaseEntity):
             CompanyField.objects
 
             .filter(
+
                 fieldset_id=fieldset_id,
+
                 fieldset__is_active=True,
+
             )
 
+            .order_by(
+
+                "id",
+
+            )
 
         )
 
@@ -193,24 +284,35 @@ class CompanyEntity(BaseEntity):
     # =====================================================
 
     def represent_option(
+
         self,
+
         obj,
+
     ):
 
         return {
 
-            "value": obj.pk,
+            "value":
 
-            "label": (
+                obj.pk,
 
-                obj.get_value(
-                    "name"
+            "label":
+
+                (
+
+                    obj.get_value(
+
+                        "name",
+
+                    )
+
+                    or
+
+                    f"Company #{obj.pk}"
+
                 )
 
-                or
-
-                f"Company #{obj.pk}"
-            ),
         }
 
     # =====================================================
@@ -218,74 +320,90 @@ class CompanyEntity(BaseEntity):
     # =====================================================
 
     def validate(
+
         self,
+
         request,
+
         payload,
+
         instance=None,
+
     ):
 
         errors = {}
 
-        name = payload.get(
-            "name"
+        name = (
+
+            payload.get(
+
+                "name"
+
+            )
+
         )
 
         if not name:
 
             errors["name"] = [
+
                 "Название обязательно"
+
             ]
 
         if errors:
 
             raise ValidationError(
+
                 errors
+
             )
 
         return payload
 
     # =====================================================
-    # BEFORE SAVE
+    # LIFECYCLE
     # =====================================================
 
     def before_save(
+
         self,
+
         ctx,
+
     ):
 
         return ctx
-
-    # =====================================================
-    # AFTER SAVE
-    # =====================================================
 
     def after_save(
+
         self,
+
         ctx,
+
     ):
 
         return ctx
 
-    # =====================================================
-    # BEFORE DELETE
-    # =====================================================
-
     def before_delete(
+
         self,
+
         request,
+
         instance,
+
     ):
 
         return None
 
-    # =====================================================
-    # AFTER DELETE
-    # =====================================================
-
     def after_delete(
+
         self,
+
         request,
         instance,
+
     ):
 
         return None
@@ -302,10 +420,10 @@ class CompanyEntity(BaseEntity):
     ):
 
         if schema["name"] in {
-
             "id",
             "created_at",
             "updated_at",
+
         }:
 
             schema["readonly"] = True
