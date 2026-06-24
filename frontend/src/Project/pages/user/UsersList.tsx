@@ -75,7 +75,7 @@ const UsersListPage = page(
             selection: true,
             rowClick: true,
             rowActions: true,
-            sorting: true
+            sorting: true,
           }}
 
           /*
@@ -137,6 +137,22 @@ const UsersListPage = page(
             },
 
           ]}
+          bulkActions={[
+
+  {
+    key: "delete",
+
+    label: "Удалить",
+
+    action: "entity.delete",
+
+    ctx: {
+      ids: "$selection.ids",
+    },
+
+  },
+
+]}
         />
 
       </Stack>

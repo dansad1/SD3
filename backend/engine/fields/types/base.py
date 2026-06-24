@@ -74,6 +74,12 @@ class BaseFieldType:
     ):
         return value
 
+    def should_save(
+        self,
+        field,
+        value,
+    ):
+        return True
     # =====================================================
     # SERIALIZATION
     # =====================================================

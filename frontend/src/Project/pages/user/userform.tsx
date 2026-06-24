@@ -71,7 +71,7 @@ const UserFormPage = page(
   }}
 
   formLayout={{
-    preset: "single-column",
+    preset: "two-columns",
     density: "comfortable",
 
     groups: "tabs",

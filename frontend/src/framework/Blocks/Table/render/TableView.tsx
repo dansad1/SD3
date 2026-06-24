@@ -89,7 +89,17 @@ export function TableView<
       ?.clear()
 
   }
+console.log({
+    selectedCount,
 
+    selected:
+        ctrl.selection?.selected,
+
+    bulkActions:
+        ctrl.bulkActions,
+
+    ctrl,
+})
   return (
     <>
 

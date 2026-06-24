@@ -37,23 +37,42 @@ export type ApiListResponse<TRow extends BaseRow> = {
 /* ================= ROW ACTION ================= */
 
 export type TableApiRowAction = {
+
   key: string
+
   label: string
 
-  variant?: "primary" | "secondary" | "ghost" | "danger"
+  variant?:
+    | "primary"
+    | "secondary"
+    | "ghost"
+    | "danger"
 
-  confirm?: boolean | { message: string }
+  confirm?:
+    | boolean
+    | {
+        message: string
+      }
 
-  /** навигация */
   to?: string
 
-  /** backend / UI action */
   action?: string
 
-  /** 🔥 ВОТ ЭТО ДОБАВИТЬ */
-  params?: Record<string, string | number | boolean>
+  params?:
+    Record<
+      string,
+      string
+      |
+      number
+      |
+      boolean
+    >
 
   ctx?: ActionContext
+
+
+  bulk?: boolean
+
 }
 
 /* ================= TABLE BLOCK ================= */

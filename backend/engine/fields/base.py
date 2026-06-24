@@ -157,6 +157,17 @@ class BaseField:
             value,
         )
 
+    def should_save(
+            self,
+            value,
+    ):
+        return (
+            self.field_type
+            .should_save(
+                self,
+                value,
+            )
+        )
     def serialize(self, value):
         return self.field_type.serialize(
             self,

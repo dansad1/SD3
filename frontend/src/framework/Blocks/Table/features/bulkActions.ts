@@ -1,148 +1,219 @@
 // table/features/bulkActions.ts
 
-import { executeExecutable } from "../executable/executeExecutable"
-import type { ExecutableAction } from "../executable/types"
-import type { BaseRow } from "../types/runtime"
-import type { TableFeature } from "./types"
+import {
+  executeExecutable,
+} from "../executable/executeExecutable"
+
+import type {
+  ExecutableAction,
+} from "../executable/types"
+
+import type {
+  BaseRow,
+} from "../types/runtime"
+
+import type {
+  TableFeature,
+} from "./types"
+
+
+function getRowId(
+  row: BaseRow,
+): string | number | undefined {
+
+  if (
+    typeof row.id === "string" ||
+    typeof row.id === "number"
+  ) {
+    return row.id
+  }
+
+  if (
+    typeof row.pk === "string" ||
+    typeof row.pk === "number"
+  ) {
+    return row.pk
+  }
+
+  if (
+    typeof row.uuid === "string" ||
+    typeof row.uuid === "number"
+  ) {
+    return row.uuid
+  }
+
+  return undefined
+}
 
 
 export function bulkActionsFeature<
   T extends BaseRow
 >(): TableFeature<T> {
+
   return {
+
     name: "bulkActions",
+
     phase: "afterList",
 
     apply(ctx) {
-      if (
-        !Array.isArray(
-          ctx.block.bulkActions
-        ) ||
-        !ctx.list
-      ) {
+
+      if (!ctx.list) {
         return ctx
       }
 
-      const actions =
-        ctx.block.bulkActions.filter(
-          (
-            action
-          ): action is ExecutableAction & {
-            key: string
-          } => {
-            if (
-              !action ||
-              typeof action !== "object"
-            ) {
-              return false
-            }
+      const actions = (
+        ctx.block.rowActions ?? []
+      ).filter(
+        action =>
+          (action as { bulk?: boolean }).bulk === true
+      )
 
-            const typedAction =
-              action as ExecutableAction & {
-                key?: string
-              }
-
-            if (!typedAction.key) {
-              return false
-            }
-
-            return (
-              ctx.list?.capabilities?.[
-                typedAction.key
-              ] !== false
-            )
-          }
-        )
+      if (!actions.length) {
+        return ctx
+      }
 
       return {
+
         ...ctx,
+
         ctrl: {
+
           ...ctx.ctrl,
 
-          bulkActions: actions,
+          bulkActions:
 
-          onBulkAction: async (
-            key: string,
-            rows: T[]
-          ) => {
-            const action = actions.find(
-              a => a.key === key
-            )
+            actions.map(action => ({
 
-            if (!action) {
-              console.warn(
-                "bulkActions: action not found",
-                key
-              )
-              return
-            }
+              key:
+                action.key,
 
-            const ids = rows
-              .map(row => {
-                if (
-                  typeof row.id === "string" ||
-                  typeof row.id === "number"
-                ) {
-                  return row.id
-                }
+              label:
+                action.label,
 
-                if (
-                  typeof row.pk === "string" ||
-                  typeof row.pk === "number"
-                ) {
-                  return row.pk
-                }
+              variant:
+                action.variant,
 
-                if (
-                  typeof row.uuid ===
-                    "string" ||
-                  typeof row.uuid ===
-                    "number"
-                ) {
-                  return row.uuid
-                }
+            })),
 
-                return undefined
-              })
-              .filter(
-                (
-                  value
-                ): value is string | number =>
-                  value !== undefined
+
+
+          onBulkAction:
+
+            async (
+
+              key: string,
+
+              rows: T[],
+
+            ) => {
+
+              const action = actions.find(
+
+                a =>
+
+                  a.key === key
+
               )
 
-            const selection = {
-              rows,
-              ids,
-              count: rows.length,
-            }
+              if (!action) {
+                return
+              }
 
-            await executeExecutable({
-              entity: ctx.entity,
 
-              row: {
-                id: ids[0],
-                selection,
-              } as unknown as T,
+              const ids = rows
 
-              executable: {
+                .map(getRowId)
+
+                .filter(
+
+                  (
+
+                    value
+
+                  ): value is
+
+                    string
+
+                    |
+
+                    number =>
+
+                      value !== undefined
+
+                )
+
+
+              const selection = {
+
+                rows,
+
+                ids,
+
+                count:
+
+                  rows.length,
+
+              }
+
+
+              const executable: ExecutableAction = {
+
                 ...action,
 
+
                 ctx: {
+
                   selection,
-                  ...(action.ctx || {}),
+
+
+                  ...(action.ctx ?? {}),
+
                 },
-              },
 
-              runAction:
-                ctx.actions.runAction,
+              }
 
-              reload:
-                ctx.list?.reload,
-            })
-          },
+
+              await executeExecutable({
+
+                entity:
+
+                  ctx.entity,
+
+
+                row: {
+
+                  id:
+
+                    ids[0],
+
+                },
+
+
+                executable,
+
+
+                runAction:
+
+                  ctx.actions
+                    .runAction,
+
+
+                reload:
+
+                  ctx.list
+                    ?.reload,
+
+              })
+
+            },
+
         },
+
       }
+
     },
+
   }
+
 }
