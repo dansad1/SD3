@@ -9,11 +9,16 @@ import type { ToolbarAction } from "@/framework/components/ToolBars/toolbar"
 ========================================================= */
 
 const DEFAULT_ACTION_MAP: Record<
-  string,
-  string
+    string,
+    string
 > = {
-  reload: "ui.reloadTable",
-  fields: "ui.openFields",
+
+    reload: "ui.reloadTable",
+
+    filters: "ui.openFilters",
+
+    fields: "ui.openFields",
+
 }
 
 /* =========================================================
@@ -21,11 +26,16 @@ const DEFAULT_ACTION_MAP: Record<
 ========================================================= */
 
 const DEFAULT_LABEL_MAP: Record<
-  string,
-  string
+    string,
+    string
 > = {
-  reload: "Обновить",
-  fields: "Поля",
+
+    reload: "Обновить",
+
+    filters: "Фильтры",
+
+    fields: "Поля",
+
 }
 
 /* =========================================================
@@ -33,92 +43,117 @@ const DEFAULT_LABEL_MAP: Record<
 ========================================================= */
 
 export function toolbarFeature<
-  T extends BaseRow
+    T extends BaseRow
 >(): TableFeature<T> {
 
-  return {
-    name: "toolbar",
+    return {
 
-    phase: "afterList",
+        name: "toolbar",
 
-    apply(ctx) {
+        phase: "afterList",
 
-      const actions =
-        ctx.block.toolbar?.actions
+        apply(ctx) {
 
-      if (
-        !actions ||
-        !ctx.list
-      ) {
-        return ctx
-      }
+            const actions =
+                ctx.block.toolbar?.actions
 
-      const mapped: ToolbarAction[] =
-        actions.map((a) => {
-
-          /* =========================
-             SHORTHAND
-          ========================= */
-
-          if (typeof a === "string") {
-
-            return {
-              label:
-                DEFAULT_LABEL_MAP[a] ?? a,
-
-              action:
-                DEFAULT_ACTION_MAP[a] ?? a,
-
-              ctx: {
-                entity: ctx.entity,
-                list: ctx.list,
-                modals: ctx.modals,
-              },
+            if (
+                !actions ||
+                !ctx.list
+            ) {
+                return ctx
             }
-          }
 
-          /* =========================
-             OBJECT DSL
-          ========================= */
+            const runtimeCtx = {
 
-          return {
-            label:
-              a.label ??
-              DEFAULT_LABEL_MAP[
-                a.action || ""
-              ] ??
-              "",
+                entity: ctx.entity,
 
-            to: a.to,
+                list: ctx.list,
 
-            action:
-              a.action,
+                modals: ctx.modals,
 
-            ctx: {
-              entity: ctx.entity,
-              list: ctx.list,
-              modals: ctx.modals,
+            }
 
-              ...(a.ctx || {}),
-            },
+            const mapped: ToolbarAction[] =
+                actions.map(a => {
 
-            order:
-              a.order,
+                    /* =========================
+                       SHORTHAND
+                    ========================= */
 
-            disabled:
-              a.disabled,
-          }
-        })
+                    if (
+                        typeof a === "string"
+                    ) {
 
-      return {
-        ...ctx,
+                        return {
 
-        toolbar: {
-          ...ctx.toolbar,
+                            label:
+                                DEFAULT_LABEL_MAP[a]
+                                ?? a,
 
-          actions: mapped,
+                            action:
+                                DEFAULT_ACTION_MAP[a]
+                                ?? a,
+
+                            ctx: runtimeCtx,
+
+                        }
+
+                    }
+
+                    /* =========================
+                       OBJECT DSL
+                    ========================= */
+
+                    return {
+
+                        label:
+
+                            a.label
+
+                            ??
+
+                            DEFAULT_LABEL_MAP[
+                                a.action || ""
+                            ]
+
+                            ??
+
+                            "",
+
+                        to:
+                            a.to,
+
+                        action:
+                            a.action,
+
+                        ctx: {
+
+                            ...runtimeCtx,
+
+                            ...(a.ctx || {}),
+
+                        },
+
+                        order:
+                            a.order,
+
+                        disabled:a.disabled,
+
+                    }
+                })
+            return {
+                ...ctx,
+                toolbar: {
+                    ...ctx.toolbar,
+                    actions: mapped,
+
+                },
+
+            }
+
         },
-      }
-    },
-  }
+
+    }
+
 }

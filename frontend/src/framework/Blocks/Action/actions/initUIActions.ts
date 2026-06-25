@@ -3,10 +3,10 @@ import { actionRegistry } from "../registry"
 
 
 export function initUIActions() {
+
   actionRegistry.register({
     id: "ui.openFields",
     run: (ctx) => {
-      console.log("🖥 ui.openFields", ctx)
 
       ctx.modals?.visibleFields?.open?.()
 
@@ -14,29 +14,36 @@ export function initUIActions() {
     },
   })
 
- actionRegistry.register({
-  id: "ui.reloadTable",
-  run: async (ctx) => {
-    console.log("🔄 ui.reloadTable ctx", ctx)
-    console.log("🔄 ui.reloadTable list", ctx.list)
-    console.log("🔄 ui.reloadTable reload", ctx.list?.reload)
 
-    if (!ctx.list?.reload) {
-      console.warn("❌ ui.reloadTable: no reload handler")
-      return false
-    }
+  actionRegistry.register({
+    id: "ui.openFilters",
+    run: (ctx) => {
 
-    try {
-      await ctx.list.reload()
+      console.log("🧹 ui.openFilters", ctx)
 
-      console.log("✅ ui.reloadTable reload complete")
+      ctx.modals?.filters?.open?.()
 
       return true
-    } catch (e) {
-      console.error("❌ ui.reloadTable reload error", e)
-      return false
-    }
-  },
-})
+    },
+  })
+
+
+  actionRegistry.register({
+    id: "ui.reloadTable",
+    run: async (ctx) => {
+
+      if (!ctx.list?.reload) {
+        console.warn(
+          "❌ ui.reloadTable: no reload handler"
+        )
+
+        return false
+      }
+
+      await ctx.list.reload()
+
+      return true
+    },
+  })
 
 }

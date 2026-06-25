@@ -158,11 +158,22 @@ export type ListContext = {
    MODALS CONTEXT
 ========================================================= */
 
-export type ModalsContext = {
-  visibleFields?: {
+export type ModalController = {
+
+    isOpen: boolean
+
     open: () => void
+
     close: () => void
-  }
+
+}
+
+export type ModalsContext = {
+
+    visibleFields?: ModalController
+
+    filters?: ModalController
+
 }
 
 /* =========================================================

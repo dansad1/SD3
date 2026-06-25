@@ -87,6 +87,8 @@ const UsersListPage = page(
             actions: [
               "reload",
               "fields",
+              "filters",
+
             ],
           }}
 

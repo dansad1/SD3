@@ -1,177 +1,266 @@
-import { useEffect, useState, useCallback } from "react"
-import type { FieldSchema, Value } from "../../dynamic/types"
-import { api } from "@/framework/api/client"
-import { validateFieldSchema } from "../../dynamic/validateSchema"
+import { FieldRenderer } from "@/framework/Blocks/Form/render/FieldRenderer"
+import Button from "../../ui/Button"
+import Modal from "../../ui/Modal"
 
-/* ---------- types ---------- */
 
-export interface SavedFilter {
-  id: number
-  name: string
-  query: Record<string, string | string[]>
+
+import { useFilterRuntime }
+  from "./useFilterRuntime"
+
+
+interface Props {
+
+  isOpen: boolean
+
+  onClose: () => void
+
+  onApply?: (
+    query: Record<string, string>
+  ) => void
+
+  entity: string
+
+  fieldset?: string
+    onSaved?: () => void
+
 }
 
-interface FilterMetaResponse {
-  fields: FieldSchema[]
-  saved_filters: SavedFilter[]
-}
 
-/* ---------- hook ---------- */
+export default function FilterModal({
 
-export function useFilterRuntime(
-  entity: string,
-  fieldset: string,
-  initialQuery: Record<string, string | string[]>
-) {
-  const [loading, setLoading] = useState(true)
-  const [fields, setFields] = useState<FieldSchema[]>([])
-  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([])
-  const [values, setValues] = useState<Record<string, Value>>({})
+  isOpen,
 
-  /* ---------- helpers ---------- */
+  onClose,
 
-  const buildEmptyValues = useCallback(
-    (fields: FieldSchema[]) => {
-      const v: Record<string, Value> = {}
+  onApply,
 
-      for (const f of fields) {
-        if (f.multiple) {
-          v[f.name] = []
-        } else if (f.type === "boolean") {
-          v[f.name] = false
-        } else {
-          v[f.name] = ""
-        }
-      }
+  entity,
 
-      return v
-    },
-    []
+  fieldset = "default",
+
+}: Props) {
+
+console.log(
+    "FilterModal",
+    isOpen,
   )
+  const {
 
-  const applyQueryToValues = useCallback(
-    (
-      fields: FieldSchema[],
-      query: Record<string, string | string[]>
-    ) => {
-      const v = buildEmptyValues(fields)
-
-      for (const f of fields) {
-        const key = `field_${f.id}`
-        const raw = query[key]
-
-        if (raw === undefined) {
-          continue
-        }
-
-        if (f.multiple) {
-          v[f.name] = Array.isArray(raw)
-            ? raw
-            : String(raw).split(",")
-        } else if (f.type === "boolean") {
-          v[f.name] = raw === "1"
-        } else {
-          v[f.name] = Array.isArray(raw)
-            ? raw[0]
-            : raw
-        }
-      }
-
-      return v
-    },
-    [buildEmptyValues]
-  )
-
-  /* ---------- load meta ---------- */
-
-  useEffect(() => {
-    let canceled = false
-
-    const load = async () => {
-      setLoading(true)
-
-      const data = await api.get<FilterMetaResponse>(
-        `/${entity}/filter/meta/?fieldset=${fieldset}`
-      )
-
-      if (canceled) {
-        return
-      }
-
-      data.fields.forEach(validateFieldSchema)
-
-      setFields(data.fields)
-      setSavedFilters(data.saved_filters ?? [])
-
-      setValues(
-        applyQueryToValues(
-          data.fields,
-          initialQuery
-        )
-      )
-
-      setLoading(false)
-    }
-
-    void load()
-
-    return () => {
-      canceled = true
-    }
-  }, [
-    entity,
-    fieldset,
-    initialQuery,
-    applyQueryToValues,
-  ])
-
-  /* ---------- public actions ---------- */
-
-  const setFieldValue = useCallback(
-    (name: string, value: Value) => {
-      setValues(prev => ({
-        ...prev,
-        [name]: value,
-      }))
-    },
-    []
-  )
-
-  const buildQuery = useCallback(() => {
-    const q: Record<string, string> = {}
-
-    for (const f of fields) {
-      const val = values[f.name]
-      const key = `field_${f.id}`
-
-      if (Array.isArray(val) && val.length) {
-        q[key] = val.join(",")
-      } else if (
-        typeof val === "string" &&
-        val.trim()
-      ) {
-        q[key] = val
-      } else if (typeof val === "boolean") {
-        q[key] = val ? "1" : "0"
-      }
-    }
-
-    return q
-  }, [fields, values])
-
-  /* ---------- export ---------- */
-
-  return {
     loading,
+
     fields,
+
     values,
-    savedFilters,
+
+    setValues,
 
     setFieldValue,
-    setValues,
-    setSavedFilters,
 
     buildEmptyValues,
+
     buildQuery,
+
+  } = useFilterRuntime(
+
+    entity,
+
+    fieldset,
+
+    {},
+
+  )
+
+
+  if (!isOpen) {
+    return null
   }
+
+
+  return (
+
+    <Modal
+
+      title="Фильтр"
+
+      isOpen={isOpen}
+
+      onClose={onClose}
+
+      width={900}
+
+
+      footer={
+
+        <>
+
+          <Button
+
+            variant="secondary"
+
+            onClick={() => {
+
+              setValues(
+
+                buildEmptyValues(
+
+                  fields,
+
+                )
+
+              )
+
+            }}
+
+          >
+
+            Сбросить
+
+          </Button>
+
+
+          <Button
+
+            onClick={() => {
+
+              onApply?.(
+
+                buildQuery(),
+
+              )
+
+              onClose()
+
+            }}
+
+          >
+
+            Применить
+
+          </Button>
+
+        </>
+
+      }
+
+    >
+
+      {
+
+        loading
+
+        &&
+
+        <div>
+
+          Загрузка...
+
+        </div>
+
+      }
+
+
+      {
+
+        !loading
+
+        &&
+
+        <div
+
+          style={{
+
+            display:
+
+              "grid",
+
+            gridTemplateColumns:
+
+              "220px 1fr",
+
+            gap:
+
+              12,
+
+          }}
+
+        >
+
+          {
+
+            fields.map(
+
+              field => (
+
+                <FieldRenderer
+
+                  key={
+
+                    field.id
+
+                  }
+
+                  field={
+
+                    field
+
+                  }
+
+                  value={
+
+                    values[
+                      field.name
+                    ]
+
+                  }
+
+                  errors={[]}
+
+                  onChange={
+
+                    value => {
+
+                      setValues(
+
+                        prev => ({
+
+                          ...prev,
+
+                          [
+
+                            field.name
+
+                          ]:
+
+                          value,
+
+                        })
+
+                      )
+
+                    }
+
+                  }
+
+                  setFieldValue={
+
+                    setFieldValue
+
+                  }
+
+                />
+
+              )
+
+            )
+
+          }
+
+        </div>
+
+      }
+
+    </Modal>
+
+  )
+
 }

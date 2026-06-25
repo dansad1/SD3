@@ -34,6 +34,10 @@ export function useTableController<T extends BaseRow>(
     visibleFieldsOpen,
     setVisibleFieldsOpen,
   ] = useState(false)
+  const [
+  filtersOpen,
+  setFiltersOpen,
+] = useState(false)
 
   const sort = {
     key: query.sort?.startsWith("-")
@@ -127,23 +131,44 @@ export function useTableController<T extends BaseRow>(
       isRunning,
     },
 
-    modals: {
-      visibleFields: {
+   modals: {
 
-        isOpen:
-          visibleFieldsOpen,
+  visibleFields: {
 
-        open: () =>
-          setVisibleFieldsOpen(
-            true
-          ),
+    isOpen:
+      visibleFieldsOpen,
 
-        close: () =>
-          setVisibleFieldsOpen(
-            false
-          ),
-      },
-    },
+    open: () =>
+      setVisibleFieldsOpen(
+        true
+      ),
+
+    close: () =>
+      setVisibleFieldsOpen(
+        false
+      ),
+
+  },
+
+
+  filters: {
+
+    isOpen:
+      filtersOpen,
+
+    open: () =>
+      setFiltersOpen(
+        true
+      ),
+
+    close: () =>
+      setFiltersOpen(
+        false
+      ),
+
+  },
+
+},
   }
 
   const features =

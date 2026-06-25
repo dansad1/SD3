@@ -1,4 +1,4 @@
-import type { ActionContext } from "@/framework/Blocks/Action/types"
+import type { ActionContext, ModalController } from "@/framework/Blocks/Action/types"
 import type {
   BaseRow,
   TableCapabilities,
@@ -80,65 +80,91 @@ export interface TableFeatureContext<
 
   fieldset: string
 
-  // 🔥 SERVER CAPABILITIES
   capabilities?: BlockCapabilities
 
   query: {
+
     page: number
+
     search: string
+
     sort?: string
 
-    setPage: (p: number) => void
+    setPage: (
+      p: number
+    ) => void
 
-    setSearch: (q: string) => void
+    setSearch: (
+      q: string
+    ) => void
 
-    setSort: (s: string) => void
+    setSort: (
+      s: string
+    ) => void
+
   }
 
   listParams: {
+
     page: number
+
     search?: string
+
     sort?: string
+
   }
 
   list?: TableListData<T>
 
   pageApi: PageApi
 
+
   actions: {
+
     runAction: (
+
       target: string,
-      ctx?: ActionContext
+
+      ctx?: ActionContext,
+
     ) => Promise<unknown>
+
 
     isRunning: (
       id: string
     ) => boolean
+
   }
+
 
   ctrl: Partial<TCtrl>
 
+
   toolbar?: {
+
     actions?: ToolbarAction[]
 
     search?: {
+
       value: string
 
       onChange: (
         v: string
       ) => void
+
     }
+
   }
+
 
   modals?: {
-    visibleFields?: {
-      isOpen: boolean
 
-      open: () => void
+    visibleFields?: ModalController
 
-      close: () => void
-    }
+    filters?: ModalController
+
   }
+
 }
 /* ========================================
    FEATURE INTERFACE

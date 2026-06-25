@@ -5,10 +5,10 @@ import Table from "@/framework/Blocks/Table/render/Table"
 import VisibleFieldsModal
   from "@/framework/components/modals/VisibleFieldsModal/VisibleFieldsModal"
 
+
+
 import { BlockToolbar }
   from "@/framework/components/ToolBars/ListToolbar"
-
-
 
 import type {
   TableFeatureContext,
@@ -20,7 +20,10 @@ import type {
 
 import { useActionExecutor }
   from "../../Action/executor/useActionExecutor"
-import { Pagination } from "@/framework/components/ui/pagination"
+
+import { Pagination }
+  from "@/framework/components/ui/pagination"
+import FilterModal from "@/framework/components/modals/FilterModal/FilterModal"
 
 
 type Props<T extends BaseRow> = {
@@ -59,10 +62,8 @@ export function TableView<
   const error =
     list?.error ?? null
 
-
   const pagination =
     ctrl.pagination
-console.log("ctrl.pagination", ctrl.pagination)
 
   const selected =
     ctrl.selection?.selected
@@ -148,7 +149,7 @@ console.log("ctrl.pagination", ctrl.pagination)
 
         &&
 
-        ctrl.bulkActions?.length
+        (ctrl.bulkActions?.length ?? 0) > 0
 
         && (
 
@@ -191,7 +192,7 @@ console.log("ctrl.pagination", ctrl.pagination)
 
               {
 
-                ctrl.bulkActions.map(
+                ctrl.bulkActions!.map(
 
                   action => (
 
@@ -257,64 +258,39 @@ console.log("ctrl.pagination", ctrl.pagination)
       <Table
 
         ctrl={{
-
           ...ctrl,
-
           fields,
-
           rows,
-
           isLoading,
-
           error,
-
         }}
-
       />
 
-
       {
-
-        pagination
-
-        &&
-
+        pagination &&
         <Pagination
-
           page={
-
             pagination.page
-
           }
 
           pages={
-
             pagination.pages
-
           }
 
           total={
-
             pagination.total
-
           }
 
           pageSize={
-
             pagination.pageSize
-
           }
-
           onChange={
-
             pagination.setPage
-
           }
 
         />
 
       }
-
 
       {
 
@@ -342,21 +318,15 @@ console.log("ctrl.pagination", ctrl.pagination)
             }
 
             entity={
-
               ctx.entity
-
             }
 
             fieldset={
-
               ctx.fieldset
-
             }
 
             onSaved={
-
               handleSaved
-
             }
 
           />
@@ -365,8 +335,47 @@ console.log("ctrl.pagination", ctrl.pagination)
 
       }
 
+
+      {
+
+        ctx.modals
+          ?.filters
+
+        && (
+
+          <FilterModal
+
+            isOpen={
+
+              ctx.modals
+                .filters
+                .isOpen
+
+            }
+
+            onClose={
+
+              ctx.modals
+                .filters
+                .close
+
+            }
+
+            entity={
+              ctx.entity
+            }
+
+            fieldset={
+              ctx.fieldset
+            }
+
+            onSaved={
+              handleSaved
+
+            }
+          />
+        )
+      }
     </>
-
   )
-
 }
