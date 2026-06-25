@@ -390,6 +390,7 @@ export type TableDSL =
   rowClick?: boolean | `$${string}`
   rowActions?: boolean | `$${string}`
   sorting?: boolean | `$${string}`
+  pagination?: boolean | `$${string}`
   visibleFields?: boolean | `$${string}`
 }
   toolbar?: {

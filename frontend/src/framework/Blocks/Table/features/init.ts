@@ -9,6 +9,7 @@ import { visibleFieldsFeature } from "./visibleFieldsFeature"
 import { rowActionsFeature } from "./rowActions"
 import { rowClickFeature } from "./rowClick"
 import { bulkActionsFeature } from "./bulkActions"
+import { paginationFeature } from "./paginationFeature"
 
 export function initTableFeatures() {
   registerTableFeature(searchFeature())
@@ -18,4 +19,5 @@ export function initTableFeatures() {
   registerTableFeature(rowClickFeature())
   registerTableFeature(rowActionsFeature())
   registerTableFeature(bulkActionsFeature())
+  registerTableFeature(paginationFeature())
 }

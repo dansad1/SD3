@@ -60,9 +60,14 @@ class BaseList:
             "fields": ctx.fields,
             "rows": ctx.rows,
             "meta": {
-                "page": ctx.page.number,
-                "pages": ctx.paginator.num_pages,
-                "total": ctx.paginator.count,
+                "pagination": {
+                    "page": ctx.page.number,
+                    "page_size": ctx.paginator.per_page,
+                    "pages": ctx.paginator.num_pages,
+                    "total": ctx.paginator.count,
+                    "has_next": ctx.page.has_next(),
+                    "has_previous": ctx.page.has_previous(),
+                },
             },
             "capabilities": ctx.capabilities,
         }

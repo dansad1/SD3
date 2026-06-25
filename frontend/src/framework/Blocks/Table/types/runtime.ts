@@ -10,6 +10,21 @@ export type BaseRow =
 
 /* ================= CAPABILITIES ================= */
 
+export interface Pagination {
+
+    page: number
+
+    pages: number
+
+    total: number
+
+    pageSize: number
+
+    setPage: (
+        page: number,
+    ) => void
+
+}
 export type TableCapabilities = {
   search?: boolean
   selection?: boolean
@@ -72,6 +87,7 @@ export interface TableCtrlBase<T extends BaseRow> {
 
   fields: ListFieldMeta[]
   rows: T[]
+    pagination?: Pagination
 
   isLoading?: boolean
   error?: string | null

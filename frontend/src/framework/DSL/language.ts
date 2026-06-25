@@ -537,6 +537,7 @@ table: {
     rowClick: "boolean" as Primitive,
     rowActions: "boolean" as Primitive,
     sorting: "boolean" as Primitive,
+    pagination: "boolean" as Primitive,
 
     visibleFields: "boolean" as Primitive,
   },

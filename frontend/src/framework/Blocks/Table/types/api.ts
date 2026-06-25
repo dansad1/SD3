@@ -25,7 +25,17 @@ export type ApiListResponse<TRow extends BaseRow> = {
   rows?: TRow[]
 
   fields: ListFieldMeta[]
-  page: PageInfo
+ pagination: {
+
+        page: number
+
+        pages: number
+
+        total: number
+
+        page_size: number
+
+    }
 
   capabilities?: TableCapabilities
 }
@@ -98,6 +108,8 @@ export type TableApiBlock = BaseBlock & {
     rowActions?: boolean
     visibleFields?: boolean
     sorting?: boolean
+
+    pagination?: boolean
   }
 
   toolbar?: {
