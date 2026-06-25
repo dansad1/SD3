@@ -2,7 +2,7 @@ from django.core.paginator import EmptyPage
 from django.core.paginator import Paginator
 
 
-DEFAULT_PAGE_SIZE = 50
+DEFAULT_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 300
 
 

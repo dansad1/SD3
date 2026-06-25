@@ -50,6 +50,7 @@ export type TableListData<T extends BaseRow> = {
     page: number
     pages: number
     total: number
+      page_size: number
   } | null
 
   capabilities: TableCapabilities

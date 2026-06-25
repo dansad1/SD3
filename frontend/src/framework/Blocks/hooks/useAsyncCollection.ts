@@ -1,27 +1,19 @@
-// src/framework/Blocks/hooks/useAsyncCollection.ts
-
 import {
   useCallback,
   useEffect,
   useState,
 } from "react"
 
-import type {
-  BaseRow,
-} from "../Table/types/runtime"
+import { parseApiError } from "@/framework/utils/parseApiError"
 
-import type {
-  ApiListResponse,
-} from "../Table/types/api"
+import type { ApiListResponse } from "../Table/types/api"
+import type { BaseRow } from "../Table/types/runtime"
 
-import {
-  parseApiError,
-} from "@/framework/utils/parseApiError"
 
 export function useAsyncCollection<
   T extends BaseRow
 >(
-  loader: () => Promise<ApiListResponse<T>>
+  loader: () => Promise<ApiListResponse<T>>,
 ) {
 
   const [items, setItems] =
@@ -34,27 +26,26 @@ export function useAsyncCollection<
 
   const [page, setPage] =
     useState<
-      ApiListResponse<T>["page"] | null
+      ApiListResponse<T>["pagination"] | null
     >(null)
 
   const [
     capabilities,
     setCapabilities,
-  ] = useState<
-    ApiListResponse<T>["capabilities"]
-  >({})
+  ] = useState(
+    {}
+  )
 
   const [loading, setLoading] =
     useState(false)
 
   const [error, setError] =
-    useState<string | null>(null)
-
-  // ============================================
-  // LOAD
-  // ============================================
+    useState<string | null>(
+      null
+    )
 
   const load = useCallback(
+
     async () => {
 
       setLoading(true)
@@ -72,84 +63,114 @@ export function useAsyncCollection<
         )
 
         console.log(
-          "LIST FIELDS:",
-          res.fields
+          "PAGINATION:",
+          res.pagination
         )
 
         setItems(
-          res.rows ??
-          res.items ??
+
+          res.items
+
+          ??
+
+          res.rows
+
+          ??
+
           []
+
         )
 
         setFields(
-          res.fields ?? []
+
+          res.fields
+
+          ??
+
+          []
+
         )
 
         setPage(
-          res.page ?? null
+
+          res.pagination
+
+          ??
+
+          null
+
         )
 
         setCapabilities(
-          res.capabilities ?? {}
+
+          res.capabilities
+
+          ??
+
+          {}
+
         )
 
-      } catch (e) {
+      }
 
-        console.error(
-          "TABLE LOAD ERROR",
-          e
-        )
+      catch (e) {
 
         const err =
-          parseApiError(e)
+          parseApiError(
+            e
+          )
 
         setError(
           err.message
         )
 
-        // optional:
-        // clear stale data
-
         setItems([])
+
         setFields([])
 
-      } finally {
+        setPage(null)
+
+      }
+
+      finally {
 
         setLoading(false)
+
       }
+
     },
-    [loader]
+
+    [
+
+      loader,
+
+    ],
+
   )
 
-  // ============================================
-  // AUTO LOAD
-  // ============================================
 
-  useEffect(() => {
+  useEffect(
 
-    void load()
+    () => {
 
-  }, [load])
+      void load()
 
-  // ============================================
-  // RESULT
-  // ============================================
+    },
+
+    [
+      load,
+    ],
+  )
+
 
   return {
-
     items,
-
     fields,
-
     page,
-
     capabilities,
-
     loading,
-
     error,
-
-    reload: load,
+    reload:
+      load,
   }
 }

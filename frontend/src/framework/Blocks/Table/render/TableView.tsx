@@ -1,10 +1,14 @@
 // src/framework/Blocks/Table/render/TableView.tsx
 
 import Table from "@/framework/Blocks/Table/render/Table"
+
 import VisibleFieldsModal
   from "@/framework/components/modals/VisibleFieldsModal/VisibleFieldsModal"
+
 import { BlockToolbar }
   from "@/framework/components/ToolBars/ListToolbar"
+
+
 
 import type {
   TableFeatureContext,
@@ -16,10 +20,13 @@ import type {
 
 import { useActionExecutor }
   from "../../Action/executor/useActionExecutor"
+import { Pagination } from "@/framework/components/ui/pagination"
+
 
 type Props<T extends BaseRow> = {
   ctx: TableFeatureContext<T>
 }
+
 
 export function TableView<
   T extends BaseRow
@@ -27,8 +34,9 @@ export function TableView<
   ctx,
 }: Props<T>) {
 
-  const { runAction } =
-    useActionExecutor()
+  const {
+    runAction,
+  } = useActionExecutor()
 
   const toolbar =
     ctx.toolbar ?? {}
@@ -51,6 +59,11 @@ export function TableView<
   const error =
     list?.error ?? null
 
+
+  const pagination =
+    ctrl.pagination
+console.log("ctrl.pagination", ctrl.pagination)
+
   const selected =
     ctrl.selection?.selected
     ?? new Set()
@@ -65,31 +78,36 @@ export function TableView<
   const selectedCount =
     selectedRows.length
 
+
   const handleSaved = () => {
 
     void list?.reload?.()
 
   }
 
- async function handleBulkAction(
+
+  async function handleBulkAction(
     key: string,
-) {
+  ) {
 
     await ctrl
-        .onBulkAction?.(
+      .onBulkAction?.(
 
-            key,
+        key,
 
-            selectedRows as T[],
+        selectedRows as T[],
 
-        )
+      )
 
     ctrl
-        .selection
-        ?.clear()
+      .selection
+      ?.clear()
 
-}
+  }
+
+
   return (
+
     <>
 
       <BlockToolbar
@@ -122,116 +140,120 @@ export function TableView<
         }}
 
       />
-{
 
-    selectedCount > 0
 
-    &&
+      {
 
-    ctrl.bulkActions?.length
+        selectedCount > 0
 
-    && (
+        &&
 
-        <div
+        ctrl.bulkActions?.length
+
+        && (
+
+          <div
 
             className="table-selection-panel"
 
-        >
+          >
 
             <div>
 
-                Выбрано{" "}
+              Выбрано{" "}
 
-                <b>
+              <b>
 
-                    {
+                {
 
-                        selectedCount
+                  selectedCount
 
-                    }
+                }
 
-                </b>
+              </b>
 
             </div>
 
 
             <div
 
-                style={{
+              style={{
 
-                    display:
-                        "flex",
+                display:
+                  "flex",
 
-                    gap:
-                        8,
+                gap:
+                  8,
 
-                }}
+              }}
 
             >
 
-                {
+              {
 
-                    ctrl.bulkActions.map(
+                ctrl.bulkActions.map(
 
-                        action => (
+                  action => (
 
-                            <button
+                    <button
 
-                                key={
+                      key={
 
-                                    action.key
+                        action.key
 
-                                }
+                      }
 
-                                type="button"
+                      type="button"
 
-                                className={
+                      className={
 
-                                    `ui-btn ui-btn-${
+                        `ui-btn ui-btn-${
 
-                                        action.variant
+                          action.variant
 
-                                        ??
+                          ??
 
-                                        "secondary"
+                          "secondary"
 
-                                    }`
+                        }`
 
-                                }
+                      }
 
-                                onClick={() => {
+                      onClick={() => {
 
-                                    void handleBulkAction(
+                        void handleBulkAction(
 
-                                        action.key,
-
-                                    )
-
-                                }}
-
-                            >
-
-                                {
-
-                                    action.label
-
-                                }
-
-                            </button>
+                          action.key,
 
                         )
 
-                    )
+                      }}
 
-                }
+                    >
+
+                      {
+
+                        action.label
+
+                      }
+
+                    </button>
+
+                  )
+
+                )
+
+              }
 
             </div>
 
-        </div>
+          </div>
 
-    )
+        )
 
-}
+      }
+
+
       <Table
 
         ctrl={{
@@ -249,6 +271,50 @@ export function TableView<
         }}
 
       />
+
+
+      {
+
+        pagination
+
+        &&
+
+        <Pagination
+
+          page={
+
+            pagination.page
+
+          }
+
+          pages={
+
+            pagination.pages
+
+          }
+
+          total={
+
+            pagination.total
+
+          }
+
+          pageSize={
+
+            pagination.pageSize
+
+          }
+
+          onChange={
+
+            pagination.setPage
+
+          }
+
+        />
+
+      }
+
 
       {
 
