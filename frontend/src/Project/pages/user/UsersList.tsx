@@ -101,56 +101,50 @@ const UsersListPage = page(
           /*
             🔥 semantic row actions
           */
-          rowActions={[
+         rowActions={[
 
-            {
-              key: "edit",
+    {
+        key: "edit",
 
-              label: "Редактировать",
+        label: "Редактировать",
 
-              variant: "secondary",
+        variant: "secondary",
 
-              to: "user:form",
+        to: "user:form",
 
-              ctx: {
-                id: "$row.id",
-              },
-            },
+        ctx: {
+            id: "$row.id",
+        },
 
-            {
-              key: "delete",
-
-              label: "Удалить",
-
-              variant: "danger",
-
-              action: "entity.delete",
-
-              ctx: {
-                entity: "user",
-                id: "$row.id",
-              },
-
-              confirm: {
-                message: "Удалить пользователя?",
-              },
-            },
-
-          ]}
-          bulkActions={[
-
-  {
-    key: "delete",
-
-    label: "Удалить",
-
-    action: "entity.delete",
-
-    ctx: {
-      ids: "$selection.ids",
     },
 
-  },
+    {
+
+        key: "delete",
+
+        label: "Удалить",
+
+        variant: "danger",
+
+        action: "entity.delete",
+
+        bulk: true,
+
+        confirm: {
+
+            message:
+                "Удалить выбранных пользователей?",
+
+        },
+
+        ctx: {
+
+            entity:
+                "user",
+
+        },
+
+    },
 
 ]}
         />

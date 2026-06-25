@@ -3,11 +3,11 @@
 import random
 from types import SimpleNamespace
 
-from faker import Faker
 
 from django.contrib.auth.hashers import make_password
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from faker import Faker
 from faker.decode import unidecode
 
 from backend.bootstrap import bootstrap

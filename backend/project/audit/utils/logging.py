@@ -119,11 +119,12 @@ def log_entity_event(
     request,
     action,
     entity,
-    instance,
+    instance=None,
     before=None,
     after=None,
     meta=None,
 ):
+
     changes = calculate_changes(
         before,
         after,
@@ -137,7 +138,6 @@ def log_entity_event(
         meta or {}
     )
 
-    # 🔥 не пишем пустые update-события
     if (
         action == "update"
         and not changes
@@ -145,25 +145,44 @@ def log_entity_event(
     ):
         return None
 
+    object_id = (
+        meta.get("object_id")
+        or getattr(
+            instance,
+            "pk",
+            None,
+        )
+    )
+
+    object_repr = (
+        meta.get("object_repr")
+        or (
+            str(instance)
+            if instance
+            else ""
+        )
+    )
+
     return EntityJournal.objects.create(
+
         actor=(
             request.user
             if (
                 request
-                and hasattr(request, "user")
+                and hasattr(
+                    request,
+                    "user",
+                )
                 and request.user.is_authenticated
             )
             else None
         ),
-
         action=action,
-
         entity=entity,
-
-        object_id=str(instance.pk),
-
-        object_repr=str(instance),
-
+        object_id=str(
+            object_id
+        ),
+        object_repr=object_repr,
         changes=changes,
 
         meta=meta,

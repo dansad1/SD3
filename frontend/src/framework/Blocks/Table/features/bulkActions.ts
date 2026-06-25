@@ -17,32 +17,108 @@ import type {
 } from "./types"
 
 
+type BulkAction = ExecutableAction & {
+
+  key: string
+
+  label: string
+
+  variant?: string
+
+  bulk?: boolean
+
+}
+
+
+function isBulkAction(
+  value: unknown,
+): value is BulkAction {
+
+  if (
+
+    !value
+
+    ||
+
+    typeof value !== "object"
+
+  ) {
+
+    return false
+
+  }
+
+  const action = value as {
+
+    key?: unknown
+
+    label?: unknown
+
+  }
+
+  return (
+
+    typeof action.key ===
+    "string"
+
+    &&
+
+    typeof action.label ===
+    "string"
+
+  )
+
+}
+
+
 function getRowId(
   row: BaseRow,
 ): string | number | undefined {
 
   if (
-    typeof row.id === "string" ||
+
+    typeof row.id === "string"
+
+    ||
+
     typeof row.id === "number"
+
   ) {
+
     return row.id
+
   }
 
   if (
-    typeof row.pk === "string" ||
+
+    typeof row.pk === "string"
+
+    ||
+
     typeof row.pk === "number"
+
   ) {
+
     return row.pk
+
   }
 
   if (
-    typeof row.uuid === "string" ||
+
+    typeof row.uuid === "string"
+
+    ||
+
     typeof row.uuid === "number"
+
   ) {
+
     return row.uuid
+
   }
 
   return undefined
+
 }
 
 
@@ -52,86 +128,168 @@ export function bulkActionsFeature<
 
   return {
 
-    name: "bulkActions",
+    name:
+      "bulkActions",
 
-    phase: "afterList",
+    phase:
+      "afterList",
 
     apply(ctx) {
 
-      if (!ctx.list) {
+      if (
+
+        !ctx.list
+
+      ) {
+
         return ctx
+
       }
 
-      const actions = (
-        ctx.block.rowActions ?? []
+
+      /*
+      🔥 старый DSL
+      */
+
+      const directActions = (
+
+        ctx.block
+          .bulkActions
+
+        ??
+
+        []
+
       ).filter(
-        action =>
-          (action as { bulk?: boolean }).bulk === true
+
+        isBulkAction
+
       )
 
-      if (!actions.length) {
+
+      /*
+      🔥 новый DSL
+      */
+
+      const inheritedActions = (
+
+        ctx.block
+          .rowActions
+
+        ??
+
+        []
+
+      ).filter(
+
+        action =>
+
+          isBulkAction(
+
+            action
+
+          )
+
+          &&
+
+          action.bulk === true
+
+      )
+
+
+      const actions: BulkAction[] = [
+
+        ...directActions,
+
+        ...inheritedActions,
+
+      ]
+
+
+      if (
+
+        !actions.length
+
+      ) {
+
         return ctx
+
       }
+
 
       return {
 
         ...ctx,
 
+
         ctrl: {
+
 
           ...ctx.ctrl,
 
+
           bulkActions:
 
-            actions.map(action => ({
-
-              key:
-                action.key,
-
-              label:
-                action.label,
-
-              variant:
-                action.variant,
-
-            })),
-
+            actions,
 
 
           onBulkAction:
 
+
             async (
 
-              key: string,
+              key,
 
-              rows: T[],
+              rows,
 
             ) => {
 
-              const action = actions.find(
 
-                a =>
+              const action =
 
-                  a.key === key
+                actions.find(
 
-              )
+                  item =>
 
-              if (!action) {
+                    item.key ===
+
+                    key
+
+                )
+
+
+              if (
+
+                !action
+
+              ) {
+
                 return
+
               }
 
 
-              const ids = rows
+              const ids =
 
-                .map(getRowId)
+                rows
+
+                .map(
+
+                  getRowId
+
+                )
 
                 .filter(
 
                   (
 
-                    value
+                    value,
 
-                  ): value is
+                  )
+
+                  :
+
+                  value is
 
                     string
 
@@ -139,7 +297,9 @@ export function bulkActionsFeature<
 
                     number =>
 
-                      value !== undefined
+                      value !==
+
+                      undefined
 
                 )
 
@@ -153,23 +313,6 @@ export function bulkActionsFeature<
                 count:
 
                   rows.length,
-
-              }
-
-
-              const executable: ExecutableAction = {
-
-                ...action,
-
-
-                ctx: {
-
-                  selection,
-
-
-                  ...(action.ctx ?? {}),
-
-                },
 
               }
 
@@ -190,7 +333,30 @@ export function bulkActionsFeature<
                 },
 
 
-                executable,
+                executable: {
+
+                  ...action,
+
+
+                  ctx: {
+
+
+                    ...(
+
+                      action.ctx
+
+                      ??
+
+                      {}
+
+                    ),
+
+
+                    selection,
+
+                  },
+
+                },
 
 
                 runAction:

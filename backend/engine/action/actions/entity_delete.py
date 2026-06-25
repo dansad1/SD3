@@ -1,7 +1,13 @@
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import (
+    get_object_or_404,
+)
 
-from backend.engine.action.Base.BaseAction import BaseAction
-from backend.engine.entity.EntityRegistry import entity_registry
+from backend.engine.action.Base.BaseAction import (
+    BaseAction,
+)
+from backend.engine.entity.EntityRegistry import (
+    entity_registry,
+)
 
 
 class EntityDeleteAction(BaseAction):
@@ -11,28 +17,89 @@ class EntityDeleteAction(BaseAction):
     def run(self, request, payload, ctx):
 
         entity = ctx.get("entity")
-        row = ctx.get("row")
 
-        if not entity or not row:
-            return {"status": "error", "message": "Invalid ctx"}
+        if not entity:
+            return {
+                "status": "error",
+                "message": "Entity required",
+            }
 
         entity_obj = entity_registry.get(entity)
 
-        entity_obj.check_permission(request, "delete")
-
-        instance = get_object_or_404(
-            entity_obj.get_queryset(request),
-            pk=row.get("id")
+        entity_obj.check_permission(
+            request,
+            "delete",
         )
 
-        entity_obj.delete_instance(request, instance)
+        ids = (
+            ctx.get(
+                "selection",
+                {},
+            ).get(
+                "ids",
+                [],
+            )
+            or ctx.get(
+                "ids",
+                [],
+            )
+        )
+
+        if not ids:
+
+            row = ctx.get(
+                "row",
+                {},
+            )
+
+            pk = row.get("id")
+
+            if pk is not None:
+                ids = [pk]
+
+        if not ids:
+            return {
+                "status": "error",
+                "message": "Nothing selected",
+            }
+
+        qs = entity_obj.get_queryset(
+            request,
+        )
+
+        deleted = 0
+
+        for pk in ids:
+
+            instance = get_object_or_404(
+                qs,
+                pk=pk,
+            )
+
+            entity_obj.delete_instance(
+                request,
+                instance,
+            )
+
+            deleted += 1
 
         return {
             "status": "ok",
+
             "effects": [
-                {"type": "table.reload", "entity": entity},
-                {"type": "toast", "variant": "success"}
-            ]
+
+                {
+                    "type": "table.reload",
+                    "entity": entity,
+                },
+
+                {
+                    "type": "toast",
+                    "variant": "success",
+                    "message": (
+                        f"Удалено: {deleted}"
+                    ),
+                },
+
+            ],
         }
-
-

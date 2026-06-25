@@ -444,31 +444,61 @@ class BaseEntity:
             request,
             instance,
     ):
-        instance._audit_before_delete = serialize_instance(
-            instance
-        )
+        instance._audit_before_delete = {
+            "state": serialize_instance(
+                instance
+            ),
+            "id": instance.pk,
+            "repr": str(instance),
+        }
 
     def after_delete(
             self,
             request,
             instance,
     ):
-        log_entity_event(
-            request=request,
-            action="delete",
-            entity=self.entity,
-            instance=instance,
-            before=getattr(
-                instance,
-                "_audit_before_delete",
-                {},
-            ),
-            after={},
-            meta={
-                "entity": self.entity,
-            },
+
+        audit = getattr(
+            instance,
+            "_audit_before_delete",
+            {},
         )
 
+        log_entity_event(
+
+            request=request,
+
+            action="delete",
+
+            entity=self.entity,
+
+            instance=instance,
+
+            before=audit.get(
+                "state",
+                {},
+            ),
+
+            after={},
+
+            meta={
+
+                "entity":
+                    self.entity,
+
+                "object_id":
+                    audit.get(
+                        "id"
+                    ),
+
+                "object_repr":
+                    audit.get(
+                        "repr"
+                    ),
+
+            },
+
+        )
     def perform_delete(
             self,
             request,

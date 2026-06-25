@@ -71,35 +71,24 @@ export function TableView<
 
   }
 
-  async function handleBulkAction(
+ async function handleBulkAction(
     key: string,
-  ) {
+) {
 
     await ctrl
-      .onBulkAction?.(
+        .onBulkAction?.(
 
-        key,
+            key,
 
-        selectedRows as T[],
+            selectedRows as T[],
 
-      )
+        )
 
     ctrl
-      .selection
-      ?.clear()
+        .selection
+        ?.clear()
 
-  }
-console.log({
-    selectedCount,
-
-    selected:
-        ctrl.selection?.selected,
-
-    bulkActions:
-        ctrl.bulkActions,
-
-    ctrl,
-})
+}
   return (
     <>
 
@@ -133,111 +122,116 @@ console.log({
         }}
 
       />
+{
 
-      {
+    selectedCount > 0
 
-        selectedCount > 0
+    &&
 
-        &&
+    ctrl.bulkActions?.length
 
-        ctrl.bulkActions?.length
+    && (
 
-        && (
+        <div
 
-          <div
             className="table-selection-panel"
-          >
+
+        >
 
             <div>
 
-              Выбрано
+                Выбрано{" "}
 
-              {" "}
+                <b>
 
-              <b>
+                    {
 
-                {
+                        selectedCount
 
-                  selectedCount
+                    }
 
-                }
-
-              </b>
+                </b>
 
             </div>
+
 
             <div
 
-              style={{
+                style={{
 
-                display:
-                  "flex",
+                    display:
+                        "flex",
 
-                gap:
-                  8,
+                    gap:
+                        8,
 
-              }}
+                }}
 
             >
 
-              {
+                {
 
-                ctrl.bulkActions.map(
+                    ctrl.bulkActions.map(
 
-                  action => (
+                        action => (
 
-                    <button
+                            <button
 
-                      key={
-                        action.key
-                      }
+                                key={
 
-                      type="button"
+                                    action.key
 
-                      className={
+                                }
 
-                        `ui-btn ui-btn-${
-                          action.variant
-                          ??
-                          "secondary"
-                        }`
+                                type="button"
 
-                      }
+                                className={
 
-                      onClick={() => {
+                                    `ui-btn ui-btn-${
 
-                        void handleBulkAction(
+                                        action.variant
 
-                          action.key,
+                                        ??
+
+                                        "secondary"
+
+                                    }`
+
+                                }
+
+                                onClick={() => {
+
+                                    void handleBulkAction(
+
+                                        action.key,
+
+                                    )
+
+                                }}
+
+                            >
+
+                                {
+
+                                    action.label
+
+                                }
+
+                            </button>
 
                         )
 
-                      }}
+                    )
 
-                    >
-
-                      {
-
-                        action.label
-
-                      }
-
-                    </button>
-
-                  )
-
-                )
-
-              }
+                }
 
             </div>
 
-          </div>
+        </div>
 
-        )
+    )
 
-      }
-
+}
       <Table
 
         ctrl={{
