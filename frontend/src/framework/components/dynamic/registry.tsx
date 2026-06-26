@@ -24,10 +24,28 @@ import { MetaWidget } from "./widgets/meta"
    TYPES
 ========================================================= */
 
-type WidgetDefinition = {
-  component: WidgetRenderer
+export type WidgetLayout = {
 
-  aliases: string[]
+    preferredSpan: number
+
+    minSpan?: number
+
+    maxSpan?: number
+
+    grow?: boolean
+
+    shrink?: boolean
+
+}
+
+export type WidgetDefinition = {
+
+    component: WidgetRenderer
+
+    aliases: string[]
+
+    layout: WidgetLayout
+
 }
 
 /* =========================================================
@@ -36,155 +54,279 @@ type WidgetDefinition = {
 
 export const widgetRegistry = {
 
-  TextInput: {
-  component: TextInputWidget,
+    TextInput: {
 
-  aliases: [
-    "string",
-    "text",
-    "textinput",
-    "TextInput",
-  ],
-},
+        component: TextInputWidget,
 
-Textarea: {
-  component: TextareaWidget,
+        aliases: [
+            "string",
+            "text",
+            "textinput",
+            "TextInput",
+        ],
 
-  aliases: [
-    "textarea",
-    "Textarea",
-  ],
-},
+        layout: {
+            preferredSpan: 6,
+            grow: true,
+            minSpan: 3,
+            maxSpan: 12,
+        },
 
-  NumberInput: {
-    component: NumberInputWidget,
+    },
 
-    aliases: [
-      "number",
-      "numberinput",
-      "NumberInput",
-    ],
-  },
 
-  Checkbox: {
-    component: CheckboxWidget,
+    Textarea: {
 
-    aliases: [
-      "boolean",
-      "checkbox",
-      "Checkbox",
-    ],
-  },
+        component: TextareaWidget,
 
-  Select: {
-    component: SelectWidget,
+        aliases: [
+            "textarea",
+            "Textarea",
+        ],
 
-    aliases: [
-      "relation",
-      "select",
-      "Select",
-    ],
-  },
+        layout: {
+            preferredSpan: 12,
+            grow: false,
+        },
 
-  MultiSelect: {
-    component: MultiSelectWidget,
+    },
 
-    aliases: [
-      "multiselect",
-      "MultiSelect",
-    ],
-  },
 
-  DateInput: {
-    component: DateInputWidget,
+    NumberInput: {
 
-    aliases: [
-      "date",
-      "dateinput",
-      "DateInput",
-    ],
-  },
+        component: NumberInputWidget,
 
-  DateTimeInput: {
-    component: DateTimeInputWidget,
+        aliases: [
+            "number",
+            "numberinput",
+            "NumberInput",
+        ],
 
-    aliases: [
-      "datetime",
-      "datetimeinput",
-      "DateTimeInput",
-    ],
-  },
+        layout: {
+            preferredSpan: 4,
+            grow: true,
+            maxSpan: 6,
+        },
 
-  TimeInput: {
-    component: TimeInputWidget,
+    },
 
-    aliases: [
-      "time",
-      "timeinput",
-      "TimeInput",
-    ],
-  },
 
-  FileInput: {
-    component: FileInputWidget,
+    Checkbox: {
 
-    aliases: [
-      "file",
-      "fileinput",
-      "FileInput",
-    ],
-  },
+        component: CheckboxWidget,
 
-  PasswordInput: {
-    component: PasswordInputWidget,
+        aliases: [
+            "boolean",
+            "checkbox",
+            "Checkbox",
+        ],
 
-    aliases: [
-      "password",
-      "passwordinput",
-      "PasswordInput",
-    ],
-  },
+        layout: {
+            preferredSpan: 3,
+            grow: true,
+            maxSpan: 6,
+        },
 
-  RichText: {
-    component: RichTextWidget,
+    },
 
-    aliases: [
-      "richtext",
-      "richtextwidget",
-      "RichText",
-    ],
-  },
 
-  InsertVariables: {
-    component: InsertVariablesWidget,
+    Select: {
 
-    aliases: [
-      "insertvariables",
-      "InsertVariables",
-    ],
-  },
-  PermissionEditor: {
+        component: SelectWidget,
 
-    component: PermissionEditorWidget,
+        aliases: [
+            "relation",
+            "select",
+            "Select",
+        ],
 
-    aliases: [
-      "permission_editor",
-      "PermissionEditor",
-    ],
+        layout: {
+            preferredSpan: 6,
+            grow: true,
+        },
 
-  },
-  Meta: {
-  component: MetaWidget,
+    },
 
-  aliases: [
-    "meta",
-    "Meta",
-  ],
-},
-} satisfies Record<
-  string,
-  WidgetDefinition
->
+
+    MultiSelect: {
+
+        component: MultiSelectWidget,
+
+        aliases: [
+            "multiselect",
+            "MultiSelect",
+        ],
+
+        layout: {
+            preferredSpan: 12,
+            grow: false,
+        },
+
+    },
+
+
+    DateInput: {
+
+        component: DateInputWidget,
+
+        aliases: [
+            "date",
+            "dateinput",
+            "DateInput",
+        ],
+
+        layout: {
+            preferredSpan: 4,
+            grow: true,
+            maxSpan: 6,
+        },
+
+    },
+
+
+    DateTimeInput: {
+
+        component: DateTimeInputWidget,
+
+        aliases: [
+            "datetime",
+            "datetimeinput",
+            "DateTimeInput",
+        ],
+
+        layout: {
+            preferredSpan: 4,
+            grow: true,
+            maxSpan: 6,
+        },
+
+    },
+
+
+    TimeInput: {
+
+        component: TimeInputWidget,
+
+        aliases: [
+            "time",
+            "timeinput",
+            "TimeInput",
+        ],
+
+        layout: {
+            preferredSpan: 4,
+            grow: true,
+            maxSpan: 6,
+        },
+
+    },
+
+
+    FileInput: {
+
+        component: FileInputWidget,
+
+        aliases: [
+            "file",
+            "fileinput",
+            "FileInput",
+        ],
+
+        layout: {
+            preferredSpan: 12,
+            grow: false,
+        },
+
+    },
+
+
+    PasswordInput: {
+
+        component: PasswordInputWidget,
+
+        aliases: [
+            "password",
+            "passwordinput",
+            "PasswordInput",
+        ],
+
+        layout: {
+            preferredSpan: 6,
+            grow: true,
+        },
+
+    },
+
+
+    RichText: {
+
+        component: RichTextWidget,
+
+        aliases: [
+            "richtext",
+            "richtextwidget",
+            "RichText",
+        ],
+
+        layout: {
+            preferredSpan: 12,
+            grow: false,
+        },
+
+    },
+
+
+    InsertVariables: {
+
+        component: InsertVariablesWidget,
+
+        aliases: [
+            "insertvariables",
+            "InsertVariables",
+        ],
+
+        layout: {
+            preferredSpan: 12,
+            grow: false,
+        },
+
+    },
+
+
+    PermissionEditor: {
+
+        component: PermissionEditorWidget,
+
+        aliases: [
+            "permission_editor",
+            "PermissionEditor",
+        ],
+
+        layout: {
+            preferredSpan: 12,
+            grow: false,
+        },
+
+    },
+
+
+    Meta: {
+
+        component: MetaWidget,
+
+        aliases: [
+            "meta",
+            "Meta",
+        ],
+
+        layout: {
+            preferredSpan: 12,
+            grow: false,
+        },
+
+    },
+
+} satisfies Record<string, WidgetDefinition>
 
 /* =========================================================
    TYPES

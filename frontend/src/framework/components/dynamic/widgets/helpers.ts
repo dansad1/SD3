@@ -1,3 +1,5 @@
+import { resolveWidgetAlias, widgetRegistry } from "../registry"
+
 type MultiValue =
   | string
   | number
@@ -13,4 +15,20 @@ export function normalizeMultiValue(
       ? String(item.value)
       : String(item)
   )
+}
+export function getWidgetDefinition(
+    widget?: string
+) {
+
+    const key =
+        resolveWidgetAlias(
+            widget
+        )
+
+    if (!key) {
+        return null
+    }
+
+    return widgetRegistry[key]
+
 }
