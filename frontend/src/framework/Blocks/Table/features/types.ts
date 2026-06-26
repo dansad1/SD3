@@ -90,6 +90,11 @@ export interface TableFeatureContext<
 
     sort?: string
 
+    filters: Record<
+      string,
+      string
+    >
+
     setPage: (
       p: number
     ) => void
@@ -102,6 +107,13 @@ export interface TableFeatureContext<
       s: string
     ) => void
 
+    setFilters: (
+      values: Record<
+        string,
+        string
+      >
+    ) => void
+
   }
 
   listParams: {
@@ -112,23 +124,23 @@ export interface TableFeatureContext<
 
     sort?: string
 
+    [key: string]:
+      | string
+      | number
+      | undefined
+
   }
 
   list?: TableListData<T>
 
   pageApi: PageApi
 
-
   actions: {
 
     runAction: (
-
       target: string,
-
       ctx?: ActionContext,
-
     ) => Promise<unknown>
-
 
     isRunning: (
       id: string
@@ -136,9 +148,7 @@ export interface TableFeatureContext<
 
   }
 
-
   ctrl: Partial<TCtrl>
-
 
   toolbar?: {
 
@@ -156,7 +166,6 @@ export interface TableFeatureContext<
 
   }
 
-
   modals?: {
 
     visibleFields?: ModalController
@@ -166,6 +175,7 @@ export interface TableFeatureContext<
   }
 
 }
+
 /* ========================================
    FEATURE INTERFACE
 ======================================== */

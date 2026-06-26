@@ -1,5 +1,14 @@
-import { useEffect, useState, useCallback } from "react"
-import type { FieldSchema, Value } from "../../dynamic/types"
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react"
+
+import type {
+  FieldSchema,
+  Value,
+} from "../../dynamic/types"
+
 import { api } from "@/framework/api/client"
 import { validateFieldSchema } from "../../dynamic/validateSchema"
 
@@ -13,7 +22,7 @@ export interface SavedFilter {
 
 interface FilterMetaResponse {
   fields: FieldSchema[]
-  saved_filters: SavedFilter[]
+  saved_filters?: SavedFilter[]
 }
 
 /* ---------- helpers ---------- */
@@ -21,6 +30,7 @@ interface FilterMetaResponse {
 function isBooleanField(field: FieldSchema): boolean {
   return (
     field.widget === "checkbox" ||
+    field.widget === "boolean" ||
     field.html_type === "checkbox"
   )
 }
@@ -30,87 +40,82 @@ function isBooleanField(field: FieldSchema): boolean {
 export function useFilterRuntime(
   entity: string,
   fieldset: string,
-  initialQuery: Record<string, string | string[]>
+  initialQuery: Record<string, string | string[]> = {},
 ) {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [fields, setFields] = useState<FieldSchema[]>([])
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([])
   const [values, setValues] = useState<Record<string, Value>>({})
 
-  /* ---------- helpers ---------- */
-
   const buildEmptyValues = useCallback(
-    (fields: FieldSchema[]) => {
-      const v: Record<string, Value> = {}
+    (items: FieldSchema[]) => {
+      const next: Record<string, Value> = {}
 
-      for (const f of fields) {
-        if (f.multiple) {
-          v[f.name] = []
-        } else if (isBooleanField(f)) {
-          v[f.name] = false
+      for (const field of items) {
+        if (field.multiple) {
+          next[field.name] = []
+        } else if (isBooleanField(field)) {
+          next[field.name] = false
         } else {
-          v[f.name] = ""
+          next[field.name] = ""
         }
       }
 
-      return v
+      return next
     },
-    []
+    [],
   )
 
   const applyQueryToValues = useCallback(
     (
-      fields: FieldSchema[],
-      query: Record<string, string | string[]>
+      items: FieldSchema[],
+      query: Record<string, string | string[]>,
     ) => {
-      const v = buildEmptyValues(fields)
+      const next = buildEmptyValues(items)
 
-      for (const f of fields) {
-        const key = `field_${f.id}`
-        const raw = query[key]
+      for (const field of items) {
+        const raw = query[field.name]
 
         if (raw === undefined) {
           continue
         }
 
-        if (f.multiple) {
-          v[f.name] = Array.isArray(raw)
+        if (field.multiple) {
+          next[field.name] = Array.isArray(raw)
             ? raw
             : String(raw).split(",")
-        } else if (isBooleanField(f)) {
+        } else if (isBooleanField(field)) {
           const value = Array.isArray(raw)
             ? raw[0]
             : raw
 
-          v[f.name] =
+          next[field.name] = (
             value === "1" ||
             value === "true" ||
             value === "on"
+          )
         } else {
-          v[f.name] = Array.isArray(raw)
+          next[field.name] = Array.isArray(raw)
             ? raw[0]
             : raw
         }
       }
 
-      return v
+      return next
     },
-    [buildEmptyValues]
+    [buildEmptyValues],
   )
-
-  /* ---------- load meta ---------- */
 
   useEffect(() => {
     let canceled = false
 
-    const load = async () => {
+    async function load() {
       try {
         setLoading(true)
 
-        const data =
-          await api.get<FilterMetaResponse>(
-            `/${entity}/filter/meta/?fieldset=${fieldset}`
-          )
+        const data = await api.get<FilterMetaResponse>(
+          `/entity/${entity}/filter/meta/?fieldset=${fieldset}`,
+        )
 
         if (canceled) {
           return
@@ -124,8 +129,8 @@ export function useFilterRuntime(
         setValues(
           applyQueryToValues(
             data.fields,
-            initialQuery
-          )
+            initialQuery,
+          ),
         )
       } finally {
         if (!canceled) {
@@ -139,14 +144,15 @@ export function useFilterRuntime(
     return () => {
       canceled = true
     }
+
+    // ВАЖНО:
+    // initialQuery специально не добавляем.
+    // Иначе {} из FilterModal создаёт бесконечные запросы.
   }, [
     entity,
     fieldset,
-    initialQuery,
     applyQueryToValues,
   ])
-
-  /* ---------- public actions ---------- */
 
   const setFieldValue = useCallback(
     (name: string, value: Value) => {
@@ -155,32 +161,43 @@ export function useFilterRuntime(
         [name]: value,
       }))
     },
-    []
+    [],
   )
 
   const buildQuery = useCallback(() => {
-    const q: Record<string, string> = {}
+    const query: Record<string, string> = {}
 
-    for (const f of fields) {
-      const val = values[f.name]
-      const key = `field_${f.id}`
+    for (const field of fields) {
+      const value = values[field.name]
 
-      if (Array.isArray(val) && val.length > 0) {
-        q[key] = val.join(",")
-      } else if (
-        typeof val === "string" &&
-        val.trim()
+      if (Array.isArray(value)) {
+        if (value.length > 0) {
+          query[field.name] = value.join(",")
+        }
+
+        continue
+      }
+
+      if (
+        typeof value === "string" &&
+        value.trim()
       ) {
-        q[key] = val
-      } else if (typeof val === "boolean") {
-        q[key] = val ? "1" : "0"
+        query[field.name] = value
+        continue
+      }
+
+      if (typeof value === "boolean") {
+        if (value) {
+          query[field.name] = "1"
+        }
       }
     }
 
-    return q
-  }, [fields, values])
-
-  /* ---------- export ---------- */
+    return query
+  }, [
+    fields,
+    values,
+  ])
 
   return {
     loading,

@@ -5,7 +5,8 @@ from django.urls import path, re_path
 from backend.engine.Resource.ResourceApi import resource_api
 from backend.engine.action.ActionApi import action_submit_api, action_form_api
 from backend.engine.form.FormApi import entity_form_submit_api, entity_form_api
-from backend.engine.list.ListApi import entity_list_api, entity_list_settings_api, entity_list_meta_api
+from backend.engine.list.ListApi import entity_list_api, entity_list_settings_api, entity_list_meta_api, \
+    entity_filter_meta_api
 from backend.engine.matrix.MatrixApi import matrix_submit_api, matrix_api
 from backend.engine.utils.options_api import entity_options_api
 from backend.engine.utils.upload_api import upload_api
@@ -92,4 +93,9 @@ path("api/matrix/<str:code>/submit/", matrix_submit_api),
         resource_api,
         name="resource",
     ),
+path(
+    "api/entity/<str:entity>/filter/meta/",
+    entity_filter_meta_api,
+    name="entity-filter-meta",
+),
 ]

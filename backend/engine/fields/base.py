@@ -233,23 +233,53 @@ class BaseField:
     # =====================================================
 
     def apply_filter(
-        self,
-        queryset,
-        value,
+
+            self,
+
+            queryset,
+
+            value,
+
     ):
+
+        print(
+
+            "CALL",
+
+            self.name,
+
+            value,
+
+        )
+
         return self.field_type.apply_filter(
+
+            queryset,
+
+            self,
+
+            value,
+
+        )
+
+    def apply_search(
+            self,
+            queryset,
+            value,
+    ):
+
+        return self.field_type.apply_search(
             queryset,
             self,
             value,
         )
 
-    def apply_search(
-        self,
-        queryset,
-        value,
+    def build_search_q(
+            self,
+            value,
     ):
-        return self.field_type.apply_search(
-            queryset,
+
+        return self.field_type.build_search_q(
             self,
             value,
         )

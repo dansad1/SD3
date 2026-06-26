@@ -104,15 +104,25 @@ export function useTableController<T extends BaseRow>(
 
     query,
 
-    listParams: {
-      page: query.page,
+   listParams: {
 
-      sort: query.sort,
+  page:
 
-      ...(resolvedBlock.filter ??
-        {}),
-    },
+    query.page,
 
+  sort:
+
+    query.sort,
+
+
+  ...query.filters,
+
+
+  ...(resolvedBlock.filter
+
+    ?? {}),
+
+},
     pageApi,
 
     ctrl: {

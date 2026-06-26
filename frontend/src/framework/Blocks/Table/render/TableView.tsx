@@ -345,35 +345,70 @@ export function TableView<
 
           <FilterModal
 
-            isOpen={
+isOpen={
 
-              ctx.modals
-                .filters
-                .isOpen
+ctx.modals
 
-            }
+?.filters
 
-            onClose={
+?.isOpen
 
-              ctx.modals
-                .filters
-                .close
+?? false
 
-            }
+}
 
-            entity={
-              ctx.entity
-            }
 
-            fieldset={
-              ctx.fieldset
-            }
+onClose={
 
-            onSaved={
-              handleSaved
+ctx.modals
 
-            }
-          />
+?.filters
+
+?.close
+
+?? (()=>{})
+
+}
+
+
+entity={
+
+ctx.entity
+
+}
+
+
+fieldset={
+
+ctx.fieldset
+
+}
+
+
+initialQuery={
+
+ctx.query.filters
+
+}
+
+
+onApply={
+
+query=>{
+
+ctx.query
+
+.setFilters(
+
+query
+
+)
+
+}
+
+}
+
+/>
         )
       }
     </>

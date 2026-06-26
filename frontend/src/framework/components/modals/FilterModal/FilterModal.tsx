@@ -1,50 +1,59 @@
-import { FieldRenderer } from "@/framework/Blocks/Form/render/FieldRenderer"
-import Button from "../../ui/Button"
-import Modal from "../../ui/Modal"
+import { FieldRenderer }
+from "@/framework/Blocks/Form/render/FieldRenderer"
 
+import Button
+from "../../ui/Button"
 
+import Modal
+from "../../ui/Modal"
 
 import { useFilterRuntime }
-  from "./useFilterRuntime"
+from "./useFilterRuntime"
 
 
 interface Props {
 
-  isOpen: boolean
+    isOpen:boolean
 
-  onClose: () => void
+    onClose:()=>void
 
-  onApply?: (
-    query: Record<string, string>
-  ) => void
+    entity:string
 
-  entity: string
+    fieldset?:string
 
-  fieldset?: string
-    onSaved?: () => void
+    initialQuery?:Record<
+        string,
+        string
+    >
+
+    onApply?:(
+        q:Record<
+            string,
+            string
+        >
+    )=>void
 
 }
 
 
+
 export default function FilterModal({
 
-  isOpen,
-
-  onClose,
-
-  onApply,
-
-  entity,
-
-  fieldset = "default",
-
-}: Props) {
-
-console.log(
-    "FilterModal",
     isOpen,
-  )
-  const {
+
+    onClose,
+
+    entity,
+
+    fieldset="default",
+
+    initialQuery={},
+
+    onApply,
+
+}:Props){
+
+const {
 
     loading,
 
@@ -54,213 +63,214 @@ console.log(
 
     setValues,
 
-    setFieldValue,
-
     buildEmptyValues,
 
     buildQuery,
 
-  } = useFilterRuntime(
+}=useFilterRuntime(
 
     entity,
 
     fieldset,
 
-    {},
+    initialQuery,
 
-  )
+)
 
 
-  if (!isOpen) {
+if(!isOpen){
+
     return null
-  }
 
+}
 
-  return (
 
-    <Modal
 
-      title="Фильтр"
+return(
 
-      isOpen={isOpen}
+<Modal
 
-      onClose={onClose}
+title="Фильтр"
 
-      width={900}
+isOpen={isOpen}
 
+onClose={onClose}
 
-      footer={
+width={900}
 
-        <>
 
-          <Button
+footer={
 
-            variant="secondary"
+<>
 
-            onClick={() => {
+<Button
 
-              setValues(
+variant="secondary"
 
-                buildEmptyValues(
+onClick={()=>{
 
-                  fields,
+setValues(
 
-                )
+buildEmptyValues(
 
-              )
+fields
 
-            }}
+)
 
-          >
+)
 
-            Сбросить
+}}
 
-          </Button>
+>
 
+Сбросить
 
-          <Button
+</Button>
 
-            onClick={() => {
 
-              onApply?.(
 
-                buildQuery(),
+<Button
 
-              )
+onClick={()=>{
 
-              onClose()
+onApply?.(
 
-            }}
+buildQuery()
 
-          >
+)
 
-            Применить
+onClose()
 
-          </Button>
+}}
 
-        </>
+>
 
-      }
+Применить
 
-    >
+</Button>
 
-      {
 
-        loading
+</>
 
-        &&
+}
 
-        <div>
 
-          Загрузка...
+>
 
-        </div>
 
-      }
+{
 
+loading
 
-      {
+&&
 
-        !loading
+<div>
 
-        &&
+Загрузка...
 
-        <div
+</div>
 
-          style={{
+}
 
-            display:
 
-              "grid",
 
-            gridTemplateColumns:
+{
 
-              "220px 1fr",
+!loading
 
-            gap:
+&&
 
-              12,
+<div
 
-          }}
+style={{
 
-        >
+display:"grid",
 
-          {
+gridTemplateColumns:
 
-            fields.map(
+"1fr 1fr",
 
-              field => (
+gap:16,
 
-                <FieldRenderer
+}}
 
-                  key={
+>
 
-                    field.id
+{
 
-                  }
+fields.map(
 
-                  field={
+field=>(
 
-                    field
+<FieldRenderer
 
-                  }
+key={
 
-                  value={
+field.name
 
-                    values[
-                      field.name
-                    ]
+}
 
-                  }
+field={
 
-                  errors={[]}
+field
 
-                  onChange={
+}
 
-                    value => {
+value={
 
-                      setValues(
+values[
 
-                        prev => ({
+field.name
 
-                          ...prev,
+]
 
-                          [
+}
 
-                            field.name
+errors={[]}
 
-                          ]:
 
-                          value,
+onChange={
 
-                        })
+value=>{
 
-                      )
+setValues(
 
-                    }
+prev=>({
 
-                  }
+...prev,
 
-                  setFieldValue={
+[field.name]:
 
-                    setFieldValue
+value
 
-                  }
+})
 
-                />
+)
 
-              )
+}
 
-            )
+}
 
-          }
 
-        </div>
+setFieldValue={()=>{}}
 
-      }
 
-    </Modal>
+/>
 
-  )
+)
+
+)
+
+}
+
+
+</div>
+
+}
+
+
+</Modal>
+
+)
 
 }

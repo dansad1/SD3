@@ -14,20 +14,49 @@ def apply_search(ctx):
 
     entity = ctx.entity
 
-    searchable = set(
-        getattr(entity, "search_fields", []) or []
+    search_fields = set(
+        getattr(
+            entity,
+            "search_fields",
+            [],
+        ) or []
     )
 
-    if not searchable:
+    if not search_fields:
         return
+
+    model_field_names = {
+        field.name
+        for field in ctx.qs.model._meta.get_fields()
+    }
 
     cond = Q()
 
-    for field in searchable:
+    for field in entity.get_fields(
+            ctx.request,
+    ):
+
+        if field.name not in search_fields:
+            continue
+
+        if field.name in model_field_names:
+
+            cond |= Q(
+                **{
+                    f"{field.name}__icontains": q,
+                }
+            )
+
+            continue
+
         cond |= Q(
-            **{
-                f"{field}__icontains": q
-            }
+            dynamic_values__field=field.source,
+            dynamic_values__value__icontains=q,
         )
 
-    ctx.qs = ctx.qs.filter(cond)
+    if cond:
+        ctx.qs = (
+            ctx.qs
+            .filter(cond)
+            .distinct()
+        )

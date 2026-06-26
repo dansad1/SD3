@@ -1,12 +1,17 @@
 type Props = {
+
     page: number
+
     pages: number
+
     total: number
+
     pageSize: number
 
     onChange: (
         page: number,
     ) => void
+
 }
 
 
@@ -24,6 +29,7 @@ export function Pagination({
 
 }: Props) {
 
+
     const items: Array<
         number | "..."
     > = []
@@ -32,9 +38,13 @@ export function Pagination({
     if (pages <= 7) {
 
         for (
+
             let i = 1;
+
             i <= pages;
+
             i++
+
         ) {
 
             items.push(i)
@@ -106,6 +116,29 @@ export function Pagination({
         )
 
     }
+
+
+    const shown = Math.max(
+
+        0,
+
+        Math.min(
+
+            pageSize,
+
+            total -
+
+            (
+
+                (page - 1)
+
+                * pageSize
+
+            )
+
+        )
+
+    )
 
 
     return (
@@ -226,13 +259,13 @@ export function Pagination({
 
                                     item === page
 
-                                    ?
+                                        ?
 
-                                    "ui-btn ui-btn-primary"
+                                        "ui-btn ui-btn-primary"
 
-                                    :
+                                        :
 
-                                    "ui-btn ui-btn-secondary"
+                                        "ui-btn ui-btn-secondary"
 
                                 }
 
@@ -313,7 +346,7 @@ export function Pagination({
 
                     {
 
-                        pageSize
+                        shown
 
                     }
 

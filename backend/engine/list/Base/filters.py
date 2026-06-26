@@ -1,76 +1,129 @@
-# =========================================================
+# =====================================================
 # backend/engine/list/Base/filters.py
-# =========================================================
+# =====================================================
 
 def apply_filters(ctx):
 
     entity = ctx.entity
 
+
     runtime_fields = (
-        ctx.runtime_fields
-        or []
+
+        entity.get_fields(
+
+            ctx.request
+
+        )
+
     )
+
 
     field_map = {
+
         field.name: field
+
         for field in runtime_fields
+
     }
 
-    allowed = set(
+
+    excluded = set(
+
         getattr(
+
             entity,
-            "filter_fields",
+
+            "filter_exclude_fields",
+
             [],
-        ) or []
+
+        )
+
+        or []
+
     )
 
-    if not allowed:
-        return
+
+    reserved = {
+
+        "page",
+
+        "page_size",
+
+        "sort",
+
+        "search",
+
+        "q",
+
+    }
+
 
     qs = ctx.qs
 
-    # =====================================================
-    # APPLY FILTERS
-    # =====================================================
 
-    for key, value in ctx.request.GET.items():
+    for key in ctx.request.GET:
 
-        # =============================================
-        # RESERVED
-        # =============================================
 
-        if key in {
-            "page",
-            "page_size",
-            "sort",
-            "search",
-            "q",
-        }:
+        if key in reserved:
             continue
 
-        # =============================================
-        # NOT ALLOWED
-        # =============================================
 
-        if key not in allowed:
-            continue
+        field = field_map.get(
 
-        # =============================================
-        # FIELD
-        # =============================================
+            key
 
-        field = field_map.get(key)
+        )
+
 
         if not field:
             continue
 
-        # =============================================
-        # APPLY
-        # =============================================
+
+        if field.name in excluded:
+            continue
+
+
+        values = (
+
+            ctx.request.GET.getlist(
+
+                key
+
+            )
+
+        )
+
+
+        value = (
+
+            values
+
+            if len(values) > 1
+
+            else values[0]
+
+        )
+
+
+        print(
+
+            "FILTER",
+
+            field.name,
+
+            value,
+
+        )
+
 
         qs = field.apply_filter(
+
             qs,
+
             value,
+
         )
+
 
     ctx.qs = qs

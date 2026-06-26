@@ -47,8 +47,7 @@ class BaseEntity:
 
     search_fields = []
 
-    filter_fields = []
-
+    filter_exclude_fields = set()
     # =====================================================
     # FORM
     # =====================================================
@@ -61,6 +60,46 @@ class BaseEntity:
             obj=None,
     ):
         return self.form_sections
+
+    def get_filter_fields(
+            self,
+            request,
+            obj=None,
+    ):
+
+        excluded = set(
+
+            self.filter_exclude_fields
+
+            or []
+
+        )
+
+        return [
+
+            field
+
+            for field in self.get_fields(
+
+                request,
+
+                obj=obj,
+
+            )
+
+            if (
+
+                    field.name
+
+                    and
+
+                    field.name
+
+                    not in excluded
+
+            )
+
+        ]
 
     # =====================================================
     # FIELD POLICY

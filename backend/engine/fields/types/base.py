@@ -1,5 +1,6 @@
 
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 
 
 class BaseFieldType:
@@ -169,24 +170,48 @@ class BaseFieldType:
     # =====================================================
 
     def apply_filter(
-        self,
-        queryset,
-        field,
-        value,
+
+            self,
+
+            queryset,
+
+            field,
+
+            value,
+
     ):
 
-        if value in (
-            None,
-            "",
-        ):
-            return queryset
+        print(
 
-        return queryset.filter(
-            **{
-                field.name: value,
-            }
+            "APPLY",
+
+            field.name,
+
+            value,
+
         )
 
+        qs = queryset.filter(
+
+            **{
+
+                field.name:
+
+                    value,
+
+            }
+
+        )
+
+        print(
+
+            "COUNT",
+
+            qs.count(),
+
+        )
+
+        return qs
     # =====================================================
     # SEARCH
     # =====================================================
@@ -205,6 +230,25 @@ class BaseFieldType:
             return queryset
 
         return queryset.filter(
+            **{
+                f"{field.name}__icontains":
+                    value,
+            }
+        )
+
+    def build_search_q(
+            self,
+            field,
+            value,
+    ):
+
+        if not value:
+            return Q()
+
+        if not self.searchable:
+            return Q()
+
+        return Q(
             **{
                 f"{field.name}__icontains":
                     value,
