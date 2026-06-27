@@ -132,15 +132,7 @@ export function useEntityLoader({
           )
         : undefined
 
-      console.log(
-        "🔥 FORM QUERY:",
-        query
-      )
-
-      console.log(
-        "🔥 RESOLVED INITIAL:",
-        resolvedInitial
-      )
+    
       /* ===================================================
          API
          =================================================== */
@@ -161,10 +153,7 @@ export function useEntityLoader({
       onCapabilities?.(
         api.capabilities
       )
-      console.log(
-        "🛡 FORM CAPABILITIES:",
-        api.capabilities
-      )
+      
 
       /* ===================================================
          SCHEMA
@@ -188,10 +177,7 @@ export function useEntityLoader({
           .length > 0
       ) {
 
-        console.log(
-          "🟢 FINAL INITIAL:",
-          finalInitial
-        )
+      
 
         state.setInitialValues(
           finalInitial

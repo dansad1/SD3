@@ -135,16 +135,7 @@ export function FieldRenderer({
   const normalizedValue =
     toValue(value)
 
-  console.log(
-    "🎯 FIELD RENDER",
-    {
-      name: field.name,
-      widget: field.widget,
-      rawValue: value,
-      normalizedValue,
-      errors,
-    }
-  )
+  
 
   return (
 

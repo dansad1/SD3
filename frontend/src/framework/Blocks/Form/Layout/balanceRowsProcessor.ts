@@ -181,32 +181,7 @@ function balanceBlocks(
         )
 
     }
-console.group("BALANCED")
 
-for (const row of rows) {
-
-    console.log(
-
-        row.map(block => ({
-
-            id: block.id,
-
-            type: block.type,
-
-            span: block.layout?.span,
-
-            widget:
-                block.type === "field"
-                    ? block.field.widget
-                    : block.type,
-
-        }))
-
-    )
-
-}
-
-console.groupEnd()
 
     return rows.flat()
 

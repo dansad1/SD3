@@ -22,11 +22,7 @@ export function usePageActionsRuntime() {
   const recompute = useCallback(() => {
     const nextActions = buildActions(actionsRef.current)
 
-    console.log("🧮 RECOMPUTE ACTIONS", {
-      runtime: actionsRef.current,
-      nextActions,
-    })
-
+    
     setActions(nextActions)
   }, [])
 
@@ -40,12 +36,7 @@ export function usePageActionsRuntime() {
         handler
       )
 
-      console.log("✅ REGISTER HANDLER RESULT", {
-        actionId,
-        handlerId: handler.id,
-        changed,
-        after: actionsRef.current,
-      })
+     
 
       if (changed) {
         recompute()
@@ -56,11 +47,7 @@ export function usePageActionsRuntime() {
 
   const unregisterHandler = useCallback(
     (actionId: string, handlerId: string) => {
-      console.log("➖ UNREGISTER HANDLER REQUEST", {
-        actionId,
-        handlerId,
-        before: actionsRef.current,
-      })
+      
 
       const changed = unregisterHandlerRuntime(
         actionsRef.current,
@@ -68,12 +55,7 @@ export function usePageActionsRuntime() {
         handlerId
       )
 
-      console.log("🗑 UNREGISTER HANDLER RESULT", {
-        actionId,
-        handlerId,
-        changed,
-        after: actionsRef.current,
-      })
+      
 
       if (changed) {
         recompute()

@@ -73,11 +73,10 @@ export function useActionExecutor() {
 
       return result
     } catch (error) {
-      console.error("❌ ACTION EXECUTION FAILED", {
-        target,
-        ctx,
-        error,
-      })
+      console.error(
+    "❌ ACTION EXECUTION FAILED",
+    error,
+)
 
       page.runEffect({
         type: "toast",

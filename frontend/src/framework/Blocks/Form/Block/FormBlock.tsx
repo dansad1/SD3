@@ -179,15 +179,7 @@ export function FormBlock({
   // DEBUG
   // =====================================================
 
-  console.log(
-    "🧪 FORM ERRORS",
-    form.fieldErrors
-  )
-
-  console.log(
-    "🛡 FORM CAPABILITIES",
-    form.capabilities
-  )
+ 
 
   // =====================================================
   // RENDER

@@ -22,16 +22,7 @@ export function resolveWidget(
   field: FieldSchema
 ): WidgetKey {
 
-  console.log(
-    "🧠 resolveWidget",
-    {
-      name: field.name,
-      widget: field.widget,
-      html_type: field.html_type,
-      semantic: field.semantic,
-      field,
-    }
-  )
+ 
 
   /* ========================================
      semantic resolution
@@ -82,10 +73,7 @@ export function resolveWidget(
   const primitive =
     resolvePrimitiveWidget(field)
 
-  console.log(
-    "🧠 primitiveWidget",
-    primitive
-  )
+  
 
   return primitive
 }

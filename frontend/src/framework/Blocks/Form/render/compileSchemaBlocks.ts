@@ -177,25 +177,6 @@ export function compileSchemaBlocks(
   const groups =
     schema.layout?.groups
 
-  console.log(
-    "GROUPS",
-    groups
-  )
-
-  console.log(
-    "LAYOUT",
-    schema.layout
-  )
-
-  console.log(
-    "FIELD SECTIONS",
-    fields.map(field => ({
-      name: field.name,
-      section:
-        field.ui?.section,
-    }))
-  )
-
   /*
    * Уже гидратированные блоки
    */

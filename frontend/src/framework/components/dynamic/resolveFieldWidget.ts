@@ -24,20 +24,7 @@ export function resolveFieldWidget(
   interaction?: InteractionMode
 ): WidgetKey {
 
-  console.log(
-    "🔵 resolveFieldWidget INPUT",
-    {
-      name: field.name,
-      type: field.type,
-      widget: field.widget,
-      presentation: field.presentation,
-      options: field.options,
-      entity: field.entity,
-      multiple: field.multiple,
-      readonly: field.readonly,
-      semantic: field.semantic,
-    }
-  )
+ 
 
   /* ========================================
      presentation layer
@@ -45,12 +32,7 @@ export function resolveFieldWidget(
 
   if (field.presentation === "meta") {
 
-    console.log(
-      "🟡 resolveFieldWidget META",
-      {
-        name: field.name,
-      }
-    )
+   
 
     return "Meta"
   }
@@ -89,14 +71,6 @@ export function resolveFieldWidget(
 
     if (semanticWidget) {
 
-      console.log(
-        "🟢 resolveFieldWidget SEMANTIC",
-        {
-          name: field.name,
-          semanticType,
-          widget: semanticWidget,
-        }
-      )
 
       return semanticWidget
     }
@@ -111,19 +85,7 @@ export function resolveFieldWidget(
       field
     )
 
-  console.log(
-    "🟣 resolveFieldWidget RESULT",
-    {
-      name: field.name,
-      type: field.type,
-      widgetFromSchema:
-        field.widget,
-      resolvedWidget:
-        widget,
-      options:
-        field.options,
-    }
-  )
+ 
 
   return widget
 }

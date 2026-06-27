@@ -37,7 +37,6 @@ export function resolveSurface(
     },
   }
 
-  console.log("🧩 resolveSurface output:", surface)
 
   return surface
 }

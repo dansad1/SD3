@@ -21,6 +21,7 @@ class Command(BaseCommand):
         )
 
         fields = [
+
             {
                 "name": "login",
                 "label": "Логин",
@@ -29,6 +30,7 @@ class Command(BaseCommand):
                 "unique": True,
                 "is_system": True,
             },
+
             {
                 "name": "full_name",
                 "label": "ФИО",
@@ -36,6 +38,7 @@ class Command(BaseCommand):
                 "required": False,
                 "is_system": False,
             },
+
             {
                 "name": "email",
                 "label": "Email",
@@ -44,6 +47,19 @@ class Command(BaseCommand):
                 "unique": True,
                 "is_system": False,
             },
+
+            {
+                "name": "company",
+                "label": "Компания",
+                "field_type": "relation",
+                "required": False,
+                "is_system": False,
+                "is_multiple": False,
+                "options": {
+                    "entity": "company",
+                },
+            },
+
             {
                 "name": "phone",
                 "label": "Телефон",
@@ -51,6 +67,7 @@ class Command(BaseCommand):
                 "required": False,
                 "is_system": False,
             },
+
             {
                 "name": "telegram",
                 "label": "Telegram",
@@ -58,6 +75,7 @@ class Command(BaseCommand):
                 "required": False,
                 "is_system": False,
             },
+
             {
                 "name": "department",
                 "label": "Отдел",
@@ -65,8 +83,8 @@ class Command(BaseCommand):
                 "required": False,
                 "is_system": False,
             },
-        ]
 
+        ]
         for data in fields:
             field, created = UserField.objects.update_or_create(
                 fieldset=fieldset,

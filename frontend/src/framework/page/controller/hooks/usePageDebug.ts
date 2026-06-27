@@ -47,11 +47,9 @@ export function usePageDebug({
   api,
 }: Params) {
   useEffect(() => {
-    console.log("[PageController] mounted")
   }, [])
 
   useEffect(() => {
-    console.log("[PageController] runtimeContext", runtimeContext)
   }, [runtimeContext])
 
   useEffect(() => {
@@ -64,12 +62,7 @@ export function usePageDebug({
   }, [actions, registerHandler, unregisterHandler, run])
 
   useEffect(() => {
-    console.log("[PageController] dirtyRuntime", {
-      pageDirty,
-      hasSetDirty: !!setDirty,
-      hasUnregisterDirty: !!unregisterDirty,
-      hasGetPageDirty: !!getPageDirty,
-    })
+    
   }, [
     pageDirty,
     setDirty,

@@ -5,17 +5,7 @@ export function resolvePrimitiveWidget(
   field: FieldSchema
 ): WidgetKey {
 
-  console.log(
-    "🔧 RESOLVE PRIMITIVE",
-    {
-      name: field.name,
-      type: field.type,
-      widget: field.widget,
-      html_type: field.html_type,
-      entity: field.entity,
-      multiple: field.multiple,
-    }
-  )
+  
 
   switch (field.html_type) {
 
@@ -40,12 +30,7 @@ export function resolvePrimitiveWidget(
       field.widget
     )
 
-  console.log(
-    "🔧 EXPLICIT",
-    field.name,
-    field.widget,
-    explicit
-  )
+  
 
   if (explicit) {
     return explicit
