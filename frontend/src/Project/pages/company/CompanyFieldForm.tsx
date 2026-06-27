@@ -54,10 +54,7 @@ const CompanyFieldFormPage = page(
                   to: "company_field:list",
                 },
               }}
-              formLayout={{
-                preset: "two-columns",
-                density: "comfortable",
-              }}
+              
             />
           </Section>
 

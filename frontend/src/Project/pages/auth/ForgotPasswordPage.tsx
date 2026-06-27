@@ -67,9 +67,7 @@ const ForgotPasswordPage = page(
             "Отправить ссылку",
         }}
 
-        formLayout={{
-          preset: "single-column",
-        }}
+        
 
       />
 

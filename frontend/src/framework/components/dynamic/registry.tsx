@@ -304,7 +304,6 @@ export const widgetRegistry = {
 
         layout: {
             preferredSpan: 12,
-            grow: false,
         },
 
     },

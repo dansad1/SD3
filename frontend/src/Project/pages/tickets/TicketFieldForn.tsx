@@ -99,17 +99,7 @@ const TicketFieldFormPage = page(
 
               }}
 
-              formLayout={{
-
-                preset:
-
-                  "two-columns",
-
-                density:
-
-                  "comfortable",
-
-              }}
+              
 
             />
 

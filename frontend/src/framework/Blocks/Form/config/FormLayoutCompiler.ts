@@ -11,72 +11,71 @@ import {
   runFormLayoutProcessors,
 } from "../Layout/registry"
 
-import "../Layout/PresetProcessor"
 import "../Layout/DensityProcessor"
+import "../Layout/balanceRowsProcessor"
 
 import {
   compileSchemaBlocks,
 } from "../render/compileSchemaBlocks"
+
 
 export type CompiledFormSchema =
   FormSchema & {
     blocks: FormBlock[]
   }
 
+
 export function applyLayoutConfig(
-  schema: FormSchema,
-  layout?: FormLayoutConfig
+    schema: FormSchema,
+    layout?: FormLayoutConfig
 ): CompiledFormSchema {
 
-  const schemaWithLayout: FormSchema = {
-    ...schema,
+    const effectiveLayout: FormLayoutConfig = {
 
-    layout: {
-      ...(schema.layout ?? {}),
+        strategy: "balance",
 
-      preset:
-        layout?.preset,
+        ...(schema.layout ?? {}),
 
-      density:
-        layout?.density,
+        ...(layout ?? {}),
 
-      groups:
-        layout?.groups,
-    },
-  }
+    }
 
-  const normalizedSchema =
-    compileSchemaBlocks(
-      schemaWithLayout
-    )
 
-  if (!layout) {
-    return normalizedSchema
-  }
+    const normalizedSchema =
+        compileSchemaBlocks({
 
-  const processedBlocks =
-    runFormLayoutProcessors(
-      [...normalizedSchema.blocks],
-      layout
-    )
+            ...schema,
 
-  return {
-    ...normalizedSchema,
+            layout:
 
-    layout: {
-      ...(normalizedSchema.layout ?? {}),
+                effectiveLayout,
 
-      preset:
-        layout.preset,
+        })
 
-      density:
-        layout.density,
 
-      groups:
-        layout.groups,
-    },
+    const processedBlocks =
 
-    blocks:
-      processedBlocks,
-  }
+        runFormLayoutProcessors(
+
+            [...normalizedSchema.blocks],
+
+            effectiveLayout
+
+        )
+
+
+    return {
+
+        ...normalizedSchema,
+
+        layout:
+
+            effectiveLayout,
+
+        blocks:
+
+            processedBlocks,
+
+    }
+
 }

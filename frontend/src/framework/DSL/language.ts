@@ -355,20 +355,38 @@ export const Atom = {
    ========================= */
 
 export const Action = {
-  action: {
-    props: {
-      label: "string",
-      icon: "string",
+action: {
+  props: {
+    label: "string",
 
-      // 🔥 ЯВНОЕ РАЗДЕЛЕНИЕ
-      to: "string",
-      action: "string",
+    icon: "string",
 
-      ctx: "object",
+    to: "string",
 
-      variant: ["primary", "secondary", "ghost", "danger"],
+    action: "string",
+
+    ctx: "object",
+
+    picker: {
+
+      entity: "string",
+
+      title: "string",
+
+      multiple: "boolean",
+
+      filter: "object",
+
     },
+
+    variant: [
+      "primary",
+      "secondary",
+      "ghost",
+      "danger",
+    ],
   },
+},
 
 
   

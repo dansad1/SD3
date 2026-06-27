@@ -85,13 +85,7 @@ const ServiceFormPage = page(
 
   }}
 
-  formLayout={{
-
-    preset: "single-column",
-
-    density: "comfortable",
-
-  }}
+  
 
 />
 

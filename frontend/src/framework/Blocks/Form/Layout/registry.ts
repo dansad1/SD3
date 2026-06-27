@@ -1,30 +1,68 @@
-// layout/registry.ts
+import type {
+    FormLayoutConfig,
+} from "../types/FormConfig"
 
-import type { FormLayoutConfig } from "../types/FormConfig"
-import type { FormBlock } from "../types/types"
+import type {
+    FormBlock,
+} from "../types/types"
+
 
 export type FormLayoutProcessor = (
-  blocks: FormBlock[],
-  layout: FormLayoutConfig
+
+    blocks: FormBlock[],
+
+    layout: FormLayoutConfig
+
 ) => FormBlock[]
 
-const processors: FormLayoutProcessor[] = []
+
+const processors:
+FormLayoutProcessor[] = []
+
 
 export function registerFormLayoutProcessor(
-  processor: FormLayoutProcessor
+
+    processor: FormLayoutProcessor
+
 ): void {
-  processors.push(processor)
+
+    processors.push(
+
+        processor
+
+    )
+
 }
 
+
 export function runFormLayoutProcessors(
-  blocks: FormBlock[],
-  layout: FormLayoutConfig
+
+    blocks: FormBlock[],
+
+    layout: FormLayoutConfig
+
 ): FormBlock[] {
-  let result = blocks
 
-  for (const processor of processors) {
-    result = processor(result, layout)
-  }
+    let result = blocks
 
-  return result
+
+    for (
+
+        const processor
+
+        of processors
+
+    ) {
+
+        result = processor(
+            result,
+            layout
+
+        )
+
+    }
+
+
+    return result
+
 }

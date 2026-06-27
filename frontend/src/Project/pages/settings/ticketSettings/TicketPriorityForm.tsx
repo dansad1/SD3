@@ -92,13 +92,7 @@ const TicketPriorityFormPage = page(
 
                 }}
 
-                formLayout={{
-
-                  preset: "single-column",
-
-                  density: "comfortable",
-
-                }}
+                
 
               />
 

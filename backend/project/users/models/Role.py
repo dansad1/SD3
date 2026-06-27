@@ -39,15 +39,7 @@ class UserRole(TimeStampedModel):
         related_name="roles",
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        editable=False,
-    )
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        editable=False,
-    )
 
     class Meta:
 

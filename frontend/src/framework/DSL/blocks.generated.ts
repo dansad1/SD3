@@ -233,6 +233,12 @@ export type ActionDSL =
   to?: string | `$${string}`
   action?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
+  picker?: {
+  entity?: string | `$${string}`
+  title?: string | `$${string}`
+  multiple?: boolean | `$${string}`
+  filter?: Record<string, unknown> | `$${string}`
+}
   variant?: ("primary" | "secondary" | "ghost" | "danger") | `$${string}`
 }
 

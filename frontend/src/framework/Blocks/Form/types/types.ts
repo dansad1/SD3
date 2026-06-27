@@ -17,7 +17,21 @@ export type FormGroupMode =
   | "sections"
   | "tabs"
 
+export type FormLayoutStrategy =
+  | "balance"
+  | "manual"
+
 export type FormLayout = {
+
+  /**
+   * Автоматическая балансировка
+   * По умолчанию используется balance
+   */
+  strategy?: FormLayoutStrategy
+
+  /**
+   * Deprecated
+   */
   preset?: FormLayoutPreset
 
   density?: FormDensity
@@ -26,9 +40,13 @@ export type FormLayout = {
 }
 
 export type FormBlockLayout = {
-  span?: 1 | 2 | 3 | 4 | 6 | 12
-  order?: number
-  hidden?: boolean
+
+    span?: number
+
+    order?: number
+
+    hidden?: boolean
+
 }
 
 export type FormFieldBlock = {

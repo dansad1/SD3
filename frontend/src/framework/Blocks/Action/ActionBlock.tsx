@@ -1,58 +1,47 @@
-import { useActionExecutor } from "./executor/useActionExecutor"
-import type { ActionContext } from "./types"
+import { DefaultPresentation }
+from "./presentation/DefaultPresentation"
 
-type Props = {
-  label: string
+import { PickerPresentation }
+from "./presentation/PickerPresentation"
 
-  to?: string
-  action?: string
-
-  ctx?: ActionContext
-  variant?: "primary" | "secondary" | "ghost" | "danger"
+import type {
+    ActionBlock as ActionBlockType
 }
+from "./types"
 
-export function ActionBlock({
-  label,
-  to,
-  action,
-  ctx,
-  variant = "secondary",
-}: Props) {
-  const { runAction, isRunning } = useActionExecutor()
 
-  // 🔥 теперь строго
-  const finalAction = action ?? to
+type Props = ActionBlockType
 
-  if (!finalAction) {
-    console.warn("ActionBlock: no 'to' or 'action' provided")
-    return null
-  }
 
-  const loading = isRunning(finalAction)
+export function ActionBlock(
+    props: Props
+){
 
-  return (
-   <button
-  type="button"
-  className={[
-    "ui-btn",
+    if(
+        props.picker
+    ){
 
-    `ui-btn-${variant}`,
+        return (
 
-    "ui-btn-md",
+            <PickerPresentation
 
-    loading && "is-loading",
-  ]
-    .filter(Boolean)
-    .join(" ")}
-  disabled={loading}
-  aria-busy={loading}
-  onClick={() =>
-    void runAction(finalAction, ctx)
-  }
->
-  <span className="ui-btn-label">
-    {loading ? "..." : label}
-  </span>
-</button>
-  )
+                {...props}
+
+            />
+
+        )
+
+    }
+
+
+    return (
+
+        <DefaultPresentation
+
+            {...props}
+
+        />
+
+    )
+
 }

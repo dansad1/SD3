@@ -1,101 +1,374 @@
-import { getWidgetDefinition } from "@/framework/components/dynamic/widgets/helpers"
+import type {
+    FormBlock,
+    FormFieldBlock,
+} from "../types/types"
+
+import type {
+    FormLayoutConfig,
+} from "../types/FormConfig"
+
+import {
+    registerFormLayoutProcessor,
+} from "./registry"
+
+import {
+    resolveWidgetAlias,
+    widgetRegistry,
+} from "@/framework/components/dynamic/registry"
+
 
 const GRID = 12
 
-export type FieldLayout = {
-  preferredSpan?: number
-  grow?: boolean
-}
 
-export type FormField = {
-  name?: string
-  type?: string
-  widget?: string
-  layout?: FieldLayout
-}
+function getSpan(
+    block: FormBlock,
+): number {
 
-export type BalancedField = {
-  field: FormField
-  span: number
-}
-
-export type BalancedRow = BalancedField[]
-
-function preferred(field: FormField): number {
-  const widget = getWidgetDefinition(field.widget)
-
-  return (
-    field.layout?.preferredSpan ??
-    widget?.layout.preferredSpan ??
-    6
-  )
-}
-
-function growable(field: FormField): boolean {
-  const widget = getWidgetDefinition(field.widget)
-
-  return (
-    field.layout?.grow ??
-    widget?.layout.grow ??
-    true
-  )
-}
-
-export function balanceRowsProcessor(
-  fields: FormField[]
-): BalancedRow[] {
-  const rows: BalancedRow[] = []
-
-  let row: BalancedRow = []
-  let total = 0
-
-  for (const field of fields) {
-    const span = preferred(field)
-
-    if (row.length && total + span > GRID) {
-      rows.push(distribute(row))
-      row = []
-      total = 0
+    if (block.layout?.span) {
+        return block.layout.span
     }
 
-    row.push({
-      field,
-      span,
-    })
+    if (block.type !== "field") {
+        return 12
+    }
 
-    total += span
-  }
+    const field =
+        block as FormFieldBlock
 
-  if (row.length) {
-    rows.push(distribute(row))
-  }
 
-  return rows
-}
+    const widgetKey =
+        resolveWidgetAlias(
+            field.field.widget
+        )
 
-function distribute(row: BalancedRow): BalancedRow {
-  let free =
-    GRID -
-    row.reduce(
-      (sum: number, item: BalancedField) =>
-        sum + item.span,
-      0
+
+    if (!widgetKey) {
+        return 6
+    }
+
+
+    return (
+
+        widgetRegistry[
+            widgetKey
+        ].layout
+        ?.preferredSpan
+
+        ??
+
+        6
+
     )
 
-  const candidates = row.filter(
-    (item: BalancedField) => growable(item.field)
-  )
+}
 
-  while (free > 0 && candidates.length) {
-    for (const item of candidates) {
-      if (free === 0) {
-        break
-      }
 
-      item.span += 1
-      free -= 1
+registerFormLayoutProcessor(
+
+    (
+        blocks: FormBlock[],
+        layout: FormLayoutConfig,
+    ): FormBlock[] => {
+
+
+        const strategy =
+
+            layout.strategy
+
+            ??
+
+            "balance"
+
+
+        if (
+
+            strategy !==
+
+            "balance"
+
+        ) {
+
+            return blocks
+
+        }
+
+
+        return balanceBlocks(
+
+            blocks
+
+        )
+
     }
-  }
 
-  return row
+)
+
+
+
+function balanceBlocks(
+
+    blocks: FormBlock[]
+
+): FormBlock[] {
+
+
+    const rows:
+        FormBlock[][] = []
+    let row:
+        FormBlock[] = []
+    let used = 0
+
+
+    for (
+        const block
+        of blocks
+    ) {
+
+
+        const span =
+            getSpan(
+                block
+
+            )
+
+
+        if (
+
+            row.length &&
+            used + span >
+            GRID
+
+        ) {
+
+
+            rows.push(
+                balanceRow(
+                    row
+
+                )
+
+            )
+
+            row = []
+            used = 0
+
+        }
+
+
+        row.push(
+            block
+
+        )
+        used += span
+
+    }
+
+
+    if (
+
+        row.length
+
+    ) {
+
+        rows.push(
+
+            balanceRow(
+
+                row
+
+            )
+
+        )
+
+    }
+console.group("BALANCED")
+
+for (const row of rows) {
+
+    console.log(
+
+        row.map(block => ({
+
+            id: block.id,
+
+            type: block.type,
+
+            span: block.layout?.span,
+
+            widget:
+                block.type === "field"
+                    ? block.field.widget
+                    : block.type,
+
+        }))
+
+    )
+
+}
+
+console.groupEnd()
+
+    return rows.flat()
+
+}
+
+
+
+function balanceRow(
+
+    row: FormBlock[]
+
+): FormBlock[] {
+
+
+    const normalized = row.map(
+
+        block => ({
+
+            ...block,
+
+            layout: {
+
+                ...(block.layout ?? {}),
+
+                span: getSpan(
+
+                    block
+
+                ),
+
+            },
+
+        })
+
+    )
+
+
+    const total = normalized.reduce(
+
+        (
+
+            s,
+
+            block
+
+        ) =>
+
+            s +
+
+            (
+
+                block.layout?.span
+
+                ??
+
+                6
+
+            ),
+
+        0
+
+    )
+
+
+    if (
+
+        total >= GRID
+
+    ) {
+
+        return normalized
+
+    }
+
+
+    const free =
+
+        GRID -
+
+        total
+
+
+    const extra =
+
+        Math.floor(
+
+            free /
+
+            normalized.length
+
+        )
+
+
+    let remainder =
+
+        free %
+
+        normalized.length
+
+
+    return normalized.map(
+
+        block => {
+
+
+            const current =
+
+                block.layout?.span
+
+                ??
+
+                6
+
+
+            let span =
+
+                current +
+
+                extra
+
+
+            if (
+
+                remainder >
+
+                0
+
+            ) {
+
+                span++
+
+                remainder--
+
+            }
+
+
+            return {
+
+                ...block,
+
+
+                layout: {
+
+                    ...(
+
+                        block.layout
+
+                        ??
+
+                        {}
+
+                    ),
+
+
+                    span,
+
+                },
+
+            }
+
+        }
+
+    )
+
 }

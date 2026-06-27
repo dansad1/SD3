@@ -107,17 +107,6 @@ const UserFieldFormPage = page(
 
               }}
 
-              formLayout={{
-
-                preset:
-
-                  "two-columns",
-
-                density:
-
-                  "comfortable",
-
-              }}
 
             />
 

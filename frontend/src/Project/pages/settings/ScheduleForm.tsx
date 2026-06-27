@@ -73,13 +73,6 @@ const ScheduleFormPage = page(
 
           }}
 
-          formLayout={{
-
-            preset: "single-column",
-
-            density: "comfortable",
-
-          }}
 
         />
 

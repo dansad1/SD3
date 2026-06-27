@@ -54,11 +54,7 @@ const ArticleFormPage = page(
             },
 
           }}
-          formLayout={{
-            preset: "single-column",
-            density: "comfortable",
-
-          }}
+          
 
         />
       </Stack>

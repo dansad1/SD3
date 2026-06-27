@@ -10,76 +10,48 @@ export type ActionVariant =
   | "secondary"
   | "ghost"
   | "danger"
+export type PickerConfig = {
+    entity: string
 
+    title?: string
+
+    multiple?: boolean
+
+    filter?: Record<
+        string,
+        unknown
+    >
+}
 /* =========================================================
    ACTION BLOCK
 ========================================================= */
 
 export type ActionBlock = BaseBlock & {
   type: "action"
-
-  /**
-   * UI
-   */
   label: string
   icon?: string
-
-  /**
-   * Navigation
-   */
   to?: string
+    picker?: PickerConfig   // <-- ЭТОГО сейчас нет
 
   /**
    * Backend action code
    */
   action?: string
-
-  /**
-   * Runtime context
-   */
   ctx?: ActionContext
 
-  /**
-   * Visual style
-   */
+  
   variant?: ActionVariant
 
-  /**
-   * UI permissions
-   *
-   * examples:
-   *
-   * {
-   *   run: true
-   * }
-   */
+  
   capabilities?: BlockCapabilities
-
-  /**
-   * Optional confirmation
-   */
   confirm?:
     | boolean
     | {
         message?: string
       }
 
-  /**
-   * Reload sources after success
-   */
   refresh?: string[]
-
-  /**
-   * Close modal after success
-   */
   closeModal?: boolean
-
-  /**
-   * Disable button
-   *
-   * IMPORTANT:
-   * disabled !== permission
-   */
   disabled?: boolean
 }
 
@@ -105,10 +77,7 @@ export type ActionDescriptor = {
    * UI capabilities
    */
   capabilities?: BlockCapabilities
-
-  /**
-   * Optional visibility
-   */
+picker?: PickerConfig
   hidden?: boolean
 
   /**

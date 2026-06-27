@@ -66,11 +66,7 @@ const TicketTypeFormPage = page(
                     to: "ticket_type:list",
                   },
                 }}
-                formLayout={{
-                  preset: "single-column",
-                  density: "comfortable",
-
-                }}
+                
               />
             </Stack>
           </Section>

@@ -10,28 +10,30 @@ export type FormSubmitConfig = {
 
 /* ================= LAYOUT ================= */
 
+export type FormLayoutStrategy =
+    | "balance"
+    | "manual"
+
 export type FormLayoutPreset =
-  | "default"
-  | "two-columns"
-  | "single-column"
-  | "wide"
+    | "default"
+    | "two-columns"
+    | "single-column"
+    | "wide"
 
 export type FormDensity =
-  | "comfortable"
-  | "default"
-  | "compact"
-  | "dense"
+    | "comfortable"
+    | "default"
+    | "compact"
+    | "dense"
 
 export type FormLayoutConfig = {
-  preset?: FormLayoutPreset
-
-  density?: FormDensity
-
-  groups?:
-    | "sections"
-    | "tabs"
+    preset?: FormLayoutPreset
+    strategy?: FormLayoutStrategy
+    density?: FormDensity
+    groups?:
+        | "sections"
+        | "tabs"
 }
-
 /* ================= CONFIG ================= */
 
 export type FormEntityConfig = {

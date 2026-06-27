@@ -99,13 +99,7 @@ const DepartmentFormPage = page(
 
   }}
 
-  formLayout={{
-
-    preset: "single-column",
-
-    density: "comfortable",
-
-  }}
+  
 
 />
 

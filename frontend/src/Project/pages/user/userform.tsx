@@ -70,12 +70,7 @@ const UserFormPage = page(
     },
   }}
 
-  formLayout={{
-    preset: "two-columns",
-    density: "comfortable",
-
-    groups: "tabs",
-  }}
+  
 />
       </Stack>
 

@@ -95,13 +95,7 @@ const CompanyFormPage = page(
 
   }}
 
-  formLayout={{
-
-    preset: "single-column",
-
-    density: "comfortable",
-
-  }}
+  
 
 />
             </Stack>
@@ -114,86 +108,97 @@ const CompanyFormPage = page(
 
           <If when="$query.id">
 
-            <Section title="Пользователи">
+    <Section title="Пользователи">
 
-              <Stack gap="md">
+        <Stack gap="md">
 
-                <Action
-                  label="Добавить пользователя"
-                  variant="primary"
-                  to="user:form"
-                  ctx={{
+            <Action
+                label="Добавить пользователей"
+                variant="primary"
+                action="entity.relation"
+                picker={{
+                    entity: "user",
+                    title: "Выберите пользователей",
+                    multiple: true,
+                }}
+                ctx={{
+                    entity: "company",
+                    id: "$query.id",
+                    field: "users",
+                    operation: "add",
+                }}
+            />
+
+            <Table
+
+                entity="user"
+
+                filter={{
                     company: "$query.id",
-                  }}
-                />
+                }}
 
-                <Table
-
-                  entity="user"
-
-                  filter={{
-                    company: "$query.id",
-                  }}
-
-                  features={{
+                features={{
                     search: true,
                     selection: false,
                     rowClick: true,
                     rowActions: true,
-                  }}
+                }}
 
-                  rowClick={{
+                rowClick={{
                     to: "user:form",
                     ctx: {
-                      id: "$row.id",
-                    },
-                  }}
-
-                  rowActions={[
-
-                    {
-                      key: "edit",
-
-                      label: "Редактировать",
-
-                      variant: "secondary",
-
-                      to: "user:form",
-
-                      ctx: {
                         id: "$row.id",
-                      },
+                    },
+                }}
+
+                rowActions={[
+
+                    {
+                        key: "edit",
+
+                        label: "Редактировать",
+
+                        variant: "secondary",
+
+                        to: "user:form",
+
+                        ctx: {
+                            id: "$row.id",
+                        },
                     },
 
                     {
-                      key: "remove",
+                        key: "remove",
 
-                      label: "Удалить из компании",
+                        label: "Удалить из компании",
 
-                      variant: "danger",
+                        variant: "danger",
 
-                      action: "company.user.remove",
+                        action: "entity.relation",
 
-                      ctx: {
-                        company: "$query.id",
-                        user: "$row.id",
-                      },
+                        ctx: {
+                            entity: "company",
+                            id: "$query.id",
+                            field: "users",
+                            operation: "remove",
+                            relationId: "$row.id",
+                        },
 
-                      confirm: {
-                        message:
-                          "Удалить пользователя из компании?",
-                      },
+                        confirm: {
+                            message:
+                                "Удалить пользователя из компании?",
+                        },
                     },
 
-                  ]}
+                ]}
 
-                />
+            />
 
-              </Stack>
+        </Stack>
 
-            </Section>
+    </Section>
 
-          </If>
+</If>
 
           {/* ============================================= */}
           {/* DEPARTMENTS */}

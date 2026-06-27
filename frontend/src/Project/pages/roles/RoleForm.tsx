@@ -61,10 +61,7 @@ const RoleFormPage = page(
             },
 
           }}
-          formLayout={{
-    preset: "single-column",
-    density: "comfortable",
-  }}
+
           
 
         />

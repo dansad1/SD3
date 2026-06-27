@@ -84,11 +84,7 @@ const EmailSettingsFormPage = page(
 
             },
           }}
-          formLayout={{
-            preset: "two-columns",
-            density: "comfortable",
-
-          }}
+          
 
         />
       </Stack>

@@ -79,13 +79,7 @@ const TicketCategoryFormPage = page(
 
           }}
 
-          formLayout={{
-
-            preset: "single-column",
-
-            density: "comfortable",
-
-          }}
+          
 
         />
 
