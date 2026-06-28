@@ -260,11 +260,12 @@ class BaseFieldType:
     # =====================================================
 
     def apply_sort(
-        self,
-        queryset,
-        field,
-        direction,
+            self,
+            queryset,
+            field,
+            direction,
     ):
+        print("SORT", field.name, direction)
 
         if not self.sortable:
             return queryset
@@ -274,6 +275,6 @@ class BaseFieldType:
         if direction == "desc":
             key = f"-{key}"
 
-        return queryset.order_by(
-            key
-        )
+        print("ORDER BY", key)
+
+        return queryset.order_by(key)

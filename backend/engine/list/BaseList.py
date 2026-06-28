@@ -17,6 +17,7 @@ from backend.engine.list.Base.fields import (
 from backend.engine.list.Base.filters import (
     apply_filters,
 )
+from backend.engine.list.Base.load_runtime_fields import load_runtime_fields
 
 from backend.engine.list.Base.pagination import (
     paginate,
@@ -94,6 +95,8 @@ PIPELINE = [
     check_permission,
 
     load_queryset,
+
+    load_runtime_fields,
 
     apply_search,
 

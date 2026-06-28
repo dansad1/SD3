@@ -96,15 +96,14 @@ class DynamicField(
     # =====================================================
 
     def apply_search(
-        self,
-        queryset,
-        value,
+            self,
+            queryset,
+            value,
     ):
-
         if not value:
             return queryset
 
         return queryset.filter(
-            dynamic_values__field_name=self.name,
+            dynamic_values__field=self.source,
             dynamic_values__value__icontains=value,
         )

@@ -5,20 +5,9 @@
 def build_fields(ctx):
 
     runtime_fields = (
-        ctx.entity.get_fields(
-            request=ctx.request
-        )
+        ctx.runtime_fields
         or []
     )
-
-    ctx.runtime_fields = (
-        runtime_fields
-    )
-
-    ctx.field_map = {
-        field.name: field
-        for field in runtime_fields
-    }
 
     allowed = set(
         ctx.entity.list_display
@@ -30,17 +19,12 @@ def build_fields(ctx):
     for field in runtime_fields:
 
         # =====================================
-        # HIDDEN
-        # =====================================
-
-        # =====================================
         # LIST DISPLAY
         # =====================================
 
         if (
             allowed
-            and field.name
-            not in allowed
+            and field.name not in allowed
         ):
             continue
 
@@ -62,29 +46,35 @@ def build_fields(ctx):
             "label":
                 schema.get(
                     "label",
-                    field.name,
+                    field.label,
                 ),
 
             "sortable":
-                bool(
-                    getattr(
-                        field,
-                        "sortable",
-                        True,
-                    )
+                schema.get(
+                    "sortable",
+                    True,
+                ),
+
+            "searchable":
+                schema.get(
+                    "searchable",
+                    False,
+                ),
+
+            "filterable":
+                schema.get(
+                    "filterable",
+                    False,
                 ),
 
             "dynamic":
-                bool(
-                    schema.get(
-                        "dynamic",
-                        False,
-                    )
+                schema.get(
+                    "dynamic",
+                    False,
                 ),
 
             "type":
                 field.type,
-
 
         })
 
