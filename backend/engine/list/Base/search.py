@@ -12,20 +12,32 @@ def apply_search(ctx):
     if not value:
         return
 
-    search_fields = set(
-        ctx.entity.search_fields or []
+    allowed = set(
+        ctx.entity.search_fields
+        or []
     )
 
-    qs = ctx.qs
+    query = Q()
 
-    for field in ctx.runtime_fields or []:
+    for field in (
+        ctx.runtime_fields
+        or []
+    ):
 
-        if field.name not in search_fields:
+        if field.name not in allowed:
             continue
 
-        qs = field.apply_search(
-            qs,
+        if not field.field_type.searchable:
+            continue
+
+        query |= field.build_search_q(
             value,
         )
 
-    ctx.qs = qs.distinct()
+    if query.children:
+
+        ctx.qs = (
+            ctx.qs
+            .filter(query)
+            .distinct()
+        )

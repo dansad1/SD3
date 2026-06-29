@@ -1,15 +1,14 @@
+from django.db.models import Q
+
 from backend.engine.fields.base import (
     BaseField,
 )
-
 from backend.engine.fields.dynamic_accessor import (
     DynamicValueAccessor,
 )
 
 
-class DynamicField(
-    BaseField,
-):
+class DynamicField(BaseField):
 
     @property
     def accessor(self):
@@ -76,14 +75,12 @@ class DynamicField(
             list,
         ):
 
-            values = [
-                str(item)
-                for item in value
-            ]
-
             return queryset.filter(
                 dynamic_values__field_name=self.name,
-                dynamic_values__value__in=values,
+                dynamic_values__value__in=[
+                    str(item)
+                    for item in value
+                ],
             )
 
         return queryset.filter(
@@ -95,15 +92,18 @@ class DynamicField(
     # SEARCH
     # =====================================================
 
-    def apply_search(
-            self,
-            queryset,
-            value,
+    def build_search_q(
+        self,
+        value,
     ):
-        if not value:
-            return queryset
 
-        return queryset.filter(
-            dynamic_values__field=self.source,
+        if (
+            not value
+            or not self.field_type.searchable
+        ):
+            return Q()
+
+        return Q(
+            dynamic_values__field_name=self.name,
             dynamic_values__value__icontains=value,
         )

@@ -1,3 +1,6 @@
+from django.db.models import Q
+
+
 class BaseField:
 
     META_FIELDS = {
@@ -117,14 +120,14 @@ class BaseField:
 
     @property
     def options(self):
-
-        value = getattr(
-            self.source,
-            "options",
-            None,
+        return (
+            getattr(
+                self.source,
+                "options",
+                None,
+            )
+            or {}
         )
-
-        return value or {}
 
     # =====================================================
     # TYPE
@@ -145,36 +148,46 @@ class BaseField:
     # BEHAVIOR
     # =====================================================
 
-    def validate(self, value):
+    def validate(
+        self,
+        value,
+    ):
         return self.field_type.validate(
             self,
             value,
         )
 
-    def normalize(self, value):
+    def normalize(
+        self,
+        value,
+    ):
         return self.field_type.normalize(
             self,
             value,
         )
 
     def should_save(
+        self,
+        value,
+    ):
+        return self.field_type.should_save(
             self,
             value,
-    ):
-        return (
-            self.field_type
-            .should_save(
-                self,
-                value,
-            )
         )
-    def serialize(self, value):
+
+    def serialize(
+        self,
+        value,
+    ):
         return self.field_type.serialize(
             self,
             value,
         )
 
-    def deserialize(self, value):
+    def deserialize(
+        self,
+        value,
+    ):
         return self.field_type.deserialize(
             self,
             value,
@@ -187,19 +200,32 @@ class BaseField:
     def get_schema(self):
 
         schema = self.field_type.get_schema(
-            self
+            self,
         )
 
         schema.update({
-            "name": self.name,
-            "label": self.label,
 
-            "required": self.required,
-            "placeholder": self.placeholder,
-            "help_text": self.help_text,
+            "name":
+                self.name,
 
-            "multiple": self.is_multiple,
-            "unique": self.unique,
+            "label":
+                self.label,
+
+            "required":
+                self.required,
+
+            "placeholder":
+                self.placeholder,
+
+            "help_text":
+                self.help_text,
+
+            "multiple":
+                self.is_multiple,
+
+            "unique":
+                self.unique,
+
         })
 
         if self.presentation:
@@ -211,7 +237,7 @@ class BaseField:
 
             schema.setdefault(
                 "ui",
-                {}
+                {},
             )
 
             schema["ui"]["section"] = (
@@ -229,57 +255,38 @@ class BaseField:
         return schema
 
     # =====================================================
-    # FILTER / SEARCH
+    # FILTER
     # =====================================================
 
     def apply_filter(
-
-            self,
-
-            queryset,
-
-            value,
-
+        self,
+        queryset,
+        value,
     ):
-
-        print(
-
-            "CALL",
-
-            self.name,
-
-            value,
-
-        )
-
         return self.field_type.apply_filter(
-
-            queryset,
-
-            self,
-
-            value,
-
-        )
-
-    def apply_search(
-            self,
-            queryset,
-            value,
-    ):
-
-        return self.field_type.apply_search(
             queryset,
             self,
             value,
         )
+
+    # =====================================================
+    # SEARCH
+    # =====================================================
 
     def build_search_q(
-            self,
-            value,
+        self,
+        value,
     ):
 
-        return self.field_type.build_search_q(
-            self,
-            value,
+        if (
+            not value
+            or not self.field_type.searchable
+        ):
+            return Q()
+
+        return Q(
+            **{
+                f"{self.name}__icontains":
+                    value,
+            }
         )

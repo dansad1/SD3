@@ -3,6 +3,11 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 
 
+
+
+from django.core.exceptions import ValidationError
+
+
 class BaseFieldType:
 
     code = "base"
@@ -81,6 +86,7 @@ class BaseFieldType:
         value,
     ):
         return True
+
     # =====================================================
     # SERIALIZATION
     # =====================================================
@@ -170,88 +176,25 @@ class BaseFieldType:
     # =====================================================
 
     def apply_filter(
-
-            self,
-
-            queryset,
-
-            field,
-
-            value,
-
-    ):
-
-        print(
-
-            "APPLY",
-
-            field.name,
-
-            value,
-
-        )
-
-        qs = queryset.filter(
-
-            **{
-
-                field.name:
-
-                    value,
-
-            }
-
-        )
-
-        print(
-
-            "COUNT",
-
-            qs.count(),
-
-        )
-
-        return qs
-    # =====================================================
-    # SEARCH
-    # =====================================================
-
-    def apply_search(
         self,
         queryset,
         field,
         value,
     ):
 
-        if not value:
-            return queryset
-
-        if not self.searchable:
+        if (
+            not self.filterable
+            or value in (
+                None,
+                "",
+                [],
+            )
+        ):
             return queryset
 
         return queryset.filter(
             **{
-                f"{field.name}__icontains":
-                    value,
-            }
-        )
-
-    def build_search_q(
-            self,
-            field,
-            value,
-    ):
-
-        if not value:
-            return Q()
-
-        if not self.searchable:
-            return Q()
-
-        return Q(
-            **{
-                f"{field.name}__icontains":
-                    value,
+                field.name: value,
             }
         )
 
@@ -260,21 +203,20 @@ class BaseFieldType:
     # =====================================================
 
     def apply_sort(
-            self,
-            queryset,
-            field,
-            direction,
+        self,
+        queryset,
+        field,
+        direction,
     ):
-        print("SORT", field.name, direction)
 
         if not self.sortable:
             return queryset
 
-        key = field.name
+        order = field.name
 
         if direction == "desc":
-            key = f"-{key}"
+            order = f"-{order}"
 
-        print("ORDER BY", key)
-
-        return queryset.order_by(key)
+        return queryset.order_by(
+            order
+        )
