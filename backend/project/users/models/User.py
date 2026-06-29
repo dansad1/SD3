@@ -2,14 +2,8 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
 )
-from django.contrib.contenttypes.fields import (
-    GenericRelation,
-)
 from django.db import models
 
-from backend.generic.models import (
-    DynamicValue,
-)
 from backend.project.users.managers import (
     UserManager,
 )
@@ -62,13 +56,6 @@ class User(
         related_name="users",
     )
 
-    dynamic_values = GenericRelation(
-        DynamicValue,
-        content_type_field="content_type",
-        object_id_field="object_id",
-        related_query_name="user",
-    )
-
     # =====================================================
     # DJANGO AUTH
     # =====================================================
@@ -80,14 +67,14 @@ class User(
     objects = UserManager()
 
     # =====================================================
-    # STR
+    # STRING
     # =====================================================
 
     def __str__(self):
 
         return (
             self.get_value(
-                "full_name"
+                "full_name",
             )
             or self.login
         )
@@ -108,10 +95,16 @@ class User(
 
         values = {}
 
-        for item in self.dynamic_values.all():
+        for item in (
+            self.dynamic_values
+            .select_related(
+                "field",
+            )
+            .all()
+        ):
 
             values[
-                item.field_name
+                item.field.name
             ] = item.value
 
         self._dynamic_map = values
@@ -125,6 +118,7 @@ class User(
     def get_value(
         self,
         field_name,
+        default=None,
     ):
 
         if hasattr(
@@ -138,5 +132,41 @@ class User(
 
         return (
             self.get_dynamic_map()
-            .get(field_name)
+            .get(
+                field_name,
+                default,
+            )
         )
+
+    def set_value(
+        self,
+        field_name,
+        value,
+    ):
+
+        field = (
+            self.fieldset.fields
+            .filter(
+                name=field_name,
+            )
+            .first()
+        )
+
+        if field is None:
+            raise ValueError(
+                f"Unknown field: {field_name}"
+            )
+
+        field.set_value(
+            self,
+            value,
+        )
+
+        if hasattr(
+            self,
+            "_dynamic_map",
+        ):
+            delattr(
+                self,
+                "_dynamic_map",
+            )

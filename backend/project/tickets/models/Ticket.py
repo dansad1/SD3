@@ -1,11 +1,6 @@
-from django.conf import settings
-from django.contrib.contenttypes.fields import (
-    GenericRelation,
-)
 from django.db import models
 
 from backend.generic.models import (
-    DynamicValue,
     TimeStampedModel,
 )
 
@@ -28,13 +23,6 @@ class Ticket(TimeStampedModel):
 
     archived = models.BooleanField(
         default=False,
-    )
-
-    dynamic_values = GenericRelation(
-        DynamicValue,
-        content_type_field="content_type",
-        object_id_field="object_id",
-        related_query_name="ticket",
     )
 
     # =====================================================
@@ -78,28 +66,34 @@ class Ticket(TimeStampedModel):
         )
 
     # =====================================================
-    # DYNAMIC CACHE
+    # DYNAMIC VALUES
     # =====================================================
 
-    def get_dynamic_values_map(
+    def get_dynamic_map(
         self,
     ):
 
         if hasattr(
             self,
-            "_dynamic_values_map",
+            "_dynamic_map",
         ):
-            return self._dynamic_values_map
+            return self._dynamic_map
 
         values = {}
 
-        for item in self.dynamic_values.all():
+        for item in (
+            self.dynamic_values
+            .select_related(
+                "field",
+            )
+            .all()
+        ):
 
             values[
-                item.field_name
+                item.field.name
             ] = item.value
 
-        self._dynamic_values_map = values
+        self._dynamic_map = values
 
         return values
 
@@ -114,9 +108,44 @@ class Ticket(TimeStampedModel):
     ):
 
         return (
-            self.get_dynamic_values_map()
+            self.get_dynamic_map()
             .get(
                 field_name,
                 default,
             )
         )
+
+    def set_value(
+        self,
+        field_name,
+        value,
+    ):
+
+        field = (
+            self.type.fieldset.fields
+            .filter(
+                name=field_name,
+            )
+            .first()
+        )
+
+        if field is None:
+
+            raise ValueError(
+                f"Unknown field: {field_name}"
+            )
+
+        field.set_value(
+            self,
+            value,
+        )
+
+        if hasattr(
+            self,
+            "_dynamic_map",
+        ):
+
+            delattr(
+                self,
+                "_dynamic_map",
+            )

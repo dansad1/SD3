@@ -12,14 +12,88 @@ from backend.generic.models.DynamicValue import (
 
 
 class DynamicValueAccessor(
-    BaseValueAccessor
+    BaseValueAccessor,
 ):
+
+    # =====================================================
+    # HELPERS
+    # =====================================================
+
+    def get_value_model(
+        self,
+        field,
+    ):
+
+        return getattr(
+            field,
+            "value_model",
+            None,
+        )
+
+    def get_owner_name(
+        self,
+        obj,
+    ):
+
+        return (
+            obj._meta.model_name
+        )
+
+    # =====================================================
+    # GET
+    # =====================================================
 
     def get(
         self,
         obj,
         field,
     ):
+
+        value_model = (
+            self.get_value_model(
+                field,
+            )
+        )
+
+        # ===============================================
+        # NEW STORAGE
+        # ===============================================
+
+        if value_model:
+
+            owner = self.get_owner_name(
+                obj,
+            )
+
+            item = (
+
+                value_model.objects
+
+                .select_related(
+                    "field",
+                )
+
+                .filter(
+                    **{
+                        owner: obj,
+                        "field": field.source,
+                    }
+                )
+
+                .first()
+
+            )
+
+            if not item:
+                return None
+
+            return field.deserialize(
+                item.value,
+            )
+
+        # ===============================================
+        # LEGACY STORAGE
+        # ===============================================
 
         content_type = (
             ContentType.objects.get_for_model(
@@ -28,7 +102,7 @@ class DynamicValueAccessor(
             )
         )
 
-        dynamic_value = (
+        item = (
 
             DynamicValue.objects
 
@@ -39,14 +113,19 @@ class DynamicValueAccessor(
             )
 
             .first()
+
         )
 
-        if not dynamic_value:
+        if not item:
             return None
 
         return field.deserialize(
-            dynamic_value.value
+            item.value,
         )
+
+    # =====================================================
+    # SET
+    # =====================================================
 
     def set(
         self,
@@ -54,6 +133,47 @@ class DynamicValueAccessor(
         field,
         value,
     ):
+
+        value_model = (
+            self.get_value_model(
+                field,
+            )
+        )
+
+        # ===============================================
+        # NEW STORAGE
+        # ===============================================
+
+        if value_model:
+
+            owner = self.get_owner_name(
+                obj,
+            )
+
+            item, _ = (
+
+                value_model.objects
+
+                .get_or_create(
+                    **{
+                        owner: obj,
+                        "field": field.source,
+                    }
+                )
+
+            )
+
+            item.value = field.serialize(
+                value,
+            )
+
+            item.save()
+
+            return value
+
+        # ===============================================
+        # LEGACY STORAGE
+        # ===============================================
 
         content_type = (
             ContentType.objects.get_for_model(
@@ -72,11 +192,12 @@ class DynamicValueAccessor(
 
             defaults={
 
-                "value":
-                    field.serialize(
-                        value
-                    )
+                "value": field.serialize(
+                    value,
+                ),
+
             },
+
         )
 
         return value

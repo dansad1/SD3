@@ -1,11 +1,4 @@
-from django.contrib.contenttypes.fields import (
-    GenericRelation,
-)
 from django.db import models
-
-from backend.generic.models import (
-    DynamicValue,
-)
 
 
 class Company(models.Model):
@@ -20,13 +13,6 @@ class Company(models.Model):
 
     archived = models.BooleanField(
         default=False,
-    )
-
-    dynamic_values = GenericRelation(
-        DynamicValue,
-        content_type_field="content_type",
-        object_id_field="object_id",
-        related_query_name="company",
     )
 
     class Meta:
@@ -46,9 +32,7 @@ class Company(models.Model):
     # DYNAMIC VALUES
     # =====================================================
 
-    def get_dynamic_map(
-        self,
-    ):
+    def get_dynamic_map(self):
 
         if hasattr(
             self,
@@ -58,10 +42,13 @@ class Company(models.Model):
 
         values = {}
 
-        for item in self.dynamic_values.all():
+        for item in (
+            self.dynamic_values
+            .select_related("field")
+        ):
 
             values[
-                item.field_name
+                item.field.name
             ] = item.value
 
         self._dynamic_map = values

@@ -6,7 +6,7 @@ from backend.generic.models.BaseField import (
 
 
 class CompanyField(
-    BaseField
+    BaseField,
 ):
 
     fieldset = models.ForeignKey(
@@ -14,6 +14,14 @@ class CompanyField(
         on_delete=models.CASCADE,
         related_name="fields",
     )
+
+    @property
+    def value_model(self):
+        from backend.project.companies.models import (
+            CompanyFieldValue,
+        )
+
+        return CompanyFieldValue
 
     class Meta:
 
