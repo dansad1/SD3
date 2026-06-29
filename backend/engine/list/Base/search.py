@@ -30,9 +30,13 @@ def apply_search(ctx):
         if not field.field_type.searchable:
             continue
 
-        query |= field.build_search_q(
-            value,
-        )
+        q = field.build_search_q(value)
+
+        print(field.name, q)
+
+        query |= q
+
+    print(query)
 
     if query.children:
 
@@ -41,3 +45,5 @@ def apply_search(ctx):
             .filter(query)
             .distinct()
         )
+
+        print(ctx.qs.query)

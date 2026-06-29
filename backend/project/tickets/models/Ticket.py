@@ -1,7 +1,13 @@
 from django.conf import settings
+from django.contrib.contenttypes.fields import (
+    GenericRelation,
+)
 from django.db import models
 
-from backend.generic.models import TimeStampedModel
+from backend.generic.models import (
+    DynamicValue,
+    TimeStampedModel,
+)
 
 
 class Ticket(TimeStampedModel):
@@ -17,10 +23,6 @@ class Ticket(TimeStampedModel):
     )
 
     # =====================================================
-    # AUDIT
-    # =====================================================
-
-    # =====================================================
     # SYSTEM
     # =====================================================
 
@@ -28,11 +30,12 @@ class Ticket(TimeStampedModel):
         default=False,
     )
 
-    # =====================================================
-    # DATES
-    # =====================================================
-
-
+    dynamic_values = GenericRelation(
+        DynamicValue,
+        content_type_field="content_type",
+        object_id_field="object_id",
+        related_query_name="ticket",
+    )
 
     # =====================================================
     # META
@@ -49,25 +52,19 @@ class Ticket(TimeStampedModel):
             models.Index(
                 fields=[
                     "type",
-                ]
+                ],
             ),
-
-
 
             models.Index(
                 fields=[
                     "created_at",
-                ]
+                ],
             ),
         ]
 
-        verbose_name = (
-            "Заявка"
-        )
+        verbose_name = "Заявка"
 
-        verbose_name_plural = (
-            "Заявки"
-        )
+        verbose_name_plural = "Заявки"
 
     # =====================================================
     # STRING
@@ -81,33 +78,33 @@ class Ticket(TimeStampedModel):
         )
 
     # =====================================================
-    # DYNAMIC VALUES CACHE
+    # DYNAMIC CACHE
     # =====================================================
 
-    def get_dynamic_values_map(self):
+    def get_dynamic_values_map(
+        self,
+    ):
 
-        if not hasattr(
+        if hasattr(
             self,
             "_dynamic_values_map",
         ):
+            return self._dynamic_values_map
 
-            self._dynamic_values_map = {
+        values = {}
 
-                value.field.name: value
+        for item in self.dynamic_values.all():
 
-                for value in (
-                    self.dynamic_values
-                    .select_related("field")
-                    .all()
-                )
-            }
+            values[
+                item.field_name
+            ] = item.value
 
-        return (
-            self._dynamic_values_map
-        )
+        self._dynamic_values_map = values
+
+        return values
 
     # =====================================================
-    # GET VALUE
+    # VALUE
     # =====================================================
 
     def get_value(
@@ -116,12 +113,10 @@ class Ticket(TimeStampedModel):
         default=None,
     ):
 
-        value = (
+        return (
             self.get_dynamic_values_map()
-            .get(field_name)
+            .get(
+                field_name,
+                default,
+            )
         )
-
-        if not value:
-            return default
-
-        return value.value
