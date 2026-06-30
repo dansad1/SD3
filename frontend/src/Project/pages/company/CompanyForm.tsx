@@ -193,17 +193,13 @@ const CompanyFormPage = page(
                 ]}
 
             />
-
         </Stack>
-
     </Section>
-
 </If>
 
           {/* ============================================= */}
           {/* DEPARTMENTS */}
           {/* ============================================= */}
-
           <If when="$query.id">
 
             <Section title="Отделы">
@@ -286,13 +282,9 @@ const CompanyFormPage = page(
             </Section>
 
           </If>
-
         </Tabs>
-
       </Stack>
-
     </Section>
-
   </Container>
 
 )

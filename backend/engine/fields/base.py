@@ -1,3 +1,5 @@
+import inspect
+
 from django.db.models import Q
 
 
@@ -11,7 +13,10 @@ class BaseField:
         "updated_by",
     }
 
-    def __init__(self, source):
+    def __init__(
+        self,
+        source,
+    ):
         self.source = source
 
     # =====================================================
@@ -24,6 +29,10 @@ class BaseField:
 
     @property
     def type(self):
+        raise NotImplementedError
+
+    @property
+    def accessor(self):
         raise NotImplementedError
 
     # =====================================================
@@ -108,11 +117,14 @@ class BaseField:
 
     @property
     def choices(self):
-        return getattr(
-            self.source,
-            "choices",
-            [],
-        ) or []
+        return (
+            getattr(
+                self.source,
+                "choices",
+                [],
+            )
+            or []
+        )
 
     # =====================================================
     # OPTIONS
@@ -136,12 +148,66 @@ class BaseField:
     @property
     def field_type(self):
 
+        if hasattr(
+            self,
+            "_field_type",
+        ):
+            return self._field_type
+
         from backend.engine.fields.types.registry import (
             get_field_type,
         )
 
-        return get_field_type(
-            self.type
+        self._field_type = get_field_type(
+            self.type,
+        )
+
+        return self._field_type
+
+    # =====================================================
+    # SAVE
+    # =====================================================
+
+    @property
+    def requires_post_save(self):
+
+        method = getattr(
+            self.field_type,
+            "requires_post_save",
+            None,
+        )
+
+        if callable(
+            method,
+        ):
+            return method(
+                self,
+            )
+
+        return False
+
+    # =====================================================
+    # VALUE
+    # =====================================================
+
+    def get_value(
+        self,
+        instance,
+    ):
+        return self.accessor.get(
+            instance,
+            self,
+        )
+
+    def set_value(
+        self,
+        instance,
+        value,
+    ):
+        return self.accessor.set(
+            instance,
+            self,
+            value,
         )
 
     # =====================================================
@@ -197,11 +263,35 @@ class BaseField:
     # SCHEMA
     # =====================================================
 
-    def get_schema(self):
+    def get_schema(
+        self,
+        request=None,
+        instance=None,
+    ):
 
-        schema = self.field_type.get_schema(
-            self,
-        )
+        method = self.field_type.get_schema
+
+        parameters = inspect.signature(
+            method,
+        ).parameters
+
+        if "request" in parameters:
+
+            schema = method(
+                self,
+                request=request,
+                instance=instance,
+            )
+
+        else:
+
+            #
+            # Backward compatibility
+            #
+
+            schema = method(
+                self,
+            )
 
         schema.update({
 
@@ -229,9 +319,10 @@ class BaseField:
         })
 
         if self.presentation:
-            schema["presentation"] = (
-                self.presentation
-            )
+
+            schema[
+                "presentation"
+            ] = self.presentation
 
         if self.section:
 
@@ -240,17 +331,18 @@ class BaseField:
                 {},
             )
 
-            schema["ui"]["section"] = (
-                self.section
-            )
+            schema["ui"][
+                "section"
+            ] = self.section
 
         if (
-            "options" not in schema
+            "options"
+            not in schema
             and self.choices
         ):
-            schema["options"] = (
-                self.choices
-            )
+            schema[
+                "options"
+            ] = self.choices
 
         return schema
 
@@ -259,15 +351,11 @@ class BaseField:
     # =====================================================
 
     def apply_filter(
-        self,
-        queryset,
-        value,
-    ):
-        return self.field_type.apply_filter(
-            queryset,
             self,
+            queryset,
             value,
-        )
+    ):
+        raise NotImplementedError
 
     # =====================================================
     # SEARCH

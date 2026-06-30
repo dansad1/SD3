@@ -20,7 +20,6 @@ def save(ctx):
         obj = ctx.instance
 
         if not obj:
-
             raise PermissionDenied
 
     else:
@@ -28,7 +27,7 @@ def save(ctx):
         raise PermissionDenied
 
     # =====================================================
-    # SAVE FIELDS
+    # RUNTIME FIELDS
     # =====================================================
 
     runtime_fields = {
@@ -36,29 +35,55 @@ def save(ctx):
         field.name: field
 
         for field in ctx.runtime_fields
+
     }
+
+    pre_save_items = []
+
+    post_save_items = []
+
+    # =====================================================
+    # SPLIT
+    # =====================================================
 
     for name, value in (
         ctx.data or {}
     ).items():
 
         field = runtime_fields.get(
-            name
+            name,
         )
 
         if not field:
             continue
 
-        # ================================================
-        # POST SAVE FIELDS
-        # ================================================
-
-        if getattr(
-            field,
-            "requires_post_save",
-            False,
+        if not field.should_save(
+            value,
         ):
             continue
+
+        item = (
+            field,
+            value,
+        )
+
+        if field.requires_post_save:
+
+            post_save_items.append(
+                item,
+            )
+
+        else:
+
+            pre_save_items.append(
+                item,
+            )
+
+    # =====================================================
+    # PRE SAVE
+    # =====================================================
+
+    for field, value in pre_save_items:
 
         field.set_value(
             obj,
@@ -66,13 +91,13 @@ def save(ctx):
         )
 
     # =====================================================
-    # DJANGO VALIDATION
+    # VALIDATE
     # =====================================================
 
     obj.full_clean()
 
     # =====================================================
-    # SAVE MODEL
+    # SAVE
     # =====================================================
 
     obj.save()
@@ -81,27 +106,12 @@ def save(ctx):
     # POST SAVE
     # =====================================================
 
-    for name, value in (
-        ctx.data or {}
-    ).items():
+    for field, value in post_save_items:
 
-        field = runtime_fields.get(
-            name
+        field.set_value(
+            obj,
+            value,
         )
-
-        if not field:
-            continue
-
-        if getattr(
-            field,
-            "requires_post_save",
-            False,
-        ):
-
-            field.set_value(
-                obj,
-                value,
-            )
 
     # =====================================================
     # RESULT

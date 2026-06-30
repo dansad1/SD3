@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 SECRET_KEY = "django-insecure-dev-key"
 DEBUG = True
+DEBUG_PROPAGATE_EXCEPTIONS = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -97,6 +98,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
+    "EXCEPTION_HANDLER": None,
 }
 
 # =========================

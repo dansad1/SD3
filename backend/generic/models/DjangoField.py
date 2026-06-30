@@ -1,40 +1,48 @@
 from django.db import models
+from django.db.models.fields.reverse_related import (
+    ForeignObjectRel,
+)
 
 from backend.engine.fields.base import BaseField
 from backend.engine.fields.django_accessor import (
     DjangoFieldAccessor,
 )
+from backend.engine.fields.types.RelationAccessor import (
+    RelationAccessor,
+)
 
 
 class DjangoField(BaseField):
 
+    # =====================================================
+    # ACCESSOR
+    # =====================================================
+
     @property
     def accessor(self):
+
+        if self.type == "relation":
+            return RelationAccessor()
+
         return DjangoFieldAccessor()
 
     # =====================================================
-    # VALUE API
+    # FILTER
     # =====================================================
 
-    def get_value(self, obj):
-        return self.accessor.get(
-            obj,
-            self,
-        )
-
-    def set_value(
+    def apply_filter(
         self,
-        obj,
+        queryset,
         value,
     ):
-        return self.accessor.set(
-            obj,
+        return self.field_type.apply_filter(
+            queryset,
             self,
             value,
         )
 
     # =====================================================
-    # CORE
+    # VALUE
     # =====================================================
 
     @property
@@ -45,15 +53,6 @@ class DjangoField(BaseField):
     def type(self):
 
         field = self.source
-
-        TYPE_MAP = {
-            models.TextField: "text",
-            models.EmailField: "email",
-            models.BooleanField: "boolean",
-            models.DateTimeField: "datetime",
-            models.DateField: "date",
-            models.JSONField: "json",
-        }
 
         if (
             field.name == "password"
@@ -69,6 +68,7 @@ class DjangoField(BaseField):
             (
                 models.ForeignKey,
                 models.ManyToManyField,
+                ForeignObjectRel,
             ),
         ):
             return "relation"
@@ -92,8 +92,21 @@ class DjangoField(BaseField):
         ):
             return "number"
 
-        for cls, code in TYPE_MAP.items():
-            if isinstance(field, cls):
+        type_map = {
+            models.TextField: "text",
+            models.EmailField: "email",
+            models.BooleanField: "boolean",
+            models.DateTimeField: "datetime",
+            models.DateField: "date",
+            models.JSONField: "json",
+        }
+
+        for cls, code in type_map.items():
+
+            if isinstance(
+                field,
+                cls,
+            ):
                 return code
 
         return "string"
@@ -105,14 +118,22 @@ class DjangoField(BaseField):
     @property
     def label(self):
         return (
-            self.source.verbose_name
+            getattr(
+                self.source,
+                "verbose_name",
+                None,
+            )
             or self.name
         )
 
     @property
     def help_text(self):
         return (
-            self.source.help_text
+            getattr(
+                self.source,
+                "help_text",
+                "",
+            )
             or ""
         )
 
@@ -126,9 +147,24 @@ class DjangoField(BaseField):
 
     @property
     def required(self):
+
+        if isinstance(
+            self.source,
+            ForeignObjectRel,
+        ):
+            return False
+
         return not (
-            self.source.blank
-            or self.source.null
+            getattr(
+                self.source,
+                "blank",
+                False,
+            )
+            or getattr(
+                self.source,
+                "null",
+                False,
+            )
         )
 
     @property
@@ -145,6 +181,13 @@ class DjangoField(BaseField):
 
     @property
     def is_multiple(self):
+
+        if isinstance(
+            self.source,
+            ForeignObjectRel,
+        ):
+            return True
+
         return getattr(
             self.source,
             "many_to_many",

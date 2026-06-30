@@ -1,8 +1,6 @@
 from django.db.models import Q
 
-from backend.engine.fields.base import (
-    BaseField,
-)
+from backend.engine.fields.base import BaseField
 from backend.engine.fields.dynamic_accessor import (
     DynamicValueAccessor,
 )
@@ -31,30 +29,6 @@ class DynamicField(BaseField):
         return self.source.field_type
 
     # =====================================================
-    # VALUE
-    # =====================================================
-
-    def get_value(
-        self,
-        obj,
-    ):
-        return self.accessor.get(
-            obj,
-            self,
-        )
-
-    def set_value(
-        self,
-        obj,
-        value,
-    ):
-        return self.accessor.set(
-            obj,
-            self,
-            value,
-        )
-
-    # =====================================================
     # FILTER
     # =====================================================
 
@@ -74,7 +48,6 @@ class DynamicField(BaseField):
             value,
             list,
         ):
-
             return queryset.filter(
                 dynamic_values__field_name=self.name,
                 dynamic_values__value__in=[

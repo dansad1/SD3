@@ -5,35 +5,49 @@ class RelationProviderRegistry:
 
     def register(
         self,
-        code,
-        provider,
+        provider_cls,
     ):
+        provider = provider_cls()
+
+        if not provider.code:
+            raise RuntimeError(
+                "Relation provider code is required."
+            )
+
+        if provider.code in self.providers:
+            raise RuntimeError(
+                f"Relation provider '{provider.code}' already registered."
+            )
+
         self.providers[
-            code
+            provider.code
         ] = provider
 
-    def execute(
+    def get(
         self,
-        provider,
-        **kwargs,
+        code,
     ):
-
-        handler = (
-            self.providers.get(
-                provider
-            )
+        provider = self.providers.get(
+            code
         )
 
-        if not handler:
+        if provider is None:
             raise RuntimeError(
-                f"Unknown relation provider: {provider}"
+                f"Unknown relation provider '{code}'."
             )
 
-        return handler(
-            **kwargs
-        )
+        return provider
 
 
 relation_provider_registry = (
     RelationProviderRegistry()
 )
+
+
+def register_relation_provider(
+    cls,
+):
+    relation_provider_registry.register(
+        cls
+    )
+    return cls
