@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { InputHTMLAttributes, ChangeEvent, ReactNode } from "react";
-import "@/Project/styles/input.css";
 
 interface InputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> {

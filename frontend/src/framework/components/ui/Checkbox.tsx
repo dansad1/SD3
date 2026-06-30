@@ -1,4 +1,3 @@
-import "@/Project/styles/checkbox.css"
 
 interface CheckboxProps {
   checked: boolean;

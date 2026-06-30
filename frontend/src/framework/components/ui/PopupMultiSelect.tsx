@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import "@/Project/styles/select.css";
 
 interface Option {
   value: string | number;

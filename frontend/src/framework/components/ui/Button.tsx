@@ -1,5 +1,4 @@
 import type { ReactNode, ButtonHTMLAttributes } from "react";
-import "@/Project/styles/button.css";
 
 interface CustomButtonProps {
   variant?: "primary" | "secondary" | "danger" | "ghost";
