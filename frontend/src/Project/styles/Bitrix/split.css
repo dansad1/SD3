@@ -1,0 +1,69 @@
+/* ======================================================
+   SPLIT
+   ====================================================== */
+
+.ui-split {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 16px;
+
+    align-items: start;
+
+    min-width: 0;
+}
+
+/* ======================================================
+   MODIFIERS
+   ====================================================== */
+
+.ui-split.split-30-70 {
+    grid-template-columns:
+        minmax(220px, 30%)
+        minmax(0, 1fr);
+}
+
+.ui-split.split-40-60 {
+    grid-template-columns:
+        minmax(280px, 40%)
+        minmax(0, 1fr);
+}
+
+.ui-split.split-60-40 {
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(280px, 40%);
+}
+
+.ui-split.split-sidebar {
+    grid-template-columns:
+        320px
+        minmax(0, 1fr);
+}
+
+.ui-split.split-chat {
+    grid-template-columns:
+        minmax(0, 1fr)
+        360px;
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 960px) {
+
+    .ui-split,
+    .ui-split.split-30-70,
+    .ui-split.split-40-60,
+    .ui-split.split-60-40,
+    .ui-split.split-sidebar,
+    .ui-split.split-chat {
+
+        grid-template-columns: 1fr;
+    }
+
+}

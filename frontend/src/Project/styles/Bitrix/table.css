@@ -1,0 +1,301 @@
+/* =========================================================
+   TABLE WRAPPER
+   ========================================================= */
+
+.ui-table-wrapper {
+    position: relative;
+
+    overflow: auto;
+
+    max-height: 600px;
+
+    border: 1px solid var(--border-subtle);
+
+    border-radius: var(--radius-md);
+
+    background: var(--bg-panel);
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.ui-table-wrapper::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.ui-table-wrapper::-webkit-scrollbar-thumb {
+    background: #c8d0da;
+
+    border-radius: 6px;
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.ui-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    table-layout: auto;
+
+    min-width: 700px;
+
+    font-size: 13px;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.ui-table thead th {
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 10;
+
+    height: 38px;
+
+    padding: 0 12px;
+
+    text-align: left;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    color: var(--text-muted);
+
+    background: #f6f8fa;
+
+    border-bottom: 1px solid var(--border-default);
+
+    user-select: none;
+}
+
+.ui-table thead th.sortable {
+
+    cursor: pointer;
+}
+
+.ui-table thead th.sortable:hover {
+
+    background: #eef3f8;
+}
+
+/* =========================================================
+   BODY
+   ========================================================= */
+
+.ui-table tbody tr {
+
+    transition: background-color .12s;
+}
+
+.ui-table tbody td {
+
+    height: 36px;
+
+    padding: 0 12px;
+
+    border-bottom: 1px solid var(--border-subtle);
+
+    color: var(--text-main);
+
+    white-space: nowrap;
+
+    vertical-align: middle;
+}
+
+.ui-table tbody tr:hover {
+
+    background: var(--bg-hover);
+}
+
+.ui-table tbody tr.selected {
+
+    background: var(--bg-active);
+}
+
+.ui-table tbody tr:last-child td {
+
+    border-bottom: none;
+}
+
+/* =========================================================
+   CLICKABLE
+   ========================================================= */
+
+.clickable-row {
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   CHECKBOX
+   ========================================================= */
+
+.ui-table input[type="checkbox"] {
+
+    width: 15px;
+
+    height: 15px;
+
+    accent-color: var(--accent-main);
+}
+
+/* =========================================================
+   ACTION COLUMN
+   ========================================================= */
+
+.ui-table td .ui-btn {
+
+    height: 28px;
+
+    padding: 0 8px;
+
+    font-size: 12px;
+}
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
+
+.ui-table-empty {
+
+    padding: 40px;
+
+    text-align: center;
+
+    color: var(--text-soft);
+}
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.ui-table-loading-overlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: rgba(255,255,255,.65);
+
+    color: var(--text-muted);
+}
+
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+
+.ui-list-toolbar {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 12px;
+}
+
+.ui-list-toolbar__left,
+.ui-list-toolbar__right {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+.ui-list-toolbar__right {
+
+    margin-left: auto;
+}
+
+.ui-list-toolbar .ui-input {
+
+    width: 260px;
+}
+
+/* =========================================================
+   SELECTION PANEL
+   ========================================================= */
+
+.table-selection-panel {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 12px;
+
+    padding: 10px 14px;
+
+    background: var(--bg-active);
+
+    border: 1px solid var(--border-default);
+
+    border-radius: var(--radius-sm);
+}
+
+/* =========================================================
+   HEADER CONTENT
+   ========================================================= */
+
+.th-content {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 4px;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .ui-list-toolbar {
+
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+    .ui-list-toolbar__right {
+
+        width: 100%;
+
+        margin-left: 0;
+    }
+
+    .ui-list-toolbar .ui-input {
+
+        width: 100%;
+    }
+
+}

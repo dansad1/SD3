@@ -1,23 +1,13 @@
-# backend/project/notifications/models/NotificationTemplate.py
-
 from django.db import models
 
+from backend.engine.fields.types.richtext import RichTextFieldType
 from backend.generic.models import TimeStampedModel
+from backend.project.notifications.models import CHANNEL_CHOICES
 
 
-class NotificationTemplate(TimeStampedModel):
-
-    CHANNEL_EMAIL = "email"
-    CHANNEL_PUSH = "push"
-    CHANNEL_SMS = "sms"
-    CHANNEL_TELEGRAM = "telegram"
-
-    CHANNEL_CHOICES = [
-        (CHANNEL_EMAIL, "Email"),
-        (CHANNEL_PUSH, "Push"),
-        (CHANNEL_SMS, "SMS"),
-        (CHANNEL_TELEGRAM, "Telegram"),
-    ]
+class NotificationTemplate(
+    TimeStampedModel
+):
 
     code = models.SlugField(
         max_length=100,
@@ -28,10 +18,13 @@ class NotificationTemplate(TimeStampedModel):
         max_length=255,
     )
 
-    channel = models.CharField(
-        max_length=32,
-        choices=CHANNEL_CHOICES,
-        default=CHANNEL_EMAIL,
+    channels = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=(
+            "Список каналов, в которых "
+            "может использоваться шаблон."
+        ),
     )
 
     subject = models.CharField(
@@ -40,16 +33,10 @@ class NotificationTemplate(TimeStampedModel):
         null=True,
     )
 
-    body = models.TextField()
-
-    event = models.ForeignKey(
-        "notifications.NotificationEvent",
-        on_delete=models.SET_NULL,
+    body = models.TextField(
         blank=True,
-        null=True,
-        related_name="templates",
+        default="",
     )
-
     is_special = models.BooleanField(
         default=False,
     )
@@ -65,9 +52,45 @@ class NotificationTemplate(TimeStampedModel):
     )
 
     class Meta:
+
         ordering = [
+
             "code",
+
         ]
 
-    def __str__(self):
-        return self.code
+    def supports_channel(
+        self,
+        channel,
+    ):
+        return channel in (
+            self.channels
+            or []
+        )
+
+    @property
+    def channel_labels(
+        self,
+    ):
+        mapping = dict(
+            CHANNEL_CHOICES,
+        )
+
+        return [
+
+            mapping.get(
+                channel,
+                channel,
+            )
+
+            for channel in (
+                self.channels
+                or []
+            )
+
+        ]
+
+    def __str__(
+        self,
+    ):
+        return self.name

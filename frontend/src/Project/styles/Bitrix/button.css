@@ -1,0 +1,206 @@
+/* ======================================================
+   BUTTON
+   ====================================================== */
+
+.ui-btn {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    box-sizing: border-box;
+
+    min-width: 36px;
+
+    height: 34px;
+
+    padding: 0 14px;
+
+    border: 1px solid transparent;
+
+    border-radius: var(--btn-radius);
+
+    background: transparent;
+
+    cursor: pointer;
+
+    user-select: none;
+
+    white-space: nowrap;
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    font-weight: var(--btn-font-weight);
+
+    line-height: 1;
+
+    transition:
+        background-color .15s,
+        border-color .15s,
+        color .15s,
+        box-shadow .15s;
+}
+
+/* ======================================================
+   SIZES
+   ====================================================== */
+
+.ui-btn-sm {
+    height: 28px;
+
+    padding: 0 10px;
+
+    font-size: 12px;
+}
+
+.ui-btn-md {
+    height: 34px;
+
+    padding: 0 14px;
+}
+
+.ui-btn-lg {
+    height: 40px;
+
+    padding: 0 18px;
+
+    font-size: 14px;
+}
+
+/* ======================================================
+   PRIMARY
+   ====================================================== */
+
+.ui-btn-primary {
+
+    color: #fff;
+
+    background: var(--btn-primary-bg);
+
+    border-color: var(--btn-primary-bg);
+}
+
+.ui-btn-primary:hover {
+
+    background: var(--btn-primary-bg-hover);
+
+    border-color: var(--btn-primary-bg-hover);
+}
+
+/* ======================================================
+   SECONDARY
+   ====================================================== */
+
+.ui-btn-secondary {
+
+    color: var(--btn-secondary-text);
+
+    background: var(--btn-secondary-bg);
+
+    border-color: var(--border-default);
+}
+
+.ui-btn-secondary:hover {
+
+    background: var(--btn-secondary-bg-hover);
+}
+
+/* ======================================================
+   GHOST
+   ====================================================== */
+
+.ui-btn-ghost {
+
+    color: var(--text-main);
+
+    background: transparent;
+
+    border-color: transparent;
+}
+
+.ui-btn-ghost:hover {
+
+    background: var(--btn-ghost-bg-hover);
+}
+
+/* ======================================================
+   DANGER
+   ====================================================== */
+
+.ui-btn-danger {
+
+    color: white;
+
+    background: var(--danger-main);
+
+    border-color: var(--danger-main);
+}
+
+.ui-btn-danger:hover {
+
+    background: var(--danger-hover);
+
+    border-color: var(--danger-hover);
+}
+
+/* ======================================================
+   STATES
+   ====================================================== */
+
+.ui-btn:focus-visible {
+
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px var(--accent-soft);
+}
+
+.ui-btn:disabled,
+.ui-btn[aria-disabled="true"] {
+
+    opacity: var(--btn-disabled-opacity);
+
+    cursor: default;
+
+    pointer-events: none;
+}
+
+.ui-btn.is-loading {
+
+    opacity: .75;
+}
+
+/* ======================================================
+   WIDTH
+   ====================================================== */
+
+.ui-btn-full {
+
+    width: 100%;
+}
+
+/* ======================================================
+   ICON
+   ====================================================== */
+
+.ui-btn-icon {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 14px;
+}
+
+.ui-btn-label {
+
+    display: inline-flex;
+
+    align-items: center;
+}

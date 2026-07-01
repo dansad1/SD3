@@ -1,0 +1,129 @@
+/* ======================================================
+   STACK
+   ====================================================== */
+
+.ui-stack {
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+
+    box-sizing: border-box;
+}
+
+/* ======================================================
+   GAP
+   ====================================================== */
+
+.ui-stack.gap-none {
+    gap: 0;
+}
+
+.ui-stack.gap-xs {
+    gap: 4px;
+}
+
+.ui-stack.gap-sm {
+    gap: 8px;
+}
+
+.ui-stack.gap-md {
+    gap: 16px;
+}
+
+.ui-stack.gap-lg {
+    gap: 24px;
+}
+
+.ui-stack.gap-xl {
+    gap: 32px;
+}
+
+/* ======================================================
+   ALIGN
+   ====================================================== */
+
+.ui-stack.align-start {
+    align-items: flex-start;
+}
+
+.ui-stack.align-center {
+    align-items: center;
+}
+
+.ui-stack.align-end {
+    align-items: flex-end;
+}
+
+.ui-stack.align-stretch {
+    align-items: stretch;
+}
+
+/* ======================================================
+   JUSTIFY
+   ====================================================== */
+
+.ui-stack.justify-start {
+    justify-content: flex-start;
+}
+
+.ui-stack.justify-center {
+    justify-content: center;
+}
+
+.ui-stack.justify-between {
+    justify-content: space-between;
+}
+
+.ui-stack.justify-end {
+    justify-content: flex-end;
+}
+
+/* ======================================================
+   WIDTH
+   ====================================================== */
+
+.ui-stack.width-auto {
+    width: auto;
+}
+
+.ui-stack.width-sm {
+    width: 420px;
+}
+
+.ui-stack.width-md {
+    width: 640px;
+}
+
+.ui-stack.width-lg {
+    width: 900px;
+}
+
+.ui-stack.width-full {
+    width: 100%;
+}
+
+/* ======================================================
+   PADDING
+   ====================================================== */
+
+.ui-stack.padding-none {
+    padding: 0;
+}
+
+.ui-stack.padding-sm {
+    padding: 8px;
+}
+
+.ui-stack.padding-md {
+    padding: 16px;
+}
+
+.ui-stack.padding-lg {
+    padding: 24px;
+}
+
+.ui-stack.padding-xl {
+    padding: 32px;
+}

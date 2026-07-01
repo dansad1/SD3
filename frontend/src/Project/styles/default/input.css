@@ -1,0 +1,18 @@
+.ui-input {
+  width: 100%;
+background: white;
+  color: black;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  color: var(--text-main);
+}
+
+.ui-input:focus {
+  outline: none;
+  border-color: var(--accent-main);
+}
+
+.ui-input::placeholder {
+  color: var(--text-soft);
+}

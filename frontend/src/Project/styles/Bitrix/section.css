@@ -1,0 +1,107 @@
+/* ======================================================
+   SECTION
+   ====================================================== */
+
+.ui-section {
+
+    background: var(--bg-panel);
+
+    border: 1px solid var(--border-subtle);
+
+    border-radius: var(--radius-lg);
+
+    padding: 20px;
+
+    box-shadow: var(--shadow-xs);
+}
+
+/* ======================================================
+   HEADER
+   ====================================================== */
+
+.ui-section-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 16px;
+
+    margin-bottom: 16px;
+
+    padding-bottom: 12px;
+
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+/* ======================================================
+   TITLE
+   ====================================================== */
+
+.ui-section-title {
+
+    margin: 0;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    color: var(--text-main);
+
+    line-height: 1.35;
+}
+
+/* ======================================================
+   BODY
+   ====================================================== */
+
+.ui-section-body {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 16px;
+
+    min-width: 0;
+}
+
+/* ======================================================
+   COMPACT
+   ====================================================== */
+
+.ui-section.compact {
+
+    padding: 14px;
+}
+
+.ui-section.compact .ui-section-header {
+
+    margin-bottom: 12px;
+
+    padding-bottom: 8px;
+}
+
+/* ======================================================
+   FLAT
+   ====================================================== */
+
+.ui-section.flat {
+
+    padding: 0;
+
+    border: none;
+
+    border-radius: 0;
+
+    box-shadow: none;
+
+    background: transparent;
+}
+
+.ui-section.flat .ui-section-header {
+
+    padding-bottom: 10px;
+}

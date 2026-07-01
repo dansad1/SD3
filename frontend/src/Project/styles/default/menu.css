@@ -1,0 +1,27 @@
+.ui-menu {
+  display: flex;
+}
+
+.ui-menu-vertical {
+  flex-direction: column;
+}
+
+.ui-menu-horizontal {
+  flex-direction: row;
+}
+
+.ui-menu-wrap {
+  flex-wrap: wrap;
+}
+
+.ui-menu-gap-sm {
+  gap: 8px;
+}
+
+.ui-menu-gap-md {
+  gap: 12px;
+}
+
+.ui-menu-gap-lg {
+  gap: 16px;
+}

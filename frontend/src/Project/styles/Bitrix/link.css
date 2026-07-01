@@ -1,0 +1,196 @@
+/* ======================================================
+   LINK
+   ====================================================== */
+
+.ui-link {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    color: var(--accent-main);
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    line-height: 1.4;
+
+    transition:
+        color .15s,
+        background-color .15s,
+        opacity .15s;
+}
+
+/* ======================================================
+   INTERACTION
+   ====================================================== */
+
+.ui-link:hover {
+    color: var(--accent-hover);
+}
+
+.ui-link:focus-visible {
+    outline: none;
+
+    border-radius: var(--radius-sm);
+
+    box-shadow:
+        0 0 0 3px var(--accent-soft);
+}
+
+.ui-link:active {
+    opacity: .8;
+}
+
+/* ======================================================
+   VARIANTS
+   ====================================================== */
+
+.ui-link.variant-default {
+    color: var(--accent-main);
+}
+
+.ui-link.variant-muted {
+    color: var(--text-muted);
+}
+
+.ui-link.variant-subtle {
+    color: var(--text-main);
+}
+
+.ui-link.variant-danger {
+    color: var(--danger-main);
+}
+
+/* ======================================================
+   MENU
+   ====================================================== */
+
+.ui-link.variant-menu {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    width: 100%;
+
+    min-height: 34px;
+
+    padding: 0 12px;
+
+    border-radius: var(--radius-sm);
+
+    color: var(--text-main);
+
+    background: transparent;
+}
+
+.ui-link.variant-menu:hover {
+
+    background: var(--bg-hover);
+
+    text-decoration: none;
+}
+
+.ui-link.variant-menu.active {
+
+    background: var(--bg-active);
+
+    color: var(--accent-main);
+
+    font-weight: 500;
+}
+
+/* ======================================================
+   UNDERLINE
+   ====================================================== */
+
+.ui-link.underline-always {
+
+    text-decoration: underline;
+}
+
+.ui-link.underline-hover {
+
+    text-decoration: none;
+}
+
+.ui-link.underline-hover:hover {
+
+    text-decoration: underline;
+}
+
+.ui-link.underline-never {
+
+    text-decoration: none;
+}
+
+/* ======================================================
+   SIZES
+   ====================================================== */
+
+.ui-link.size-sm {
+
+    font-size: 12px;
+}
+
+.ui-link.size-md {
+
+    font-size: 13px;
+}
+
+.ui-link.size-lg {
+
+    font-size: 14px;
+}
+
+/* ======================================================
+   STATES
+   ====================================================== */
+
+.ui-link.disabled {
+
+    opacity: .45;
+
+    pointer-events: none;
+
+    cursor: default;
+}
+
+.ui-link.external {
+
+    font-weight: 500;
+}
+
+/* ======================================================
+   PARTS
+   ====================================================== */
+
+.ui-link-label {
+
+    line-height: inherit;
+}
+
+.ui-link-icon {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-shrink: 0;
+}
+
+.ui-link-external {
+
+    margin-left: 2px;
+
+    font-size: 11px;
+
+    opacity: .6;
+}

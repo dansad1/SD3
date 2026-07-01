@@ -1,0 +1,126 @@
+/* ======================================================
+   CONTAINER
+   ====================================================== */
+
+.ui-container {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  min-width: 0;
+}
+
+/* ======================================================
+   WIDTHS
+   ====================================================== */
+
+.ui-container.container-xs {
+  max-width: 480px;
+}
+
+.ui-container.container-sm {
+  max-width: 760px;
+}
+
+.ui-container.container-md {
+  max-width: 960px;
+}
+
+.ui-container.container-lg {
+  max-width: 1200px;
+}
+
+.ui-container.container-xl {
+  max-width: 1440px;
+}
+
+.ui-container.container-full {
+  max-width: 100%;
+}
+
+/* ======================================================
+   ALIGN
+   ====================================================== */
+
+.ui-container.align-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ui-container.align-left {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.ui-container.align-right {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* ======================================================
+   PADDING
+   ====================================================== */
+
+.ui-container.padding-none {
+  padding: 0;
+}
+
+.ui-container.padding-sm {
+  padding: var(--space-3);
+}
+
+.ui-container.padding-md {
+  padding: var(--space-5);
+}
+
+.ui-container.padding-lg {
+  padding: var(--space-7);
+}
+
+.ui-container.padding-xl {
+  padding: var(--space-8);
+}
+
+/* ======================================================
+   FLUID
+   ====================================================== */
+
+.ui-container.fluid {
+  max-width: 100%;
+}
+
+/* ======================================================
+   FULL HEIGHT
+   ====================================================== */
+
+.ui-container.full-height {
+  min-height: 100vh;
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 768px) {
+  .ui-container.container-sm,
+  .ui-container.container-md,
+  .ui-container.container-lg,
+  .ui-container.container-xl {
+    max-width: 100%;
+  }
+
+  .ui-container.padding-lg {
+    padding:
+      var(--space-5)
+      var(--space-4);
+  }
+
+  .ui-container.padding-xl {
+    padding:
+      var(--space-6)
+      var(--space-5);
+  }
+}

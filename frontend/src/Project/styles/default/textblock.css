@@ -1,0 +1,103 @@
+/* ======================================================
+   TEXT
+   ====================================================== */
+
+.ui-text {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  line-height: 1.6;
+}
+
+/* ======================================================
+   VARIANTS
+   ====================================================== */
+
+.ui-text.variant-default {
+  color: var(--text-primary);
+}
+
+.ui-text.variant-muted {
+  color: var(--text-secondary);
+}
+
+.ui-text.variant-subtle {
+  opacity: 0.78;
+}
+
+.ui-text.variant-danger {
+  color: #dc2626;
+}
+
+.ui-text.variant-success {
+  color: #059669;
+}
+
+/* ======================================================
+   SIZES
+   ====================================================== */
+
+.ui-text.size-sm {
+  font-size: 0.875rem;
+}
+
+.ui-text.size-md {
+  font-size: 1rem;
+}
+
+.ui-text.size-lg {
+  font-size: 1.125rem;
+}
+
+.ui-text.size-xl {
+  font-size: 1.35rem;
+}
+
+/* ======================================================
+   WEIGHT
+   ====================================================== */
+
+.ui-text.weight-regular {
+  font-weight: 400;
+}
+
+.ui-text.weight-medium {
+  font-weight: 500;
+}
+
+.ui-text.weight-semibold {
+  font-weight: 600;
+}
+
+.ui-text.weight-bold {
+  font-weight: 700;
+}
+
+/* ======================================================
+   ALIGN
+   ====================================================== */
+
+.ui-text.align-left {
+  text-align: left;
+}
+
+.ui-text.align-center {
+  text-align: center;
+}
+
+.ui-text.align-right {
+  text-align: right;
+}
+
+/* ======================================================
+   NOWRAP
+   ====================================================== */
+
+.ui-text.nowrap {
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}

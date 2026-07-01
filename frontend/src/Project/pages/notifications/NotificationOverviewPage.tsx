@@ -6,6 +6,7 @@ import {
   Section,
   Stack,
   Heading,
+  Link,
   Custom,
 } from "@/framework"
 
@@ -28,12 +29,18 @@ const NotificationOverviewPage = page(
           text="Уведомления — обзор"
         />
 
-       <Custom
-  component="NotificationOverview"
-  props={{
-    process: "$query.id",
-  }}
-/>
+        <Link
+          to="/page/notification_template:list"
+          label="Перейти к списку уведомлений"
+        />
+
+        <Custom
+          component="NotificationOverview"
+          props={{
+            process: "$query.id",
+          }}
+        />
+
       </Stack>
 
     </Section>

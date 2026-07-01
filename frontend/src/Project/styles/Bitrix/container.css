@@ -1,0 +1,131 @@
+/* ======================================================
+   CONTAINER
+   ====================================================== */
+
+.ui-container {
+    width: 100%;
+
+    min-width: 0;
+
+    margin: 0 auto;
+
+    box-sizing: border-box;
+}
+
+/* ======================================================
+   WIDTHS
+   ====================================================== */
+
+.ui-container.container-xs {
+    max-width: 520px;
+}
+
+.ui-container.container-sm {
+    max-width: 760px;
+}
+
+.ui-container.container-md {
+    max-width: 1040px;
+}
+
+.ui-container.container-lg {
+    max-width: 1320px;
+}
+
+.ui-container.container-xl {
+    max-width: 1680px;
+}
+
+.ui-container.container-full {
+    max-width: none;
+}
+
+/* ======================================================
+   ALIGN
+   ====================================================== */
+
+.ui-container.align-left {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.ui-container.align-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ui-container.align-right {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+/* ======================================================
+   PADDING
+   ====================================================== */
+
+.ui-container.padding-none {
+    padding: 0;
+}
+
+.ui-container.padding-sm {
+    padding: 12px;
+}
+
+.ui-container.padding-md {
+    padding: 16px;
+}
+
+.ui-container.padding-lg {
+    padding: 24px;
+}
+
+.ui-container.padding-xl {
+    padding: 32px;
+}
+
+/* ======================================================
+   MODIFIERS
+   ====================================================== */
+
+.ui-container.fluid {
+    width: 100%;
+    max-width: none;
+}
+
+.ui-container.full-height {
+    min-height: 100vh;
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 1200px) {
+
+    .ui-container.container-xl {
+        max-width: 100%;
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .ui-container.container-sm,
+    .ui-container.container-md,
+    .ui-container.container-lg,
+    .ui-container.container-xl {
+
+        max-width: 100%;
+    }
+
+    .ui-container.padding-lg {
+
+        padding: 16px;
+    }
+
+    .ui-container.padding-xl {
+
+        padding: 20px;
+    }
+
+}

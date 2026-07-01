@@ -1,0 +1,71 @@
+/* ======================================================
+   CHECKBOX LIST
+   ====================================================== */
+
+.ui-checkbox-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+
+    max-height: 320px;
+
+    overflow-y: auto;
+}
+
+/* ======================================================
+   ITEM
+   ====================================================== */
+
+.ui-checkbox-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    width: 100%;
+
+    min-height: 28px;
+
+    padding: 4px 6px;
+
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+
+    line-height: 1.35;
+
+    font-size: 13px;
+
+    color: var(--text-main);
+}
+
+.ui-checkbox-item:hover {
+    background: var(--bg-hover);
+}
+
+/* ======================================================
+   INPUT
+   ====================================================== */
+
+.ui-checkbox-item input {
+    width: 14px;
+    height: 14px;
+
+    margin: 0;
+
+    flex: 0 0 auto;
+
+    accent-color: var(--accent-main);
+}
+
+/* ======================================================
+   LABEL
+   ====================================================== */
+
+.ui-checkbox-item span {
+    flex: 1;
+
+    min-width: 0;
+}

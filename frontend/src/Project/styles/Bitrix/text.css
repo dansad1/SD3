@@ -1,0 +1,115 @@
+/* ======================================================
+   TEXT
+   ====================================================== */
+
+.ui-text {
+    margin: 0;
+
+    color: var(--text-main);
+
+    font-size: 13px;
+
+    line-height: 1.45;
+}
+
+/* ======================================================
+   VARIANTS
+   ====================================================== */
+
+.ui-text.variant-default {
+    color: var(--text-main);
+}
+
+.ui-text.variant-muted {
+    color: var(--text-muted);
+}
+
+.ui-text.variant-soft {
+    color: var(--text-soft);
+}
+
+.ui-text.variant-danger {
+    color: var(--danger-main);
+}
+
+.ui-text.variant-success {
+    color: #0f8a4b;
+}
+
+/* ======================================================
+   SIZES
+   ====================================================== */
+
+.ui-text.size-xs {
+    font-size: 11px;
+}
+
+.ui-text.size-sm {
+    font-size: 12px;
+}
+
+.ui-text.size-md {
+    font-size: 13px;
+}
+
+.ui-text.size-lg {
+    font-size: 14px;
+}
+
+.ui-text.size-xl {
+    font-size: 16px;
+}
+
+/* ======================================================
+   WEIGHT
+   ====================================================== */
+
+.ui-text.weight-regular {
+    font-weight: 400;
+}
+
+.ui-text.weight-medium {
+    font-weight: 500;
+}
+
+.ui-text.weight-semibold {
+    font-weight: 600;
+}
+
+.ui-text.weight-bold {
+    font-weight: 700;
+}
+
+/* ======================================================
+   ALIGN
+   ====================================================== */
+
+.ui-text.align-left {
+    text-align: left;
+}
+
+.ui-text.align-center {
+    text-align: center;
+}
+
+.ui-text.align-right {
+    text-align: right;
+}
+
+/* ======================================================
+   WRAPPING
+   ====================================================== */
+
+.ui-text.nowrap {
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.ui-text.wrap {
+    white-space: normal;
+
+    word-break: break-word;
+}

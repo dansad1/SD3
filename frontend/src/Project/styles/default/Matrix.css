@@ -1,0 +1,192 @@
+/* =========================================================
+   MATRIX ROOT
+========================================================= */
+
+.ui-matrix-wrapper {
+  width: 100%;
+}
+
+.ui-matrix {
+  width: 100%;
+  overflow: auto;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+
+  position: relative;
+}
+
+/* scroll */
+.ui-matrix::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.ui-matrix::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.ui-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed; /* 🔥 стабильная ширина */
+}
+
+/* =========================================================
+   CELLS
+========================================================= */
+
+.ui-matrix-table th,
+.ui-matrix-table td {
+  border: 1px solid #d1d5db;
+  padding: 6px 8px;
+  font-size: 14px;
+  text-align: center;
+  background: #ffffff;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.ui-matrix-table thead th {
+  background: #f3f4f6;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* =========================================================
+   ROW LABEL (левая колонка)
+========================================================= */
+
+.ui-matrix-table tbody th {
+  background: #f9fafb;
+  font-weight: 500;
+  text-align: left;
+  padding-left: 12px;
+}
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.ui-matrix-table tbody tr:hover td {
+  background: #f1f5f9;
+}
+
+/* =========================================================
+   ZEBRA
+========================================================= */
+
+.ui-matrix-table tbody tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+/* =========================================================
+   SELECTED
+========================================================= */
+
+.ui-matrix-value.selected {
+  background: #e0f2fe;
+}
+
+/* =========================================================
+   STICKY
+========================================================= */
+
+.ui-matrix-sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.ui-matrix-sticky-left {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #f9fafb;
+}
+
+.ui-matrix-sticky-top.ui-matrix-sticky-left {
+  z-index: 4;
+}
+
+/* =========================================================
+   VALUE CELL
+========================================================= */
+
+.ui-matrix-value {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ui-matrix-value:hover {
+  background: #eef2ff;
+}
+
+/* =========================================================
+   INPUTS (journal)
+========================================================= */
+
+.ui-matrix input[type="checkbox"] {
+  transform: scale(0.9);
+}
+
+.ui-matrix input[type="number"] {
+  width: 60px;
+  height: 26px;
+  font-size: 13px;
+  text-align: center;
+
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+/* =========================================================
+   ATTENDANCE MODE (плотный режим)
+========================================================= */
+
+.ui-matrix--attendance .ui-matrix-table th,
+.ui-matrix--attendance .ui-matrix-table td {
+  padding: 4px;
+  font-size: 13px;
+}
+
+/* =========================================================
+   STATES
+========================================================= */
+
+.ui-matrix-loading,
+.ui-matrix-empty {
+  padding: 24px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* overlay */
+.ui-matrix-loading-overlay {
+  position: absolute;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.35);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+  font-size: 14px;
+
+  z-index: 5;
+}

@@ -1,0 +1,117 @@
+.upload {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* label */
+
+.upload__label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* dropzone */
+
+.upload__dropzone {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  background: #fafafa;
+  transition: all 0.15s ease;
+  font-size: 14px;
+}
+
+.upload__dropzone:hover {
+  border-color: #6366f1;
+  background: #f5f6ff;
+}
+
+.upload__dropzone.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* list */
+
+.upload__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upload__list--done {
+  margin-top: 4px;
+}
+
+/* row */
+
+.upload__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: white;
+}
+
+/* name */
+
+.upload__name {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* progress */
+
+.upload__progress {
+  width: 160px;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.upload__progress-bar {
+  height: 100%;
+  background: #6366f1;
+  transition: width 0.2s ease;
+}
+
+.upload__progress-bar.is-error {
+  background: #ef4444;
+}
+
+/* footer */
+
+.upload__footer {
+  margin-top: 4px;
+}
+
+/* commit button full width */
+
+.upload__commit.ui-btn {
+  width: 100%;
+}
+
+/* mobile */
+
+@media (max-width: 640px) {
+  .upload__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .upload__progress {
+    width: 100%;
+  }
+}

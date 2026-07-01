@@ -1,0 +1,176 @@
+/* =========================================================
+   PAGE ROOT
+   ========================================================= */
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+
+    min-height: 100vh;
+
+    background: var(--bg-app);
+}
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+
+.page-layout {
+    display: grid;
+
+    grid-template-columns: 220px minmax(0, 1fr);
+
+    min-height: 100vh;
+}
+
+.page-layout.with-sidebar-left {
+    grid-template-columns: 220px minmax(0, 1fr);
+}
+
+.page-layout.with-sidebar-right {
+    grid-template-columns: minmax(0, 1fr) 360px;
+}
+
+/* =========================================================
+   PAGE AREAS
+   ========================================================= */
+
+.page-areas {
+    display: grid;
+
+    min-width: 0;
+
+    align-items: stretch;
+
+    gap: 16px;
+
+    padding: 16px;
+}
+
+.page-areas:not(.page-areas-left):not(.page-areas-right) {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.page-areas-left {
+    grid-template-columns:
+        260px
+        minmax(0, 1fr);
+}
+
+.page-areas-right {
+    grid-template-columns:
+        minmax(0, 1fr)
+        360px;
+}
+
+.page-areas-left.page-areas-right {
+    grid-template-columns:
+        260px
+        minmax(0, 1fr)
+        360px;
+}
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+.main,
+.page-main {
+    min-width: 0;
+
+    padding: 24px;
+
+    background: var(--bg-panel);
+
+    border: 1px solid var(--border-subtle);
+
+    border-radius: var(--radius-lg);
+
+    box-shadow: var(--shadow-xs);
+}
+
+/* =========================================================
+   SIDEBARS
+   ========================================================= */
+
+.sidebar,
+.page-sidebar-left,
+.page-sidebar-right {
+    display: flex;
+    flex-direction: column;
+
+    gap: 16px;
+
+    min-width: 0;
+
+    padding: 16px;
+
+    background: var(--bg-panel);
+
+    border: 1px solid var(--border-subtle);
+
+    border-radius: var(--radius-lg);
+
+    box-shadow: var(--shadow-xs);
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.page-footer {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 12px;
+
+    margin-top: 24px;
+
+    padding-top: 16px;
+
+    border-top: 1px solid var(--border-subtle);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
+    .page-areas-right {
+        grid-template-columns:
+            minmax(0, 1fr)
+            320px;
+    }
+
+    .page-areas-left {
+        grid-template-columns:
+            220px
+            minmax(0, 1fr);
+    }
+
+    .page-areas-left.page-areas-right {
+        grid-template-columns:
+            220px
+            minmax(0, 1fr)
+            320px;
+    }
+}
+
+@media (max-width: 960px) {
+
+    .page-layout,
+    .page-areas,
+    .page-areas-left,
+    .page-areas-right,
+    .page-areas-left.page-areas-right {
+        display: block;
+    }
+
+    .page-main,
+    .page-sidebar-left,
+    .page-sidebar-right {
+        margin-bottom: 16px;
+    }
+}

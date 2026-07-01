@@ -1,12 +1,12 @@
-# backend/project/notifications/matrixes/NotificationStatusMatrix.py
-
 from backend.engine.matrix.Base.BaseMatrix import (
     BaseMatrix,
 )
 
+
+
 from backend.project.notifications.models import (
     NotificationRule,
-    NotificationTemplate,
+    NotificationTemplate, CHANNEL_CHOICES,
 )
 
 from backend.project.tickets.models import (
@@ -48,9 +48,9 @@ class NotificationStatusMatrix(
             )
 
             .order_by(
-                "channel",
                 "name",
             )
+
         )
 
         statuses = list(
@@ -60,53 +60,113 @@ class NotificationStatusMatrix(
             .order_by(
                 "name",
             )
+
         )
+
+        channel_options = {
+
+            code: []
+
+            for code, _ in CHANNEL_CHOICES
+
+        }
+
+        for template in templates:
+
+            for channel in (
+                template.channels
+                or []
+            ):
+
+                channel_options.setdefault(
+                    channel,
+                    [],
+                ).append(
+
+                    {
+                        "value":
+                            template.pk,
+
+                        "label":
+                            template.name,
+                    }
+
+                )
 
         return {
 
-            "value_type":
-                "select",
+            # =====================================
+            # LAYOUT
+            # =====================================
 
-            "choices": [
-
-                {
-                    "value":
-                        template.id,
-
-                    "label":
-                        (
-                            f"{template.channel}"
-                            f" / "
-                            f"{template.name}"
-                        ),
-                }
-
-                for template in templates
-            ],
-
-            "rows": [
+            "layoutRows": [
 
                 {
+
                     "id":
-                        status.id,
+                        str(status.pk),
 
                     "label":
                         status.name,
+
                 }
 
                 for status in statuses
+
             ],
 
-            "columns": [
+            "layoutColumns": [
 
                 {
+
                     "id":
-                        "template",
+                        code,
 
                     "label":
-                        "Шаблон",
+                        label,
+
                 }
+
+                for code, label
+                in CHANNEL_CHOICES
+
             ],
+
+            # =====================================
+            # SCHEMA
+            # =====================================
+
+            "defaultCell": {
+
+                "widget":
+                    "select",
+
+            },
+
+            "columnSchema": {
+
+                code: {
+
+                    "widget":
+                        "select",
+
+                    "options":
+                        channel_options.get(
+                            code,
+                            [],
+                        ),
+
+                }
+
+                for code, _
+                in CHANNEL_CHOICES
+
+            },
+
+            "rowSchema": {},
+
+            "cells": {},
+
         }
 
     # =====================================================
@@ -117,14 +177,17 @@ class NotificationStatusMatrix(
         self,
         request,
     ):
-        recipient = request.GET.get(
-            "recipient"
+        recipient = self.get_param(
+            request,
+            "recipient",
         )
 
         if not recipient:
 
             return {
+
                 "items": [],
+
             }
 
         qs = (
@@ -134,37 +197,35 @@ class NotificationStatusMatrix(
             .filter(
                 ticket_status__isnull=False,
             )
+
         )
 
         if recipient.startswith(
-            "role:"
+            "role:",
         ):
 
-            role_id = int(
-                recipient.split(
-                    ":",
-                    1,
-                )[1]
-            )
-
             qs = qs.filter(
-                role_id=role_id,
+
+                role_id=int(
+                    recipient.split(
+                        ":",
+                        1,
+                    )[1]
+                )
+
             )
 
         elif recipient.startswith(
-            "logical:"
+            "logical:",
         ):
 
-            logical_role = (
-                recipient.split(
+            qs = qs.filter(
+
+                logical_role=recipient.split(
                     ":",
                     1,
                 )[1]
-            )
 
-            qs = qs.filter(
-                logical_role=
-                logical_role,
             )
 
         return {
@@ -172,18 +233,22 @@ class NotificationStatusMatrix(
             "items": [
 
                 {
+
                     "row":
-                        rule.ticket_status_id,
+                        str(rule.ticket_status_id),
 
                     "column":
-                        "template",
+                        rule.channel,
 
                     "value":
                         rule.template_id,
+
                 }
 
                 for rule in qs
-            ]
+
+            ],
+
         }
 
     # =====================================================
@@ -195,22 +260,32 @@ class NotificationStatusMatrix(
         request,
         changes,
     ):
-        recipient = request.GET.get(
-            "recipient"
+        recipient = self.get_param(
+            request,
+            "recipient",
         )
 
         if not recipient:
 
             return {
-                "success": False,
+
+                "success":
+                    False,
+
             }
 
         for change in changes:
 
-            status_id = change["row"]
+            status_id = int(
+                change["row"],
+            )
+
+            channel = change[
+                "column"
+            ]
 
             template_id = change.get(
-                "value"
+                "value",
             )
 
             defaults = {
@@ -220,53 +295,52 @@ class NotificationStatusMatrix(
 
                 "enabled":
                     True,
+
             }
 
             if recipient.startswith(
-                "role:"
+                "role:",
             ):
-
-                role_id = int(
-                    recipient.split(
-                        ":",
-                        1,
-                    )[1]
-                )
 
                 NotificationRule.objects.update_or_create(
 
                     ticket_status_id=status_id,
 
-                    role_id=role_id,
+                    role_id=int(
+                        recipient.split(
+                            ":",
+                            1,
+                        )[1]
+                    ),
 
-                    event=None,
+                    channel=channel,
 
                     defaults=defaults,
+
                 )
 
             elif recipient.startswith(
-                "logical:"
+                "logical:",
             ):
-
-                logical_role = (
-                    recipient.split(
-                        ":",
-                        1,
-                    )[1]
-                )
 
                 NotificationRule.objects.update_or_create(
 
                     ticket_status_id=status_id,
 
-                    logical_role=
-                        logical_role,
+                    logical_role=recipient.split(
+                        ":",
+                        1,
+                    )[1],
 
-                    event=None,
+                    channel=channel,
 
                     defaults=defaults,
+
                 )
 
         return {
-            "success": True,
+
+            "success":
+                True,
+
         }

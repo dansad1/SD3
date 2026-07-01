@@ -25,14 +25,36 @@ function getCellSchema(
 ): MatrixCellSchema | undefined {
 
   if (!schema) {
-    return undefined
+    return
   }
 
-  const key = getCellKey(x, y,)
+  const key = getCellKey(
+    x,
+    y,
+  )
+
+  if (
+    schema.cells &&
+    key in schema.cells
+  ) {
+    return schema.cells[key]
+  }
+
+  if (
+    schema.columns &&
+    x in schema.columns
+  ) {
+    return schema.columns[x]
+  }
+
+  if (
+    schema.rows &&
+    y in schema.rows
+  ) {
+    return schema.rows[y]
+  }
+
   return (
-    schema.cells?.[key]??
-    schema.columns?.[x]??
-    schema.rows?.[y]??
     schema.defaultCell
   )
 

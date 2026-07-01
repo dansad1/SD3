@@ -1,11 +1,9 @@
-# backend/project/notifications/entities/NotificationTemplateEntity.py
-
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
 
 from backend.project.notifications.models import (
-    NotificationTemplate,
+    NotificationTemplate, CHANNEL_CHOICES,
 )
 
 
@@ -23,11 +21,12 @@ class NotificationTemplateEntity(
 
         "name",
 
-        "channel",
+        "channels",
 
-        "event",
+        "is_special",
 
         "is_active",
+
     ]
 
     search_fields = [
@@ -35,20 +34,27 @@ class NotificationTemplateEntity(
         "code",
 
         "name",
+
+        "subject",
+
+        "body",
+
     ]
 
     filter_fields = [
 
-        "channel",
+        "channels",
 
-        "event",
+        "is_special",
 
         "is_active",
+
     ]
 
     ordering = [
 
         "code",
+
     ]
 
     capabilities = {
@@ -67,18 +73,57 @@ class NotificationTemplateEntity(
 
         "delete":
             "notifications.templates.delete",
+
     }
 
     def get_select_related(
         self,
     ):
-        return [
-            "event",
-        ]
+        return []
 
     def get_prefetch_related(
         self,
     ):
         return [
+
             "special_users",
+
         ]
+
+    def customize_field_schema(
+            self,
+            request,
+            schema,
+            field=None,
+    ):
+
+        if schema["name"] in {
+            "id",
+            "created_at",
+            "updated_at",
+        }:
+            schema["readonly"] = True
+
+        if schema["name"] == "channels":
+            schema["widget"] = "multiselect"
+
+            schema["options"] = [
+
+                {
+                    "value": value,
+                    "label": label,
+                }
+
+                for value, label in CHANNEL_CHOICES
+
+            ]
+
+        if schema["name"] == "body":
+            schema["widget"] = "richtext"
+
+        if schema["name"] == "special_users":
+            schema["widget"] = "entity_multiselect"
+
+            schema["entity"] = "user"
+
+        return schema

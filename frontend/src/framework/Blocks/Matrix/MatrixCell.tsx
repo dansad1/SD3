@@ -115,10 +115,16 @@ export const MatrixCell = ({
   ======================================== */
 
   const widget =
-    resolveBuiltinWidget(
-      schema,
-      value,
-    )
+  resolveBuiltinWidget(
+    schema,
+    value,
+  )
+
+console.log({
+  widget,
+  schema,
+  value,
+})
   switch (widget) {
     case "checkbox":
       return (

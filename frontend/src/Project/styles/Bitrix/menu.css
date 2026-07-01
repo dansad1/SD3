@@ -1,0 +1,99 @@
+/* ======================================================
+   MENU
+   ====================================================== */
+
+.ui-menu {
+    display: flex;
+
+    min-width: 0;
+}
+
+/* ======================================================
+   DIRECTION
+   ====================================================== */
+
+.ui-menu-vertical {
+    flex-direction: column;
+}
+
+.ui-menu-horizontal {
+    flex-direction: row;
+
+    align-items: center;
+}
+
+/* ======================================================
+   WRAP
+   ====================================================== */
+
+.ui-menu-wrap {
+    flex-wrap: wrap;
+}
+
+.ui-menu-nowrap {
+    flex-wrap: nowrap;
+}
+
+/* ======================================================
+   JUSTIFY
+   ====================================================== */
+
+.ui-menu-start {
+    justify-content: flex-start;
+}
+
+.ui-menu-center {
+    justify-content: center;
+}
+
+.ui-menu-end {
+    justify-content: flex-end;
+}
+
+.ui-menu-between {
+    justify-content: space-between;
+}
+
+/* ======================================================
+   ALIGN
+   ====================================================== */
+
+.ui-menu-align-start {
+    align-items: flex-start;
+}
+
+.ui-menu-align-center {
+    align-items: center;
+}
+
+.ui-menu-align-end {
+    align-items: flex-end;
+}
+
+.ui-menu-align-stretch {
+    align-items: stretch;
+}
+
+/* ======================================================
+   GAP
+   ====================================================== */
+
+.ui-menu-gap-none {
+    gap: 0;
+}
+
+.ui-menu-gap-sm {
+    gap: 8px;
+}
+
+.ui-menu-gap-md {
+    gap: 12px;
+}
+
+.ui-menu-gap-lg {
+    gap: 16px;
+}
+
+.ui-menu-gap-xl {
+    gap: 24px;
+}

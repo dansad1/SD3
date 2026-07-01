@@ -1,0 +1,13 @@
+.ui-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* responsive behavior */
+@media (max-width: 900px) {
+  .ui-split {
+    grid-template-columns: 1fr;
+  }
+}
+

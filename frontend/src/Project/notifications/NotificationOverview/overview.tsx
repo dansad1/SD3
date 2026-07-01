@@ -2,10 +2,24 @@
 
 import { useEffect, useState } from "react"
 
+import { MatrixBlock } from "@/framework/Blocks/Matrix/MatrixBlock"
+import Modal from "@/framework/components/ui/Modal"
+
+type SelectedRecipient = {
+  recipient: string
+  label: string
+}
 
 const NotificationOverview = () => {
 
   const [data, setData] = useState<any>(null)
+
+  const [
+    selected,
+    setSelected,
+  ] = useState<SelectedRecipient | null>(
+    null,
+  )
 
   useEffect(() => {
 
@@ -18,19 +32,15 @@ const NotificationOverview = () => {
         "/api/resource/notification.overview/",
 
         {
-
           credentials: "include",
-
-        }
+        },
 
       )
 
       if (!res.ok) {
 
         console.error(
-
-          await res.text()
-
+          await res.text(),
         )
 
         return
@@ -42,16 +52,14 @@ const NotificationOverview = () => {
       if (active) {
 
         setData(
-
-          json
-
+          json,
         )
 
       }
 
     }
 
-    load()
+    void load()
 
     return () => {
 
@@ -60,7 +68,6 @@ const NotificationOverview = () => {
     }
 
   }, [])
-
 
   if (!data) {
 
@@ -76,12 +83,13 @@ const NotificationOverview = () => {
 
   }
 
-
   const renderTable = (
 
     title: string,
 
     rows: any[],
+
+    logical = false,
 
   ) => (
 
@@ -94,217 +102,86 @@ const NotificationOverview = () => {
       </h3>
 
       <div
-
         className="ui-table-wrapper"
-
       >
 
         <table
-
           className="ui-table"
-
         >
 
           <thead>
 
-          <tr>
+            <tr>
 
-            <th>
+              <th>
 
-              Роль
+                Роль
 
-            </th>
+              </th>
 
-            {
+              {
 
-              data.events.map(
+                data.events.map(
 
-                (
+                  (
+                    event: any,
+                  ) => (
 
-                  event: any
-
-                ) => (
-
-                  <th
-
-                    key={
-
-                      event.code
-
-                    }
-
-                    title={
-
-                      event.label
-
-                    }
-
-                  >
-
-                    <div
-
-                      className="th-content"
-
+                    <th
+                      key={
+                        event.code
+                      }
+                      title={
+                        event.label
+                      }
                     >
 
-                      {
+                      <div
+                        className="th-content"
+                      >
 
-                        event.label
+                        {event.label}
 
-                      }
+                      </div>
 
-                    </div>
+                    </th>
 
-                  </th>
+                  ),
 
                 )
 
-              )
+              }
 
-            }
+              <th>
 
-            <th>
+                Статусы
 
-              Статусы
+              </th>
 
-            </th>
-
-          </tr>
+            </tr>
 
           </thead>
 
-
           <tbody>
 
-          {
+            {
 
-            rows.length === 0
+              rows.length === 0
 
-            ? (
+                ? (
 
-              <tr>
+                  <tr>
 
-                <td
-
-                  className="empty"
-
-                  colSpan={
-
-                    data.events.length
-
-                    +
-
-                    2
-
-                  }
-
-                >
-
-                  Нет данных
-
-                </td>
-
-              </tr>
-
-            )
-
-            : (
-
-              rows.map(
-
-                (
-
-                  row: any
-
-                ) => (
-
-                  <tr
-
-                    key={
-
-                      row.id
-
-                      ||
-
-                      row.code
-
-                    }
-
-                  >
-
-                    <td>
-
-                      {
-
-                        row.label
-
+                    <td
+                      className="empty"
+                      colSpan={
+                        data.events.length
+                        +
+                        2
                       }
+                    >
 
-                    </td>
-
-
-                    {
-
-                      data.events.map(
-
-                        (
-
-                          event: any
-
-                        ) => (
-
-                          <td
-
-                            key={
-
-                              event.code
-
-                            }
-
-                          >
-
-                            {
-
-                              row.events.includes(
-
-                                event.code
-
-                              )
-
-                              &&
-
-                              "✔"
-
-                            }
-
-                          </td>
-
-                        )
-
-                      )
-
-                    }
-
-
-                    <td>
-
-                      {
-
-                        row.statuses.length
-
-                        ?
-
-                        row.statuses.join(
-
-                          ", "
-
-                        )
-
-                        :
-
-                        "—"
-
-                      }
+                      Нет данных
 
                     </td>
 
@@ -312,11 +189,121 @@ const NotificationOverview = () => {
 
                 )
 
-              )
+                : (
 
-            )
+                  rows.map(
 
-          }
+                    (
+                      row: any,
+                    ) => {
+
+                      const recipient = logical
+
+                        ? `logical:${row.code}`
+
+                        : `role:${row.id}`
+
+                      return (
+
+                        <tr
+
+                          key={
+                            row.id
+                            ||
+                            row.code
+                          }
+
+                          style={{
+                            cursor:
+                              "pointer",
+                          }}
+
+                          onClick={() =>
+
+                            setSelected({
+
+                              recipient,
+
+                              label:
+                                row.label,
+
+                            })
+
+                          }
+
+                        >
+
+                          <td>
+
+                            {row.label}
+
+                          </td>
+
+                          {
+
+                            data.events.map(
+
+                              (
+                                event: any,
+                              ) => (
+
+                                <td
+                                  key={
+                                    event.code
+                                  }
+                                >
+
+                                  {
+
+                                    row.events.includes(
+
+                                      event.code,
+
+                                    )
+
+                                      ? "✔"
+
+                                      : ""
+
+                                  }
+
+                                </td>
+
+                              ),
+
+                            )
+
+                          }
+
+                          <td>
+
+                            {
+
+                              row.statuses.length
+
+                                ? row.statuses.join(
+
+                                    ", ",
+
+                                  )
+
+                                : "—"
+
+                            }
+
+                          </td>
+
+                        </tr>
+
+                      )
+
+                    },
+
+                  )
+
+                )
+
+            }
 
           </tbody>
 
@@ -327,7 +314,6 @@ const NotificationOverview = () => {
     </>
 
   )
-
 
   return (
 
@@ -355,15 +341,116 @@ const NotificationOverview = () => {
 
           data.logical_roles,
 
+          true,
+
         )
 
       }
+
+      <Modal
+
+        isOpen={
+          selected !== null
+        }
+
+        onClose={() =>
+
+          setSelected(
+            null,
+          )
+
+        }
+
+        title={
+          selected
+            ? `Уведомления — ${selected.label}`
+            : ""
+        }
+
+        width="95vw"
+
+      >
+
+        {
+
+          selected && (
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 24,
+              }}
+            >
+
+              <div>
+
+                <h3>
+
+                  События
+
+                </h3>
+
+                <MatrixBlock
+
+                  block={{
+
+                    code:
+                      "notification-recipient",
+
+                    params: {
+
+                      recipient:
+                        selected.recipient,
+
+                    },
+
+                  }}
+
+                />
+
+              </div>
+
+              <div>
+
+                <h3>
+
+                  Статусы
+
+                </h3>
+
+                <MatrixBlock
+
+                  block={{
+
+                    code:
+                      "notification-status",
+
+                    params: {
+
+                      recipient:
+                        selected.recipient,
+
+                    },
+
+                  }}
+
+                />
+
+              </div>
+
+            </div>
+
+          )
+
+        }
+
+      </Modal>
 
     </>
 
   )
 
 }
-
 
 export default NotificationOverview

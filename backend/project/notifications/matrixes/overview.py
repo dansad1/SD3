@@ -1,11 +1,19 @@
 from collections import defaultdict
 
-from backend.engine.Resource.BaseResource import BaseResource
+from backend.engine.Resource.BaseResource import (
+    BaseResource,
+)
+
+
+
 from backend.project.notifications.models import (
     NotificationEvent,
-    NotificationRule,
+    NotificationRule, CHANNEL_CHOICES,
 )
-from backend.project.users.models import UserRole
+
+from backend.project.users.models import (
+    UserRole,
+)
 
 
 LOGICAL_ROLE_LABELS = {
@@ -18,7 +26,9 @@ LOGICAL_ROLE_LABELS = {
 }
 
 
-class NotificationOverviewResource(BaseResource):
+class NotificationOverviewResource(
+    BaseResource
+):
 
     code = "notification.overview"
 
@@ -29,7 +39,9 @@ class NotificationOverviewResource(BaseResource):
     ):
 
         events = list(
+
             NotificationEvent.objects.all()
+
         )
 
         rules = list(
@@ -45,6 +57,8 @@ class NotificationOverviewResource(BaseResource):
                 "ticket_status",
 
                 "role",
+
+                "template",
 
             )
 
@@ -77,6 +91,7 @@ class NotificationOverviewResource(BaseResource):
                 role.pk,
 
                 [],
+
             )
 
             roles.append({
@@ -87,29 +102,35 @@ class NotificationOverviewResource(BaseResource):
                 "label":
                     str(role),
 
-                "events":
+                "events": sorted({
 
-                    sorted({
+                    r.event.code
 
-                        r.event.code
+                    for r in role_rules
 
-                        for r in role_rules
+                    if r.event_id
 
-                        if r.event_id
+                }),
 
-                    }),
+                "statuses": sorted({
 
-                "statuses":
+                    r.ticket_status.name
 
-                    sorted({
+                    for r in role_rules
 
-                        r.ticket_status.name
+                    if r.ticket_status_id
 
-                        for r in role_rules
+                }),
 
-                        if r.ticket_status_id
+                "channels": sorted({
 
-                    }),
+                    r.channel
+
+                    for r in role_rules
+
+                    if r.channel
+
+                }),
 
             })
 
@@ -124,6 +145,7 @@ class NotificationOverviewResource(BaseResource):
                 logical_role,
 
                 [],
+
             )
 
             logical_roles.append({
@@ -134,29 +156,35 @@ class NotificationOverviewResource(BaseResource):
                 "label":
                     label,
 
-                "events":
+                "events": sorted({
 
-                    sorted({
+                    r.event.code
 
-                        r.event.code
+                    for r in role_rules
 
-                        for r in role_rules
+                    if r.event_id
 
-                        if r.event_id
+                }),
 
-                    }),
+                "statuses": sorted({
 
-                "statuses":
+                    r.ticket_status.name
 
-                    sorted({
+                    for r in role_rules
 
-                        r.ticket_status.name
+                    if r.ticket_status_id
 
-                        for r in role_rules
+                }),
 
-                        if r.ticket_status_id
+                "channels": sorted({
 
-                    }),
+                    r.channel
+
+                    for r in role_rules
+
+                    if r.channel
+
+                }),
 
             })
 
@@ -175,6 +203,22 @@ class NotificationOverviewResource(BaseResource):
                 }
 
                 for event in events
+
+            ],
+
+            "channels": [
+
+                {
+
+                    "code":
+                        code,
+
+                    "label":
+                        label,
+
+                }
+
+                for code, label in CHANNEL_CHOICES
 
             ],
 

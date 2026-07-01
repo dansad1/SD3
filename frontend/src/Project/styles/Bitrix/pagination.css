@@ -1,0 +1,127 @@
+/* ======================================================
+   PAGINATION
+   ====================================================== */
+
+.ui-pagination {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 16px;
+
+    margin-top: 16px;
+
+    padding-top: 12px;
+
+    border-top: 1px solid var(--border-subtle);
+}
+
+/* ======================================================
+   BUTTONS
+   ====================================================== */
+
+.ui-pagination button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 32px;
+
+    height: 32px;
+
+    padding: 0 10px;
+
+    border: 1px solid var(--border-default);
+
+    border-radius: var(--radius-sm);
+
+    background: var(--bg-panel);
+
+    color: var(--text-main);
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    transition:
+        background-color .15s,
+        border-color .15s,
+        color .15s;
+}
+
+.ui-pagination button:hover {
+
+    background: var(--bg-hover);
+}
+
+.ui-pagination button.active {
+
+    background: var(--accent-main);
+
+    border-color: var(--accent-main);
+
+    color: #fff;
+}
+
+.ui-pagination button:disabled {
+
+    opacity: .45;
+
+    cursor: default;
+}
+
+/* ======================================================
+   INFO
+   ====================================================== */
+
+.ui-pagination span {
+
+    color: var(--text-muted);
+
+    font-size: 13px;
+
+    white-space: nowrap;
+}
+
+/* ======================================================
+   GROUPS
+   ====================================================== */
+
+.ui-pagination-left,
+.ui-pagination-right {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+}
+
+/* ======================================================
+   MOBILE
+   ====================================================== */
+
+@media (max-width: 768px) {
+
+    .ui-pagination {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+        gap: 12px;
+    }
+
+    .ui-pagination-left,
+    .ui-pagination-right {
+
+        justify-content: center;
+    }
+
+}
