@@ -2,6 +2,8 @@ from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
 
+
+
 from backend.project.notifications.models import (
     NotificationTemplate, CHANNEL_CHOICES,
 )
@@ -91,20 +93,34 @@ class NotificationTemplateEntity(
         ]
 
     def customize_field_schema(
-            self,
-            request,
-            schema,
-            field=None,
+        self,
+        request,
+        schema,
+        field=None,
     ):
 
+        # =================================================
+        # READONLY
+        # =================================================
+
         if schema["name"] in {
+
             "id",
+
             "created_at",
+
             "updated_at",
+
         }:
+
             schema["readonly"] = True
 
-        if schema["name"] == "channels":
+        # =================================================
+        # CHANNELS
+        # =================================================
+
+        elif schema["name"] == "channels":
+
             schema["widget"] = "multiselect"
 
             schema["options"] = [
@@ -114,16 +130,57 @@ class NotificationTemplateEntity(
                     "label": label,
                 }
 
-                for value, label in CHANNEL_CHOICES
+                for value, label
+                in CHANNEL_CHOICES
 
             ]
 
-        if schema["name"] == "body":
+        # =================================================
+        # BODY
+        # =================================================
+
+        elif schema["name"] == "body":
+
             schema["widget"] = "richtext"
 
-        if schema["name"] == "special_users":
-            schema["widget"] = "entity_multiselect"
+        # =================================================
+        # SPECIAL USERS
+        # =================================================
+
+        elif schema["name"] == "special_users":
+
+            schema["widget"] = (
+                "entity_multiselect"
+            )
 
             schema["entity"] = "user"
 
         return schema
+
+    def get_extra_fields(
+        self,
+        request,
+    ):
+
+        return [
+
+            {
+
+                "name":
+                    "variables",
+
+                "label":
+                    "Переменные",
+
+                "widget":
+                    "InsertVariables",
+
+                "resource":
+                    "notification_template.variables",
+
+                "targetField":
+                    "body",
+
+            },
+
+        ]

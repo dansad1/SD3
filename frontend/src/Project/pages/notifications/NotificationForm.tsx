@@ -9,6 +9,7 @@ import {
   Text,
   Form,
   Action,
+  Insert_variables,
 } from "@/framework"
 
 const NotificationTemplateFormPage = page(
@@ -21,7 +22,6 @@ const NotificationTemplateFormPage = page(
   >
 
     <Section>
-
       <Stack gap="lg">
 
         {/* ===================================== */}
@@ -64,31 +64,30 @@ const NotificationTemplateFormPage = page(
         {/* ===================================== */}
 
         <Form
-
           entity="notification-templates"
-
           objectId="$query.id"
-
           submit={{
-
             label: "Сохранить",
-
             redirect: {
-
               to: "notification_template:list",
-
             },
-
           }}
 
         />
 
+        {/* ===================================== */}
+        {/* VARIABLES */}
+        {/* ===================================== */}
+
+        <Insert_variables
+  source="resource:notification_template.variables"
+  targetField="body"
+  format="template"
+/>
+
       </Stack>
-
     </Section>
-
   </Container>
-
 )
 
 export default NotificationTemplateFormPage

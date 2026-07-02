@@ -1,117 +1,118 @@
-# backend/project/notifications/services/NotificationVariableService.py
+# backend/project/notifications/services/variables.py
 
-from backend.project.users.models import (
-    UserField,
+from backend.project.companies.models import (
+    CompanyField,
 )
 
 from backend.project.tickets.models import (
     TicketField,
 )
 
-from backend.project.companies.models import (
-    CompanyField,
+from backend.project.users.models import (
+    UserField,
 )
 
 
-class NotificationVariableService:
+SYSTEM_VARIABLES = [
 
-    SYSTEM_VARIABLES = [
+    "site_url",
 
-        "site_url",
+    "support_email",
 
-        "support_email",
+    "current_time",
 
-        "current_time",
+    "temporary_password",
 
-        "temporary_password",
+    "reset_link",
 
-        "reset_link",
+]
+
+
+def get_available_variables():
+
+    return {
+
+        "Пользователь":
+            get_user_variables(),
+
+        "Компания":
+            get_company_variables(),
+
+        "Заявка":
+            get_ticket_variables(),
+
+        "Система":
+            SYSTEM_VARIABLES,
+
+    }
+
+
+def get_user_variables():
+
+    return [
+
+        f"user_{name}"
+
+        for name in _field_names(
+            UserField,
+        )
+
     ]
 
-    @classmethod
-    def get_available_variables(
-        cls,
-    ):
-        return {
 
-            "Пользователь":
-                cls.get_user_variables(),
+def get_company_variables():
 
-            "Компания":
-                cls.get_company_variables(),
+    return [
 
-            "Заявка":
-                cls.get_ticket_variables(),
+        f"company_{name}"
 
-            "Система":
-                cls.SYSTEM_VARIABLES,
-        }
+        for name in _field_names(
+            CompanyField,
+        )
 
-    @classmethod
-    def get_user_variables(
-        cls,
-    ):
-        return [
+    ]
 
-            f"user_{name}"
 
-            for name in cls._field_names(
-                UserField
-            )
-        ]
+def get_ticket_variables():
 
-    @classmethod
-    def get_company_variables(
-        cls,
-    ):
-        return [
+    return [
 
-            f"company_{name}"
+        f"ticket_{name}"
 
-            for name in cls._field_names(
-                CompanyField
-            )
-        ]
+        for name in _field_names(
+            TicketField,
+        )
 
-    @classmethod
-    def get_ticket_variables(
-        cls,
-    ):
-        return [
+    ]
 
-            f"ticket_{name}"
 
-            for name in cls._field_names(
-                TicketField
-            )
-        ]
+def _field_names(
+    model,
+):
 
-    @classmethod
-    def _field_names(
-        cls,
-        model,
-    ):
-        return sorted({
+    return sorted({
 
-            name
+        name
 
-            for name in (
+        for name in (
 
-                model.objects
+            model.objects
 
-                .exclude(
-                    name__isnull=True,
-                )
-
-                .exclude(
-                    name="",
-                )
-
-                .values_list(
-                    "name",
-                    flat=True,
-                )
+            .exclude(
+                name__isnull=True,
             )
 
-            if name
-        })
+            .exclude(
+                name="",
+            )
+
+            .values_list(
+                "name",
+                flat=True,
+            )
+
+        )
+
+        if name
+
+    })

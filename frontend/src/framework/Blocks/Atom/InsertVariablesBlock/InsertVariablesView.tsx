@@ -17,9 +17,10 @@ export function InsertVariablesView({
   onInsert,
   title,
 }: Props) {
+
   if (loading) {
     return (
-      <div className="p-4 text-sm text-neutral-500">
+      <div className="w-full rounded-xl border bg-neutral-50 p-6 text-sm text-neutral-500">
         Загрузка...
       </div>
     )
@@ -27,39 +28,57 @@ export function InsertVariablesView({
 
   if (!groups.length) {
     return (
-      <div className="p-4 text-sm text-neutral-500">
+      <div className="w-full rounded-xl border bg-neutral-50 p-6 text-sm text-neutral-500">
         Нет переменных
       </div>
     )
   }
 
   return (
-    <div className="p-4 border rounded-xl bg-neutral-50">
-      <div className="mb-4 font-semibold">
-        {title || "Доступные переменные"}
+
+    <div className="w-full rounded-xl border bg-neutral-50 p-6">
+
+      <div className="mb-6 text-lg font-semibold">
+        {title ?? "Доступные переменные"}
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="space-y-6">
+
         {groups.map(group => (
-          <div key={group.key}>
-            <div className="mb-2 text-sm font-medium">
+
+          <div
+            key={group.key}
+          >
+
+            <div className="mb-3 text-sm font-semibold text-neutral-700">
               {group.label}
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-x-3 gap-y-3">
+
               {group.items.map(item => (
+
                 <Button
                   key={item.key}
                   size="sm"
+                  variant="primary"
                   onClick={() => onInsert(item)}
                 >
                   {item.label}
                 </Button>
+
               ))}
+
             </div>
+
           </div>
+
         ))}
+
       </div>
+
     </div>
+
   )
+
 }
