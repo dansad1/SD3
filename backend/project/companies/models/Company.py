@@ -1,7 +1,9 @@
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class Company(models.Model):
+
+class Company(TimeStampedModel):
 
     fieldset = models.ForeignKey(
         "companies.CompanyFieldSet",

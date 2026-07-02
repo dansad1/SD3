@@ -1,8 +1,10 @@
 from django.conf import settings
 from django.db import models
 
+from backend.generic.models import TimeStampedModel
 
-class Service(models.Model):
+
+class Service(TimeStampedModel):
 
     # =====================================================
     # TREE
@@ -129,15 +131,7 @@ class Service(models.Model):
     archived = models.BooleanField(
         default=False,
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        editable=False,
-    )
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        editable=False,
-    )
 
     class Meta:
 
