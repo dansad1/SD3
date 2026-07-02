@@ -20,9 +20,9 @@ const CompanyListPage = page(
 
       <Stack gap="lg">
 
-        {/* ============================================= */}
+        {/* ================================================= */}
         {/* HEADER */}
-        {/* ============================================= */}
+        {/* ================================================= */}
 
         <Stack gap="sm">
 
@@ -33,9 +33,9 @@ const CompanyListPage = page(
 
         </Stack>
 
-        {/* ============================================= */}
+        {/* ================================================= */}
         {/* ACTIONS */}
-        {/* ============================================= */}
+        {/* ================================================= */}
 
         <Stack gap="sm">
 
@@ -47,30 +47,44 @@ const CompanyListPage = page(
 
         </Stack>
 
-        {/* ============================================= */}
+        {/* ================================================= */}
         {/* TABLE */}
-        {/* ============================================= */}
+        {/* ================================================= */}
 
         <Table
           entity="company"
 
+          /*
+            🔥 fieldset-driven columns
+          */
           fieldset="default"
 
+          /*
+            🔥 built-in runtime features
+          */
           features={{
             search: true,
             selection: true,
             rowClick: true,
             rowActions: true,
-            visibleFields: true,
+            sorting: true,
+            pagination: true,
           }}
 
+          /*
+            🔥 semantic toolbar
+          */
           toolbar={{
             actions: [
               "reload",
               "fields",
+              "filters",
             ],
           }}
 
+          /*
+            🔥 row navigation
+          */
           rowClick={{
             to: "company:form",
             ctx: {
@@ -78,6 +92,9 @@ const CompanyListPage = page(
             },
           }}
 
+          /*
+            🔥 semantic row actions
+          */
           rowActions={[
 
             {
@@ -103,25 +120,27 @@ const CompanyListPage = page(
 
               action: "entity.delete",
 
-              ctx: {
-                entity: "company",
-                id: "$row.id",
-              },
+              bulk: true,
 
               confirm: {
-                message: "Удалить компанию?",
+                message:
+                  "Удалить выбранные компании?",
+              },
+
+              ctx: {
+                entity: "company",
               },
             },
 
           ]}
         />
 
-
       </Stack>
 
     </Section>
 
   </Container>
+
 )
 
 export default CompanyListPage
