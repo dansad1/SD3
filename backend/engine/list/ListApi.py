@@ -1,9 +1,9 @@
 # core/api/generics/ListApi.py
 
 import json
+import traceback
 
 from django.http import JsonResponse
-
 from django.views.decorators.http import (
     require_GET,
     require_POST,
@@ -36,34 +36,58 @@ from backend.project.audit.utils.error_logging import (
 
 
 # =========================================================
+# DEBUG
+# =========================================================
+
+def print_exception(exc):
+
+    print()
+    print("#" * 100)
+    print("EXCEPTION")
+    print("#" * 100)
+
+    traceback.print_exc()
+
+    print()
+    print("TYPE:")
+    print(type(exc))
+
+    print()
+    print("MESSAGE:")
+    print(exc)
+
+    print("#" * 100)
+    print()
+
+
+# =========================================================
 # HELPERS
 # =========================================================
 
 def api_error(
-        *,
-        request=None,
-        message: str,
-        type: str = "error",
-        status: int = 400,
-        field_errors=None,
-        exc=None,
+    *,
+    request=None,
+    message: str,
+    type: str = "error",
+    status: int = 400,
+    field_errors=None,
+    exc=None,
 ):
 
     if exc:
 
+        print_exception(exc)
+
         try:
 
             log_error(
-
                 request=request,
-
                 exc=exc,
-
             )
 
         except Exception:
 
-            pass
+            traceback.print_exc()
 
     payload = {
 
@@ -77,18 +101,11 @@ def api_error(
 
     if field_errors:
 
-        payload["field_errors"] = (
-
-            field_errors
-
-        )
+        payload["field_errors"] = field_errors
 
     return JsonResponse(
-
         payload,
-
         status=status,
-
     )
 
 
@@ -98,61 +115,36 @@ def api_error(
 
 @require_GET
 def entity_list_api(
-        request,
-        entity,
+    request,
+    entity,
 ):
 
     try:
 
         list_obj = list_registry.get(
-
-            f"{entity}.list"
-
+            f"{entity}.list",
         )
 
         result = list_obj.build(
-
-            request
-
+            request,
         )
 
         return JsonResponse(
-
-            result
-
+            result,
         )
-
-    # =====================================================
-    # VALIDATION
-    # =====================================================
 
     except ValidationError as e:
 
         return api_error(
-
             request=request,
-
             type="validation",
-
             message="Ошибка валидации",
-
-            field_errors=(
-
-                validation_error_to_dict(
-
-                    e
-
-                )
-
+            field_errors=validation_error_to_dict(
+                e,
             ),
-
             status=400,
-
+            exc=e,
         )
-
-    # =====================================================
-    # PERMISSION
-    # =====================================================
 
     except PermissionDenied:
 
@@ -160,18 +152,13 @@ def entity_list_api(
             request=request,
             type="permission",
             message=(
-                "У вас недостаточно "
-                "прав для выполнения "
-                "данного действия."
+                "У вас недостаточно прав."
             ),
             status=403,
         )
 
-    # =====================================================
-    # UNKNOWN
-    # =====================================================
-
     except Exception as e:
+
         return api_error(
             request=request,
             type="server_error",
@@ -186,41 +173,79 @@ def entity_list_api(
 # =========================================================
 
 @require_GET
-def entity_list_meta_api(request,entity):
+def entity_list_meta_api(
+    request,
+    entity,
+):
+
     try:
-        list_obj = list_registry.get(f"{entity}.list")
-        fields = list_obj.get_fields(request)
+
+        list_obj = list_registry.get(
+            f"{entity}.list",
+        )
+
+        fields = list_obj.get_fields(
+            request,
+        )
+
         try:
-            entity_obj = entity_registry.get(entity)
-            entity_obj.check_permission(request,"list",)
+
+            entity_obj = entity_registry.get(
+                entity,
+            )
+
+            entity_obj.check_permission(
+                request,
+                "list",
+            )
+
             default_visible = (
-                list_obj.get_default_visible_fields(request)
+                list_obj.get_default_visible_fields(
+                    request,
+                )
                 or [
                     f["key"]
                     for f in fields
                 ]
             )
-            settings = (
-                UserListSettings.objects.filter(user=request.user,entity=entity,) .first())
 
-            if (settings and settings.visible_fields):
-                visible = (settings.visible_fields)
-            else:
+            settings = (
+                UserListSettings.objects
+                .filter(
+                    user=request.user,
+                    entity=entity,
+                )
+                .first()
+            )
+
+            if (
+                settings
+                and settings.visible_fields
+            ):
+
                 visible = (
-                    default_visible
+                    settings.visible_fields
                 )
 
+            else:
+
+                visible = default_visible
+
             capabilities = (
-                entity_obj.get_capabilities_for_user(request))
+                entity_obj.get_capabilities_for_user(
+                    request,
+                )
+            )
 
         except KeyError:
+
             list_obj.check_permission(
-                request
+                request,
             )
+
             visible = [
                 f["key"]
                 for f in fields
-
             ]
 
             capabilities = {
@@ -229,27 +254,27 @@ def entity_list_meta_api(request,entity):
                 "create": False,
                 "edit": False,
                 "delete": False,
-
             }
 
         return JsonResponse({
+
             "entity": entity,
+
             "fields": fields,
+
             "visible_fields": visible,
+
             "capabilities": capabilities,
 
         })
 
     except PermissionDenied:
+
         return api_error(
             request=request,
             type="permission",
-            message=(
-                "У вас недостаточно прав для выполнения данного действия."
-
-            ),
+            message="У вас недостаточно прав.",
             status=403,
-
         )
 
     except Exception as e:
@@ -268,44 +293,70 @@ def entity_list_meta_api(request,entity):
 # =========================================================
 
 @require_POST
-def entity_list_settings_api(request,entity):
+def entity_list_settings_api(
+    request,
+    entity,
+):
 
     try:
 
-        data = json.loads(request.body or "{}")
+        data = json.loads(
+            request.body or "{}",
+        )
+
         visible_fields = data.get(
-            "fields",[],)
-        entity_obj = entity_registry.get(entity)
-        entity_obj.check_permission(request,"list")
+            "fields",
+            [],
+        )
+
+        entity_obj = entity_registry.get(
+            entity,
+        )
+
+        entity_obj.check_permission(
+            request,
+            "list",
+        )
+
         UserListSettings.objects.update_or_create(
+
             user=request.user,
+
             entity=entity,
+
             defaults={
-                "visible_fields":visible_fields})
+
+                "visible_fields": visible_fields,
+
+            },
+
+        )
+
         return JsonResponse({
-            "status": "ok"
+
+            "status": "ok",
+
         })
 
     except PermissionDenied:
+
         return api_error(
             request=request,
             type="permission",
-            message=(
-                "У вас недостаточно "
-                "прав для выполнения "
-                "данного действия."
-            ),
+            message="У вас недостаточно прав.",
             status=403,
         )
+
     except Exception as e:
+
         return api_error(
             request=request,
             type="server_error",
             message=str(e),
-            status=500,exc=e)
-# =========================================================
-# FILTER META
-# =========================================================
+            status=500,
+            exc=e,
+        )
+
 
 # =========================================================
 # FILTER META
@@ -313,86 +364,45 @@ def entity_list_settings_api(request,entity):
 
 @require_GET
 def entity_filter_meta_api(
-        request,
-        entity,
+    request,
+    entity,
 ):
 
     try:
 
         list_obj = list_registry.get(
-
-            f"{entity}.list"
-
+            f"{entity}.list",
         )
 
-        fields = (
-
-            list_obj
-
-            .get_filter_fields(
-
-                request,
-
-            )
-
+        fields = list_obj.get_filter_fields(
+            request,
         )
 
         return JsonResponse({
 
-            "entity":
+            "entity": entity,
 
-                entity,
+            "fields": fields,
 
-
-            "fields":
-
-                fields,
-
-
-            "saved_filters":
-
-                [],
+            "saved_filters": [],
 
         })
-
 
     except PermissionDenied:
 
         return api_error(
-
             request=request,
-
             type="permission",
-
-            message=(
-
-                "У вас недостаточно "
-
-                "прав."
-
-            ),
-
+            message="У вас недостаточно прав.",
             status=403,
-
         )
-
 
     except Exception as e:
 
         return api_error(
-
             request=request,
-
             type="server_error",
-
-            message=str(
-
-                e
-
-            ),
-
+            message=str(e),
             status=500,
-
             exc=e,
-
         )

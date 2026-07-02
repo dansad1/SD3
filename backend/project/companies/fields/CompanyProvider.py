@@ -32,18 +32,29 @@ class CompanyProvider(
         queryset = (
             Company.objects
             .all()
-            .order_by(
-                "name",
-            )
         )
 
-        return [
+        options = [
+
             {
                 "value": obj.pk,
                 "label": str(obj),
             }
+
             for obj in queryset
+
         ]
+
+        options.sort(
+
+            key=lambda item: (
+                item["label"]
+                or ""
+            ).casefold()
+
+        )
+
+        return options
 
     # =====================================================
     # VALIDATION
@@ -57,14 +68,12 @@ class CompanyProvider(
         instance=None,
     ):
 
-        value = super().validate(
+        return super().validate(
             field,
             value,
             request=request,
             instance=instance,
         )
-
-        return value
 
     # =====================================================
     # NORMALIZATION
@@ -78,14 +87,12 @@ class CompanyProvider(
         instance=None,
     ):
 
-        value = super().normalize(
+        return super().normalize(
             field,
             value,
             request=request,
             instance=instance,
         )
-
-        return value
 
     # =====================================================
     # SERIALIZATION

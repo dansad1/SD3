@@ -6,7 +6,7 @@ from backend.generic.models.BaseField import (
 
 
 class TicketField(
-    BaseField
+    BaseField,
 ):
 
     fieldset = models.ForeignKey(
@@ -15,8 +15,15 @@ class TicketField(
         related_name="fields",
     )
 
-    class Meta:
+    @property
+    def value_model(self):
+        from backend.project.tickets.models import (
+            TicketFieldValue,
+        )
 
+        return TicketFieldValue
+
+    class Meta:
 
         unique_together = (
             "fieldset",
