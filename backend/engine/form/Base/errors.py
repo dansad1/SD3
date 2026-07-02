@@ -1,4 +1,6 @@
 from django.core.exceptions import ValidationError
+from django.utils.encoding import force_str
+
 from rest_framework.exceptions import ErrorDetail
 
 
@@ -19,7 +21,11 @@ def normalize_error(value):
             for k, v in value.items()
         }
 
-    return value
+    # Преобразуем ленивые строки Django и обычные строки
+    if isinstance(value, str) or hasattr(value, "__proxy__"):
+        return force_str(value)
+
+    return force_str(value)
 
 
 def validation_error_to_dict(exc):
@@ -32,7 +38,9 @@ def validation_error_to_dict(exc):
 
     if detail is None:
         return {
-            "__all__": [str(exc)]
+            "__all__": [
+                force_str(exc),
+            ],
         }
 
     return normalize_error(detail)

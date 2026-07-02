@@ -3,7 +3,6 @@ from django.core.exceptions import ValidationError
 from backend.engine.fields.types.base import (
     BaseFieldType,
 )
-
 from backend.engine.fields.types.registry import (
     register_field_type,
 )
@@ -135,16 +134,25 @@ class BooleanFieldType(BaseFieldType):
     # =====================================================
 
     def serialize(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
 
         if value is None:
-            return None
+            return ""
 
-        return bool(value)
+        if field.is_multiple:
+            return [
+                "✓" if self.to_bool(v) else "✗"
+                for v in value
+            ]
 
+        return (
+            "✓"
+            if self.to_bool(value)
+            else "✗"
+        )
     def deserialize(
         self,
         field,

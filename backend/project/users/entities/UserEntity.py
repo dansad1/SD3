@@ -192,80 +192,71 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     def validate(
-        self,
-        request,
-        payload,
-        instance=None,
+            self,
+            request,
+            payload,
+            instance=None,
     ):
-
         errors = {}
 
         password = payload.get(
-            "password"
+            "password",
         )
 
         if (
-            instance is None
-            and not password
+                instance is None
+                and not password
         ):
-
             errors["password"] = [
-                "Password required"
+                "Password required",
             ]
 
-        if password:
-
+        if password not in (
+                None,
+                "",
+                "********",
+        ):
             try:
-
                 validate_password(
                     password,
                     user=instance,
                 )
 
             except ValidationError as e:
-
-                errors["password"] = (
-                    list(
-                        e.messages
-                    )
+                errors["password"] = list(
+                    e.messages,
                 )
 
         if errors:
-
             raise ValidationError(
-                errors
+                errors,
             )
 
         return payload
-
     # =====================================================
     # BEFORE SAVE
     # =====================================================
 
     def before_save(
-        self,
-        ctx,
+            self,
+            ctx,
     ):
-
-        # ВАЖНО:
-        # создаёт before_state для аудита
         ctx = super().before_save(
-            ctx
+            ctx,
         )
 
-        password = ctx.data.get(
-            "password"
+        password = ctx.data.pop(
+            "password",
+            None,
         )
 
-        if password:
-
-            ctx.instance.set_password(
-                password
-            )
-
-            ctx.data.pop(
-                "password",
+        if password not in (
                 None,
+                "",
+                "********",
+        ):
+            ctx.instance.set_password(
+                password,
             )
 
         return ctx

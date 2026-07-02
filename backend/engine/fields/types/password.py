@@ -1,11 +1,8 @@
-from django.core.exceptions import (
-    ValidationError,
-)
+from django.core.exceptions import ValidationError
 
 from backend.engine.fields.types.base import (
     BaseFieldType,
 )
-
 from backend.engine.fields.types.registry import (
     register_field_type,
 )
@@ -13,13 +10,17 @@ from backend.engine.fields.types.registry import (
 
 class PasswordAccessor:
 
+    MASK = "********"
+
     def get(
         self,
         obj,
         field,
     ):
-        # пароль никогда не отдаём
-        return None
+        if getattr(obj, "pk", None):
+            return self.MASK
+
+        return ""
 
     def set(
         self,
@@ -27,23 +28,21 @@ class PasswordAccessor:
         field,
         value,
     ):
-
         if value in (
             None,
             "",
+            self.MASK,
         ):
             return obj
 
-        obj.set_password(
-            value
-        )
+        obj.set_password(value)
 
         return obj
 
 
 @register_field_type
 class PasswordFieldType(
-    BaseFieldType
+    BaseFieldType,
 ):
 
     code = "password"
@@ -71,31 +70,32 @@ class PasswordFieldType(
     # =====================================================
 
     def validate(
-            self,
-            field,
-            value,
+        self,
+        field,
+        value,
     ):
-
         value = super().validate(
             field,
             value,
         )
 
         if value in (
-                None,
-                "",
+            None,
+            "",
+            self.accessor.MASK,
         ):
             return value
 
         if not isinstance(
-                value,
-                str,
+            value,
+            str,
         ):
             raise ValidationError(
-                "Некорректное значение"
+                "Некорректное значение",
             )
 
         return value.strip()
+
     # =====================================================
     # NORMALIZE
     # =====================================================
@@ -105,15 +105,15 @@ class PasswordFieldType(
         field,
         value,
     ):
-
         if value in (
             None,
             "",
+            self.accessor.MASK,
         ):
             return None
 
         return str(
-            value
+            value,
         ).strip()
 
     # =====================================================
@@ -125,7 +125,7 @@ class PasswordFieldType(
         field,
         value,
     ):
-        return None
+        return self.accessor.MASK if value else ""
 
     # =====================================================
     # DESERIALIZE
@@ -146,9 +146,8 @@ class PasswordFieldType(
         self,
         field,
     ):
-
         schema = super().get_schema(
-            field
+            field,
         )
 
         schema.update({

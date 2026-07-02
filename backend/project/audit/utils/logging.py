@@ -7,6 +7,9 @@ from datetime import (
 from decimal import Decimal
 from uuid import UUID
 
+from django.utils.encoding import force_str
+from django.utils.functional import Promise
+
 from backend.project.audit.models.EntityJournal import (
     EntityJournal,
 )
@@ -17,6 +20,9 @@ from backend.project.audit.models.EntityJournal import (
 # =========================================================
 
 def make_json_safe(value):
+
+    if isinstance(value, Promise):
+        return force_str(value)
 
     if isinstance(value, dict):
         return {
@@ -43,7 +49,6 @@ def make_json_safe(value):
         return value.pk
 
     return value
-
 
 # =========================================================
 # SERIALIZATION

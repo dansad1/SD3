@@ -57,6 +57,20 @@ def save(ctx):
         if not field:
             continue
 
+        # ================================================
+        # PASSWORD
+        # ================================================
+
+        if (
+            field.type == "password"
+            and value in (
+                None,
+                "",
+                "********",
+            )
+        ):
+            continue
+
         if not field.should_save(
             value,
         ):
