@@ -5,19 +5,26 @@ from django.core.exceptions import (
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
-from backend.generic.models import DynamicField
 
 from backend.project.companies.models import (
-    Department,
     CompanyField,
+    Department,
 )
 
 
 class DepartmentEntity(BaseEntity):
 
+    # =====================================================
+    # BASE
+    # =====================================================
+
     model = Department
 
     entity = "department"
+
+    # =====================================================
+    # UI
+    # =====================================================
 
     list_display = [
         "id",
@@ -45,6 +52,10 @@ class DepartmentEntity(BaseEntity):
 
     hierarchy_parent_field = "parent"
 
+    # =====================================================
+    # ACCESS
+    # =====================================================
+
     capabilities = {
         "list": "departments.view",
         "view": "departments.view",
@@ -52,6 +63,10 @@ class DepartmentEntity(BaseEntity):
         "edit": "departments.edit",
         "delete": "departments.delete",
     }
+
+    # =====================================================
+    # QUERYSET
+    # =====================================================
 
     def get_select_related(self):
 
@@ -77,19 +92,15 @@ class DepartmentEntity(BaseEntity):
         obj=None,
     ):
 
-        return [
-
-            DynamicField(field)
-
-            for field in
-
-            CompanyField.objects.filter(
+        return (
+            CompanyField.objects
+            .filter(
                 fieldset__is_active=True,
-            ).order_by(
+            )
+            .order_by(
                 "id",
             )
-
-        ]
+        )
 
     # =====================================================
     # OPTIONS
@@ -119,32 +130,28 @@ class DepartmentEntity(BaseEntity):
         errors = {}
 
         if not payload.get(
-            "name"
+            "name",
         ):
-
             errors["name"] = [
-                "Название обязательно"
+                "Название обязательно",
             ]
 
         parent = payload.get(
-            "parent"
+            "parent",
         )
 
         if (
             instance
             and parent
-            and str(parent.pk)
-            == str(instance.pk)
+            and str(parent.pk) == str(instance.pk)
         ):
-
             errors["parent"] = [
-                "Отдел не может быть родителем самому себе"
+                "Отдел не может быть родителем самому себе",
             ]
 
         if errors:
-
             raise ValidationError(
-                errors
+                errors,
             )
 
         return payload
@@ -161,11 +168,11 @@ class DepartmentEntity(BaseEntity):
         instance = ctx.instance
 
         parent = ctx.data.get(
-            "parent"
+            "parent",
         )
 
         company = ctx.data.get(
-            "company"
+            "company",
         )
 
         if (
@@ -173,15 +180,10 @@ class DepartmentEntity(BaseEntity):
             and company
             and parent.company_id != company.id
         ):
-
             raise ValidationError({
-
                 "parent": [
-
-                    "Родительский отдел должен принадлежать той же компании"
-
-                ]
-
+                    "Родительский отдел должен принадлежать той же компании",
+                ],
             })
 
         if instance and parent:
@@ -191,15 +193,10 @@ class DepartmentEntity(BaseEntity):
             while current:
 
                 if current.pk == instance.pk:
-
                     raise ValidationError({
-
                         "parent": [
-
-                            "Нельзя создать циклическую иерархию"
-
-                        ]
-
+                            "Нельзя создать циклическую иерархию",
+                        ],
                     })
 
                 current = current.parent
@@ -216,15 +213,9 @@ class DepartmentEntity(BaseEntity):
     ):
 
         return {
-
-            "_depth":
-                self.get_depth(obj),
-
-            "_parent":
-                obj.parent_id,
-
-            "_has_children":
-                obj.has_children,
+            "_depth": self.get_depth(obj),
+            "_parent": obj.parent_id,
+            "_has_children": obj.has_children,
         }
 
     def get_depth(
@@ -237,9 +228,7 @@ class DepartmentEntity(BaseEntity):
         parent = obj.parent
 
         while parent:
-
             depth += 1
-
             parent = parent.parent
 
         return depth
