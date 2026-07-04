@@ -2,7 +2,7 @@
 
 import json
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBase
 from django.views.decorators.http import require_GET, require_POST
 
 from backend.engine.action.ActionRegistry import actions
@@ -28,21 +28,59 @@ def action_form_api(request, code: str):
 @require_POST
 def action_submit_api(request, code):
 
-    # ctx + payload
     if request.content_type.startswith("multipart/"):
+
         payload = request.POST.dict()
-        raw_ctx = payload.pop("_ctx", None)
+
+        raw_ctx = payload.pop(
+            "_ctx",
+            None,
+        )
 
         try:
-            ctx = json.loads(raw_ctx) if raw_ctx else {}
+            ctx = (
+                json.loads(raw_ctx)
+                if raw_ctx
+                else {}
+            )
         except Exception:
             ctx = {}
+
     else:
-        payload = json.loads(request.body or "{}")
-        ctx = payload.pop("_ctx", {})
 
-    action = actions.get(code)
+        payload = json.loads(
+            request.body or "{}",
+        )
 
-    result = action.submit(request, payload, ctx)
+        ctx = payload.pop(
+            "_ctx",
+            {},
+        )
 
-    return JsonResponse(result)
+    action = actions.get(
+        code,
+    )
+
+    result = action.submit(
+        request,
+        payload,
+        ctx,
+    )
+
+    # =====================================================
+    # FILE DOWNLOAD / CUSTOM RESPONSE
+    # =====================================================
+
+    if isinstance(
+        result,
+        HttpResponseBase,
+    ):
+        return result
+
+    # =====================================================
+    # JSON
+    # =====================================================
+
+    return JsonResponse(
+        result,
+    )

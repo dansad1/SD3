@@ -10,6 +10,8 @@ from backend.engine.list.ListApi import entity_list_api, entity_list_settings_ap
 from backend.engine.matrix.MatrixApi import matrix_submit_api, matrix_api
 from backend.engine.utils.options_api import entity_options_api
 from backend.engine.utils.upload_api import upload_api
+from backend.generic.api.entity_export_api import entity_export_api
+from backend.generic.api.entity_template_api import entity_template_api
 from backend.project.auth.me import me
 
 urlpatterns = [
@@ -98,4 +100,16 @@ path(
     entity_filter_meta_api,
     name="entity-filter-meta",
 ),
+    path(
+        "api/entity/<str:entity>/export/",
+        entity_export_api,
+        name="entity-export",
+    ),
+
+    path(
+        "api/entity/<str:entity>/template/",
+        entity_template_api,
+        name="entity-template",
+    ),
+
 ]

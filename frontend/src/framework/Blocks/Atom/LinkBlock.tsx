@@ -1,7 +1,7 @@
 // LinkBlock.tsx
 
-import { Link as RouterLink } from "react-router-dom"
 import type { ReactNode } from "react"
+import { Link as RouterLink } from "react-router-dom"
 
 import { resolveProps } from "@/framework/bind/expression/resolveProps"
 import { usePageRuntimeContext } from "@/framework/page/runtime/usePageRuntimeContext"
@@ -18,6 +18,9 @@ type ResolvedLinkProps = {
   to?: string
 
   external?: boolean
+
+  newTab?: boolean
+
   disabled?: boolean
 
   icon?: ReactNode
@@ -44,12 +47,25 @@ type ResolvedLinkProps = {
    SECURITY
    ====================================================== */
 
-function isSafeExternalUrl(url: string) {
-  return (
-    url.startsWith("http://") ||
-    url.startsWith("https://") ||
-    url.startsWith("mailto:")
-  )
+function isSafeExternalUrl(
+  url: string,
+) {
+  try {
+    const parsed = new URL(
+      url,
+      window.location.origin,
+    )
+
+    return [
+      "http:",
+      "https:",
+      "mailto:",
+    ].includes(
+      parsed.protocol,
+    )
+  } catch {
+    return false
+  }
 }
 
 /* ======================================================
@@ -68,16 +84,23 @@ export function LinkBlock({
     >
 
   const props = resolveProps(
-    block as Record<string, unknown>,
-    ctx
+    block as Record<
+      string,
+      unknown
+    >,
+    ctx,
   ) as ResolvedLinkProps
 
   const {
     label,
+
     to,
 
-    external,
-    disabled,
+    external = false,
+
+    newTab = false,
+
+    disabled = false,
 
     icon,
 
@@ -92,7 +115,10 @@ export function LinkBlock({
      GUARDS
      ====================================================== */
 
-  if (!to || typeof to !== "string") {
+  if (
+    !to ||
+    typeof to !== "string"
+  ) {
     return null
   }
 
@@ -132,11 +158,12 @@ export function LinkBlock({
         {label}
       </span>
 
-      {external && (
-        <span className="ui-link-external">
-          ↗
-        </span>
-      )}
+      {external &&
+        newTab && (
+          <span className="ui-link-external">
+            ↗
+          </span>
+        )}
     </>
   )
 
@@ -159,27 +186,43 @@ export function LinkBlock({
      EXTERNAL
      ====================================================== */
 
-  if (external) {
-    if (!isSafeExternalUrl(to)) {
-      console.warn(
-        "[Link] blocked unsafe url:",
-        to
-      )
-
-      return null
-    }
-
-    return (
-      <a
-        href={to}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={className}
-      >
-        {content}
-      </a>
+ if (external) {
+  if (!isSafeExternalUrl(to)) {
+    console.warn(
+      "[Link] blocked unsafe url:",
+      to,
     )
+
+    return null
   }
+
+  return (
+    <a
+      href={to}
+      className={className}
+      onClick={(event) => {
+        event.preventDefault()
+
+        const link =
+          document.createElement("a")
+
+        link.href = to
+
+        document.body.appendChild(
+          link,
+        )
+
+        link.click()
+
+        document.body.removeChild(
+          link,
+        )
+      }}
+    >
+      {content}
+    </a>
+  )
+}
 
   /* ======================================================
      INTERNAL
