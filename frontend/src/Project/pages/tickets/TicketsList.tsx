@@ -50,7 +50,7 @@ const TicketsListPage = page(
 
           <Action
             label="Создать тикет"
-            to="ticket:form"
+            to="ticket:type_select"
             variant="primary"
           />
 
