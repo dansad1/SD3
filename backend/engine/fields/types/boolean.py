@@ -30,13 +30,9 @@ class BooleanFieldType(BaseFieldType):
         1,
         "1",
         "true",
-        "True",
-        "TRUE",
         "yes",
-        "Yes",
-        "YES",
         "on",
-        "ON",
+        "✓",
     }
 
     FALSE_VALUES = {
@@ -44,13 +40,11 @@ class BooleanFieldType(BaseFieldType):
         0,
         "0",
         "false",
-        "False",
-        "FALSE",
         "no",
-        "No",
-        "NO",
         "off",
-        "OFF",
+        "✗",
+        "",
+        None,
     }
 
     # =====================================================
@@ -62,6 +56,9 @@ class BooleanFieldType(BaseFieldType):
         value,
     ):
 
+        if isinstance(value, str):
+            value = value.strip().lower()
+
         if value in self.TRUE_VALUES:
             return True
 
@@ -69,7 +66,7 @@ class BooleanFieldType(BaseFieldType):
             return False
 
         raise ValidationError(
-            "Некорректное булево значение"
+            f"Некорректное булево значение: {value!r}"
         )
 
     # =====================================================
@@ -91,7 +88,7 @@ class BooleanFieldType(BaseFieldType):
             None,
             "",
         ):
-            return value
+            return None
 
         if field.is_multiple:
             return [
@@ -99,9 +96,7 @@ class BooleanFieldType(BaseFieldType):
                 for v in value
             ]
 
-        return self.to_bool(
-            value
-        )
+        return self.to_bool(value)
 
     # =====================================================
     # NORMALIZATION
@@ -125,35 +120,13 @@ class BooleanFieldType(BaseFieldType):
                 for v in value
             ]
 
-        return self.to_bool(
-            value
-        )
+        return self.to_bool(value)
 
     # =====================================================
     # SERIALIZATION
     # =====================================================
 
     def serialize(
-            self,
-            field,
-            value,
-    ):
-
-        if value is None:
-            return ""
-
-        if field.is_multiple:
-            return [
-                "✓" if self.to_bool(v) else "✗"
-                for v in value
-            ]
-
-        return (
-            "✓"
-            if self.to_bool(value)
-            else "✗"
-        )
-    def deserialize(
         self,
         field,
         value,
@@ -162,9 +135,37 @@ class BooleanFieldType(BaseFieldType):
         if value is None:
             return None
 
-        return self.to_bool(
-            value
-        )
+        if field.is_multiple:
+            return [
+                self.to_bool(v)
+                for v in value
+            ]
+
+        return self.to_bool(value)
+
+    # =====================================================
+    # DESERIALIZATION
+    # =====================================================
+
+    def deserialize(
+        self,
+        field,
+        value,
+    ):
+
+        if value in (
+            None,
+            "",
+        ):
+            return None
+
+        if field.is_multiple:
+            return [
+                self.to_bool(v)
+                for v in value
+            ]
+
+        return self.to_bool(value)
 
     # =====================================================
     # FILTER
@@ -185,8 +186,7 @@ class BooleanFieldType(BaseFieldType):
 
         return queryset.filter(
             **{
-                field.name:
-                    self.to_bool(value)
+                field.name: self.to_bool(value),
             }
         )
 
@@ -200,11 +200,9 @@ class BooleanFieldType(BaseFieldType):
     ):
 
         schema = super().get_schema(
-            field
+            field,
         )
 
-        schema["inputType"] = (
-            "checkbox"
-        )
+        schema["inputType"] = "checkbox"
 
         return schema
