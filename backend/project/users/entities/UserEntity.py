@@ -14,6 +14,7 @@ from backend.generic.models import (
     DynamicField,
     DjangoField,
 )
+from backend.project.users.entities.sync import sync_user
 
 from backend.project.users.models import (
     User,
@@ -266,19 +267,19 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     def after_save(
-        self,
-        ctx,
+            self,
+            ctx,
     ):
-
-        # ВАЖНО:
-        # создаёт after_state,
-        # changes и audit log
         ctx = super().after_save(
-            ctx
+            ctx,
+        )
+
+        sync_user(
+            ctx.instance,
+
         )
 
         return ctx
-
     # =====================================================
     # BEFORE DELETE
     # =====================================================

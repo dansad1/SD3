@@ -9,6 +9,7 @@ from django.core.exceptions import (
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
+from backend.project.services.entities.sync import sync_service
 
 from backend.project.services.models import (
     Service,
@@ -16,13 +17,11 @@ from backend.project.services.models import (
 
 
 class ServiceEntity(BaseEntity):
-
     # =====================================================
     # BASE
     # =====================================================
 
     model = Service
-
     entity = "service"
 
     # =====================================================
@@ -30,47 +29,29 @@ class ServiceEntity(BaseEntity):
     # =====================================================
 
     list_display = [
-
         "id",
-
         "name",
-
         "code",
-
         "parent",
-
         "owner",
-
         "schedule",
-
         "created_at",
     ]
 
     search_fields = [
-
         "name",
-
         "code",
-
         "description",
     ]
 
     filter_fields = [
-
         "parent",
-
         "owner",
-
         "schedule",
-
         "companies",
-
         "ticket_types",
-
         "ticket_categories",
-
         "roles",
-
         "archived",
     ]
 
@@ -116,11 +97,8 @@ class ServiceEntity(BaseEntity):
     def get_select_related(self):
 
         return [
-
             "parent",
-
             "owner",
-
             "schedule",
         ]
 
@@ -129,15 +107,10 @@ class ServiceEntity(BaseEntity):
         return [
 
             "children",
-
             "users",
-
             "companies",
-
             "roles",
-
             "ticket_types",
-
             "ticket_categories",
         ]
 
@@ -297,17 +270,11 @@ class ServiceEntity(BaseEntity):
         self,
         obj,
     ):
-
         depth = 0
-
         parent = obj.parent
-
         while parent:
-
             depth += 1
-
             parent = parent.parent
-
         return depth
 
     # =====================================================
@@ -416,7 +383,19 @@ class ServiceEntity(BaseEntity):
     # =====================================================
     # DELETE
     # =====================================================
+    def after_save(
+            self,
+            ctx,
+    ):
+        ctx = super().after_save(
+            ctx,
+        )
 
+        sync_service(
+            ctx.instance,
+        )
+
+        return ctx
     def before_delete(
         self,
         request,
@@ -426,15 +405,10 @@ class ServiceEntity(BaseEntity):
         # ================================================
         # DETACH M2M
         # ================================================
-
         instance.users.clear()
-
         instance.companies.clear()
-
         instance.roles.clear()
-
         instance.ticket_types.clear()
-
         instance.ticket_categories.clear()
 
         return None

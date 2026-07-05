@@ -9,6 +9,7 @@ from django.core.exceptions import (
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
+from backend.project.companies.entities.sync import sync_company
 
 from backend.project.companies.models import (
     Company,
@@ -376,12 +377,16 @@ class CompanyEntity(BaseEntity):
         return ctx
 
     def after_save(
-
-        self,
-
-        ctx,
-
+            self,
+            ctx,
     ):
+        ctx = super().after_save(
+            ctx,
+        )
+
+        sync_company(
+            ctx.instance,
+        )
 
         return ctx
 

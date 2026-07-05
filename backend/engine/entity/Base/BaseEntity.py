@@ -591,3 +591,5 @@ class BaseEntity:
             obj=None,
     ):
         return schema
+
+
