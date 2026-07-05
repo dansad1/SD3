@@ -1,38 +1,28 @@
-from backend.project.users.models import (
-    User,
+from backend.project.companies.models import (
+    Company,
 )
 
 
 def sync_user(
     user,
-    old_company=None,
 ):
-    new_company = user.company
+    company_id = user.get_value(
+        "company",
+    )
 
-    #
-    # REMOVE
-    #
+    if not company_id:
+        return
 
-    if (
-        old_company
-        and old_company != new_company
+    company = Company.objects.filter(
+        pk=company_id,
+    ).first()
+
+    if not company:
+        return
+
+    for service in (
+        company.services.all()
     ):
-        for service in (
-            old_company.services.all()
-        ):
-            service.users.remove(
-                user,
-            )
-
-    #
-    # ADD
-    #
-
-    if new_company:
-
-        for service in (
-            new_company.services.all()
-        ):
-            service.users.add(
-                user,
-            )
+        service.users.add(
+            user,
+        )

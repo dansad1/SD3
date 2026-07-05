@@ -1,4 +1,7 @@
-from backend.engine.fields.utils.sync import sync_m2m
+from backend.engine.fields.utils.sync import (
+    sync_m2m,
+)
+
 from backend.project.users.models import (
     User,
 )
@@ -7,20 +10,18 @@ from backend.project.users.models import (
 def get_service_users(
     service,
 ):
-    users = set(
-        service.users.all()
-    )
+    users = User.objects.none()
 
-    for company in (
-        service.companies.all()
-    ):
-        users.update(
-            User.objects.filter(
-                company=company,
-            )
+    for company in service.companies.all():
+
+        users |= User.objects.filter(
+            dynamic_values__field__name="company",
+            dynamic_values__value=str(
+                company.pk,
+            ),
         )
 
-    return users
+    return users.distinct()
 
 
 def sync_service(
