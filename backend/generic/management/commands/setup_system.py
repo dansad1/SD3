@@ -1,11 +1,14 @@
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from backend.bootstrap import bootstrap
 from backend.engine.action.ActionRegistry import actions
 from backend.engine.entity.EntityRegistry import entity_registry
 from backend.engine.matrix.MatrixRegistry import matrix_registry
-from backend.project.permissions.collect import collect_permissions
+from backend.project.permissions.collect import (
+    collect_permissions,
+)
 from backend.project.users.models import (
     Permission,
     User,
@@ -15,47 +18,47 @@ from backend.project.users.models import (
 
 class Command(BaseCommand):
 
-    help = "Setup system"
+    help = (
+        "Synchronize system configuration, "
+        "permissions and seed data"
+    )
 
+    @transaction.atomic
     def handle(
         self,
         *args,
         **kwargs,
     ):
 
-        # =====================================
+        # =====================================================
         # BOOTSTRAP
-        # =====================================
+        # =====================================================
 
         bootstrap(
             force=True,
         )
 
         self.stdout.write("")
-
         self.stdout.write(
             "╔══════════════════════════════════════╗"
         )
-
         self.stdout.write(
-            "║            SETUP SYSTEM             ║"
+            "║          SYSTEM SYNCHRONIZE         ║"
         )
-
         self.stdout.write(
             "╚══════════════════════════════════════╝"
         )
-
         self.stdout.write("")
 
-        # =====================================
+        # =====================================================
         # PERMISSIONS
-        # =====================================
+        # =====================================================
 
         self.stdout.write(
             "🔑 SYNC PERMISSIONS"
         )
 
-        permission_codes = (
+        permission_codes = sorted(
             collect_permissions()
         )
 
@@ -64,21 +67,12 @@ class Command(BaseCommand):
         for code in permission_codes:
 
             permission, created = (
-
                 Permission.objects
-
-                .get_or_create(
-
+                .update_or_create(
                     code=code,
-
                     defaults={
-
-                        "name":
-                            code,
-
-                        "category":
-                            code.split(".")[0],
-
+                        "name": code,
+                        "category": code.split(".")[0],
                     },
                 )
             )
@@ -87,49 +81,41 @@ class Command(BaseCommand):
                 permission
             )
 
-            icon = "✔"
-
-            if created:
-
-                icon = "🟢"
-
             self.stdout.write(
+                f"   {'🟢' if created else '✔'} {code}"
+            )
 
-                f"   {icon} {code}"
+        deleted, _ = (
+            Permission.objects
+            .exclude(
+                code__in=permission_codes,
+            )
+            .delete()
+        )
 
+        if deleted:
+            self.stdout.write(
+                f"   🗑 removed: {deleted}"
             )
 
         self.stdout.write("")
 
-        # =====================================
+        # =====================================================
         # ADMIN ROLE
-        # =====================================
+        # =====================================================
 
         self.stdout.write(
-
             "🛡 SYNC ADMIN ROLE"
-
         )
 
         role, created = (
-
             UserRole.objects
-
-            .get_or_create(
-
+            .update_or_create(
                 code="admin",
-
                 defaults={
-
-                    "name":
-                        "Administrator",
-
-                    "is_active":
-                        True,
-
-                    "priority":
-                        0,
-
+                    "name": "Administrator",
+                    "priority": 0,
+                    "is_active": True,
                 },
             )
         )
@@ -139,47 +125,32 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(
+            f"   {'🟢' if created else '✔'} admin"
+        )
 
-            f"   ✔ permissions assigned: "
-
-            f"{len(permissions)}"
-
+        self.stdout.write(
+            f"   ✔ permissions: {len(permissions)}"
         )
 
         self.stdout.write("")
 
-        # =====================================
+        # =====================================================
         # ROOT USER
-        # =====================================
+        # =====================================================
 
         self.stdout.write(
-
             "👤 SYNC ROOT USER"
-
         )
 
         user, created = (
-
             User.objects
-
-            .get_or_create(
-
+            .update_or_create(
                 login="root",
-
                 defaults={
-
-                    "is_active":
-                        True,
-
-                    "is_staff":
-                        True,
-
-                    "is_superuser":
-                        True,
-
-                    "role":
-                        role,
-
+                    "is_active": True,
+                    "is_staff": True,
+                    "is_superuser": True,
+                    "role": role,
                 },
             )
         )
@@ -190,208 +161,100 @@ class Command(BaseCommand):
                 "root"
             )
 
-            user.save()
-
-            self.stdout.write(
-
-                "   🟢 root user created"
-
-            )
-
-        if user.role_id != role.id:
-
-            user.role = role
-
             user.save(
-
                 update_fields=[
-
-                    "role",
-
+                    "password",
                 ]
-
             )
 
         self.stdout.write(
-
-            "   ✔ login      : root"
-
+            f"   {'🟢' if created else '✔'} root"
         )
 
         self.stdout.write(
-
-            "   ✔ password   : root"
-
+            "   ✔ login    : root"
         )
+
+        if created:
+            self.stdout.write(
+                "   ✔ password : root"
+            )
+        else:
+            self.stdout.write(
+                "   ✔ password : unchanged"
+            )
 
         self.stdout.write("")
 
-        # =====================================
-        # FIELDSETS
-        # =====================================
+        # =====================================================
+        # SEED COMMANDS
+        # =====================================================
 
-        self.stdout.write(
+        commands = [
 
-            "📑 SYNC FIELDSETS"
-
-        )
-
-        call_command(
+            # =============================================
+            # FIELDSETS
+            # =============================================
 
             "sync_user_fieldset",
-
-            verbosity=0,
-
-        )
-
-        call_command(
-
             "sync_company_fieldset",
-
-            verbosity=0,
-
-        )
-
-        call_command(
-
             "sync_ticket_fieldset",
 
-            verbosity=0,
-
-        )
-
-        self.stdout.write(
-
-            "   ✔ user"
-
-        )
-
-        self.stdout.write(
-
-            "   ✔ company"
-
-        )
-
-        self.stdout.write(
-
-            "   ✔ ticket"
-
-        )
-
-        self.stdout.write("")
-
-        # =====================================
-        # TICKETS
-        # =====================================
-
-        # =====================================
-        # TICKETS
-        # =====================================
-
-        self.stdout.write(
-
-            "🎫 SYNC TICKET DATA"
-
-        )
-
-        call_command(
+            # =============================================
+            # SYSTEM DATA
+            # =============================================
 
             "seed_tickets",
+            "seed_notification_events",
 
-            verbosity=0,
-
-        )
-
-        self.stdout.write(
-
-            "   ✔ priorities"
-
-        )
+        ]
 
         self.stdout.write(
-
-            "   ✔ statuses"
-
+            "🌱 SYNC SYSTEM DATA"
         )
 
-        self.stdout.write(
+        for command in commands:
 
-            "   ✔ types"
-
-        )
-
-        self.stdout.write("")
-
-        # =====================================
-        # NOTIFICATIONS
-        # =====================================
-
-        self.stdout.write(
-
-            "🔔 SYNC NOTIFICATIONS"
-
-        )
-
-        call_command(
-
-            "seed_notifications",
-
-            verbosity=0,
-
-        )
-
-        self.stdout.write(
-
-            "   ✔ events"
-
-        )
-
-        self.stdout.write("")
-
-        # =====================================
-        # REGISTRY INFO
-        # =====================================
-
-        self.stdout.write(
-
-            "📦 REGISTRY"
-
-        )
-
-        self.stdout.write(
-
-            f"   ✔ entities : "
-
-            f"{len(entity_registry.storage.by_code)}"
-
-        )
-
-        self.stdout.write(
-
-            f"   ✔ actions  : "
-
-            f"{len(actions.storage.by_code)}"
-
-        )
-
-        self.stdout.write(
-
-            f"   ✔ matrix   : "
-
-            f"{len(matrix_registry.storage.by_code)}"
-
-        )
-
-        self.stdout.write("")
-
-        self.stdout.write(
-
-            self.style.SUCCESS(
-
-                "🔥 SYSTEM READY"
-
+            self.stdout.write(
+                f"   ▶ {command}"
             )
 
+            call_command(
+                command,
+                verbosity=1,
+            )
+
+        self.stdout.write("")
+
+        # =====================================================
+        # REGISTRY
+        # =====================================================
+
+        self.stdout.write(
+            "📦 REGISTRY"
+        )
+
+        self.stdout.write(
+            f"   ✔ entities : "
+            f"{len(entity_registry.storage.by_code)}"
+        )
+
+        self.stdout.write(
+            f"   ✔ actions  : "
+            f"{len(actions.storage.by_code)}"
+        )
+
+        self.stdout.write(
+            f"   ✔ matrix   : "
+            f"{len(matrix_registry.storage.by_code)}"
+        )
+
+        self.stdout.write("")
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                "🔥 SYSTEM SYNCHRONIZED"
+            )
         )
 
         self.stdout.write("")

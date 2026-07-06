@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from backend.project.companies.models import (
     CompanyFieldSet,
@@ -13,6 +14,7 @@ class Command(BaseCommand):
         "and base company fields"
     )
 
+    @transaction.atomic
     def handle(
         self,
         *args,
@@ -21,7 +23,7 @@ class Command(BaseCommand):
 
         fieldset, _ = (
             CompanyFieldSet.objects
-            .get_or_create(
+            .update_or_create(
                 code="default",
                 defaults={
                     "name": "Основной",
@@ -46,6 +48,7 @@ class Command(BaseCommand):
                 "label": "Полное название",
                 "field_type": "text",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -63,6 +66,7 @@ class Command(BaseCommand):
                 "label": "КПП",
                 "field_type": "string",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -71,6 +75,7 @@ class Command(BaseCommand):
                 "label": "ОГРН",
                 "field_type": "string",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -79,6 +84,7 @@ class Command(BaseCommand):
                 "label": "Контактное лицо",
                 "field_type": "string",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -87,6 +93,7 @@ class Command(BaseCommand):
                 "label": "Телефон",
                 "field_type": "phone",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -95,6 +102,7 @@ class Command(BaseCommand):
                 "label": "Email",
                 "field_type": "email",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -103,6 +111,7 @@ class Command(BaseCommand):
                 "label": "Адрес",
                 "field_type": "text",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -111,6 +120,7 @@ class Command(BaseCommand):
                 "label": "Номер договора",
                 "field_type": "string",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -119,6 +129,7 @@ class Command(BaseCommand):
                 "label": "Дата договора",
                 "field_type": "date",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -127,12 +138,17 @@ class Command(BaseCommand):
                 "label": "Комментарий",
                 "field_type": "richtext",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
         ]
 
+        synced_names = []
+
         for data in fields:
+
+            synced_names.append(data["name"])
 
             field, created = (
                 CompanyField.objects
@@ -144,12 +160,29 @@ class Command(BaseCommand):
             )
 
             self.stdout.write(
-                f"{'🟢' if created else '✔'} "
-                f"{field.name}"
+                f"{'🟢' if created else '✔'} {field.name}"
+            )
+
+        deleted, _ = (
+            CompanyField.objects
+            .filter(
+                fieldset=fieldset,
+            )
+            .exclude(
+                name__in=synced_names,
+            )
+            .delete()
+        )
+
+        if deleted:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Удалено полей: {deleted}"
+                )
             )
 
         self.stdout.write(
             self.style.SUCCESS(
-                "Company fieldset synced"
+                "Company fieldset synchronized."
             )
         )

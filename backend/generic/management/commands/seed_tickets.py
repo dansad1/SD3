@@ -1,16 +1,47 @@
-from django.core.management.base import BaseCommand
 from django.apps import apps
+from django.core.management.base import BaseCommand
 from django.db import transaction
 
 
 class Command(BaseCommand):
-    help = "Seed базовых справочников заявок"
+    help = "Полная синхронизация системных справочников заявок"
 
     @transaction.atomic
     def handle(self, *args, **options):
-        TicketPriority = apps.get_model("tickets", "TicketPriority")
-        TicketStatus = apps.get_model("tickets", "TicketStatus")
-        TicketType = apps.get_model("tickets", "TicketType")
+        TicketPriority = apps.get_model(
+            "tickets",
+            "TicketPriority",
+        )
+        TicketStatus = apps.get_model(
+            "tickets",
+            "TicketStatus",
+        )
+        TicketType = apps.get_model(
+            "tickets",
+            "TicketType",
+        )
+        TicketFieldSet = apps.get_model(
+            "tickets",
+            "TicketFieldSet",
+        )
+
+        # =====================================================
+        # DEFAULT FIELDSET
+        # =====================================================
+
+        default_fieldset, _ = (
+            TicketFieldSet.objects.update_or_create(
+                code="default",
+                defaults={
+                    "name": "Основной",
+                    "is_active": True,
+                },
+            )
+        )
+
+        # =====================================================
+        # PRIORITIES
+        # =====================================================
 
         priorities = [
             ("Критический", 1, "#d32f2f"),
@@ -20,7 +51,11 @@ class Command(BaseCommand):
             ("Плановый", 5, "#1976d2"),
         ]
 
+        priority_levels = []
+
         for name, level, color in priorities:
+            priority_levels.append(level)
+
             TicketPriority.objects.update_or_create(
                 level=level,
                 defaults={
@@ -28,6 +63,14 @@ class Command(BaseCommand):
                     "color": color,
                 },
             )
+
+        TicketPriority.objects.exclude(
+            level__in=priority_levels,
+        ).delete()
+
+        # =====================================================
+        # STATUSES
+        # =====================================================
 
         statuses = [
             {
@@ -75,37 +118,89 @@ class Command(BaseCommand):
             },
         ]
 
+        status_codes = []
+
         for item in statuses:
+            status_codes.append(item["code"])
+
             TicketStatus.objects.update_or_create(
                 code=item["code"],
                 defaults={
                     "name": item["name"],
-                    "color": item.get("color", "#999999"),
-                    "comment_required": item.get("comment_required", False),
-                    "blocks_time": item.get("blocks_time", False),
-                    "blocks_editing": item.get("blocks_editing", False),
+                    "color": item.get(
+                        "color",
+                        "#999999",
+                    ),
+                    "comment_required": item.get(
+                        "comment_required",
+                        False,
+                    ),
+                    "blocks_time": item.get(
+                        "blocks_time",
+                        False,
+                    ),
+                    "blocks_editing": item.get(
+                        "blocks_editing",
+                        False,
+                    ),
                 },
             )
 
+        TicketStatus.objects.exclude(
+            code__in=status_codes,
+        ).delete()
+
+        # =====================================================
+        # TYPES
+        # =====================================================
+
         types = [
             ("incident", "Инцидент"),
-            ("service_request", "Запрос на обслуживание"),
-            ("access_request", "Запрос доступа"),
-            ("consultation", "Консультация"),
-            ("change_request", "Запрос на изменение"),
-            ("hardware", "Оборудование"),
-            ("software", "Программное обеспечение"),
+            (
+                "service_request",
+                "Запрос на обслуживание",
+            ),
+            (
+                "access_request",
+                "Запрос доступа",
+            ),
+            (
+                "consultation",
+                "Консультация",
+            ),
+            (
+                "change_request",
+                "Запрос на изменение",
+            ),
+            (
+                "hardware",
+                "Оборудование",
+            ),
+            (
+                "software",
+                "Программное обеспечение",
+            ),
         ]
 
+        type_codes = []
+
         for code, name in types:
+            type_codes.append(code)
+
             TicketType.objects.update_or_create(
                 code=code,
                 defaults={
                     "name": name,
-                    "fieldset": None,
+                    "fieldset": default_fieldset,
                 },
             )
 
+        TicketType.objects.exclude(
+            code__in=type_codes,
+        ).delete()
+
         self.stdout.write(
-            self.style.SUCCESS("Справочники заявок засеяны, можно запускаться.")
+            self.style.SUCCESS(
+                "Системные справочники полностью синхронизированы."
+            )
         )

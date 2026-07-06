@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from backend.project.users.models import (
     UserFieldSet,
@@ -8,16 +9,27 @@ from backend.project.users.models import (
 
 class Command(BaseCommand):
 
-    help = "Sync default user fieldset and base user fields"
+    help = (
+        "Sync default user fieldset "
+        "and base user fields"
+    )
 
-    def handle(self, *args, **kwargs):
+    @transaction.atomic
+    def handle(
+        self,
+        *args,
+        **kwargs,
+    ):
 
-        fieldset, _ = UserFieldSet.objects.get_or_create(
-            code="default",
-            defaults={
-                "name": "Основной",
-                "is_active": True,
-            },
+        fieldset, _ = (
+            UserFieldSet.objects
+            .update_or_create(
+                code="default",
+                defaults={
+                    "name": "Основной",
+                    "is_active": True,
+                },
+            )
         )
 
         fields = [
@@ -36,6 +48,7 @@ class Command(BaseCommand):
                 "label": "ФИО",
                 "field_type": "string",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -53,6 +66,7 @@ class Command(BaseCommand):
                 "label": "Компания",
                 "field_type": "relation",
                 "required": False,
+                "unique": False,
                 "is_system": False,
                 "is_multiple": False,
                 "options": {
@@ -65,6 +79,7 @@ class Command(BaseCommand):
                 "label": "Телефон",
                 "field_type": "phone",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -73,6 +88,7 @@ class Command(BaseCommand):
                 "label": "Telegram",
                 "field_type": "string",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
@@ -81,21 +97,51 @@ class Command(BaseCommand):
                 "label": "Отдел",
                 "field_type": "string",
                 "required": False,
+                "unique": False,
                 "is_system": False,
             },
 
         ]
+
+        synced_names = []
+
         for data in fields:
-            field, created = UserField.objects.update_or_create(
-                fieldset=fieldset,
-                name=data["name"],
-                defaults=data,
+
+            synced_names.append(data["name"])
+
+            field, created = (
+                UserField.objects
+                .update_or_create(
+                    fieldset=fieldset,
+                    name=data["name"],
+                    defaults=data,
+                )
             )
 
             self.stdout.write(
                 f"{'🟢' if created else '✔'} {field.name}"
             )
 
+        deleted, _ = (
+            UserField.objects
+            .filter(
+                fieldset=fieldset,
+            )
+            .exclude(
+                name__in=synced_names,
+            )
+            .delete()
+        )
+
+        if deleted:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Удалено полей: {deleted}"
+                )
+            )
+
         self.stdout.write(
-            self.style.SUCCESS("User fieldset synced")
+            self.style.SUCCESS(
+                "User fieldset synchronized."
+            )
         )

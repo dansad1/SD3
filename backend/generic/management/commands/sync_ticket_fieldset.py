@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from backend.project.tickets.models import (
     TicketFieldSet,
@@ -13,6 +14,7 @@ class Command(BaseCommand):
         "and base ticket fields"
     )
 
+    @transaction.atomic
     def handle(
         self,
         *args,
@@ -21,7 +23,7 @@ class Command(BaseCommand):
 
         fieldset, _ = (
             TicketFieldSet.objects
-            .get_or_create(
+            .update_or_create(
                 code="default",
                 defaults={
                     "name": "Основной",
@@ -84,12 +86,6 @@ class Command(BaseCommand):
             },
 
             {
-                "name": "service",
-                "label": "Сервис",
-                "field_type": "relation",
-            },
-
-            {
                 "name": "lifecycle",
                 "label": "Жизненный цикл",
                 "field_type": "relation",
@@ -102,18 +98,6 @@ class Command(BaseCommand):
             {
                 "name": "requester",
                 "label": "Заявитель",
-                "field_type": "user",
-            },
-
-            {
-                "name": "creator",
-                "label": "Создатель",
-                "field_type": "user",
-            },
-
-            {
-                "name": "assigned_to",
-                "label": "Ответственный",
                 "field_type": "user",
             },
 
@@ -148,44 +132,6 @@ class Command(BaseCommand):
             # =====================================================
 
             {
-                "name": "reaction_deadline",
-                "label": "Дедлайн реакции",
-                "field_type": "datetime",
-            },
-
-            {
-                "name": "resolve_deadline",
-                "label": "Дедлайн решения",
-                "field_type": "datetime",
-            },
-
-            {
-                "name": "closed_at",
-                "label": "Закрыта",
-                "field_type": "datetime",
-            },
-
-            # =====================================================
-            # ОЦЕНКА
-            # =====================================================
-
-            {
-                "name": "rating",
-                "label": "Оценка",
-                "field_type": "number",
-            },
-
-            {
-                "name": "feedback",
-                "label": "Отзыв",
-                "field_type": "text",
-            },
-
-            # =====================================================
-            # ВЛОЖЕНИЯ
-            # =====================================================
-
-            {
                 "name": "attachments",
                 "label": "Вложения",
                 "field_type": "relation",
@@ -194,7 +140,11 @@ class Command(BaseCommand):
 
         ]
 
+        synced_names = []
+
         for data in fields:
+
+            synced_names.append(data["name"])
 
             field, created = (
                 TicketField.objects
@@ -206,12 +156,33 @@ class Command(BaseCommand):
             )
 
             self.stdout.write(
-                f"{'🟢' if created else '✔'} "
-                f"{field.name}"
+                f"{'🟢' if created else '✔'} {field.name}"
+            )
+
+        # =====================================================
+        # DELETE REMOVED FIELDS
+        # =====================================================
+
+        deleted, _ = (
+            TicketField.objects
+            .filter(
+                fieldset=fieldset,
+            )
+            .exclude(
+                name__in=synced_names,
+            )
+            .delete()
+        )
+
+        if deleted:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Удалено полей: {deleted}"
+                )
             )
 
         self.stdout.write(
             self.style.SUCCESS(
-                "Ticket fieldset synced"
+                "Ticket fieldset synchronized."
             )
         )

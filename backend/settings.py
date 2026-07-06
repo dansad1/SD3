@@ -98,7 +98,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
-    "EXCEPTION_HANDLER": None,
+    "EXCEPTION_HANDLER": (
+        "rest_framework.views.exception_handler"
+    ),
 }
 
 # =========================

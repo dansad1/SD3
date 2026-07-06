@@ -1,4 +1,9 @@
+import logging
+
+from django.core.exceptions import ValidationError
+
 from backend.generic.models import DynamicField
+logger = logging.getLogger(__name__)
 
 
 class DynamicValueService:
@@ -25,11 +30,35 @@ class DynamicValueService:
                 item.field,
             )
 
-            values[
-                item.field.name
-            ] = field.deserialize(
-                item.value,
-            )
+            try:
+
+                values[
+                    item.field.name
+                ] = field.deserialize(
+                    item.value,
+                )
+
+            except ValidationError as exc:
+
+                logger.warning(
+                    (
+                        "Invalid dynamic value. "
+                        "Model=%s "
+                        "Object=%s "
+                        "Field=%s "
+                        "Value=%r "
+                        "Error=%s"
+                    ),
+                    instance.__class__.__name__,
+                    instance.pk,
+                    item.field.name,
+                    item.value,
+                    exc,
+                )
+
+                values[
+                    item.field.name
+                ] = None
 
         return values
 
