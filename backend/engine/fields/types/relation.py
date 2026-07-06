@@ -1,3 +1,4 @@
+import ast
 from django.core.exceptions import (
     ValidationError,
 )
@@ -15,7 +16,7 @@ from backend.engine.fields.types.base import (
 from backend.engine.fields.types.registry import (
     register_field_type,
 )
-
+import json
 
 @register_field_type
 class RelationFieldType(BaseFieldType):
@@ -107,30 +108,56 @@ class RelationFieldType(BaseFieldType):
     # =====================================================
 
     def extract_id(
-        self,
-        value,
-    ):
-        if isinstance(
+            self,
             value,
-            dict,
+    ):
+        if value is None:
+            return None
+
+        if isinstance(
+                value,
+                str,
+        ):
+
+            try:
+                value = json.loads(
+                    value,
+                )
+
+            except json.JSONDecodeError:
+
+                try:
+                    value = ast.literal_eval(
+                        value,
+                    )
+
+                except (
+                        ValueError,
+                        SyntaxError,
+                ):
+                    pass
+
+        if isinstance(
+                value,
+                dict,
         ):
             value = (
-                value.get("value")
-                or value.get("id")
+                    value.get("value")
+                    or value.get("id")
             )
 
         try:
             return int(
                 value,
             )
+
         except (
-            TypeError,
-            ValueError,
+                TypeError,
+                ValueError,
         ):
             raise ValidationError(
-                f"Invalid relation id: {value}",
+                f"Invalid relation id: {value!r}",
             )
-
     # =====================================================
     # SAVE STAGE
     # =====================================================
@@ -315,29 +342,61 @@ class RelationFieldType(BaseFieldType):
     # =====================================================
 
     def deserialize(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
+        if value in (
+                None,
+                "",
+        ):
+            return (
+                []
+                if field.is_multiple
+                else None
+            )
+
+        if isinstance(
+                value,
+                str,
+        ):
+
+            try:
+                value = json.loads(
+                    value,
+                )
+
+            except json.JSONDecodeError:
+
+                try:
+                    value = ast.literal_eval(
+                        value,
+                    )
+
+                except (
+                        ValueError,
+                        SyntaxError,
+                ):
+                    pass
+
         return self.normalize(
             field,
             value,
         )
-
     # =====================================================
     # FILTER
     # =====================================================
 
     def apply_filter(
-        self,
-        queryset,
-        field,
-        value,
+            self,
+            queryset,
+            field,
+            value,
     ):
         if value in (
-            None,
-            "",
-            [],
+                None,
+                "",
+                [],
         ):
             return queryset
 
@@ -352,8 +411,8 @@ class RelationFieldType(BaseFieldType):
         )
 
         if isinstance(
-            source,
-            ForeignObjectRel,
+                source,
+                ForeignObjectRel,
         ):
             accessor_name = source.get_accessor_name()
 
@@ -363,12 +422,29 @@ class RelationFieldType(BaseFieldType):
                 },
             ).distinct()
 
-        return queryset.filter(
-            **{
-                field.name: object_id,
-            },
-        )
+        if isinstance(
+                source,
+                (
+                        models.ForeignKey,
+                        models.ManyToManyField,
+                ),
+        ):
+            return queryset.filter(
+                **{
+                    field.name: object_id,
+                },
+            )
 
+        return (
+            queryset
+            .filter(
+                dynamic_values__field__name=field.name,
+                dynamic_values__value__contains=(
+                    f'"value": {object_id}'
+                ),
+            )
+            .distinct()
+        )
     # =====================================================
     # SCHEMA
     # =====================================================

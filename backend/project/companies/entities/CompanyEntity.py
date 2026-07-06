@@ -32,6 +32,7 @@ class CompanyEntity(BaseEntity):
         "name",
         "phone",
         "email",
+        "company"
     ]
 
     search_fields = [
@@ -42,6 +43,7 @@ class CompanyEntity(BaseEntity):
 
     filter_fields = [
         "archived",
+        "company"
     ]
 
     ordering = [

@@ -1,3 +1,6 @@
+import logging
+import traceback
+
 from django.db import transaction
 from django.core.exceptions import (
     PermissionDenied,
@@ -49,6 +52,7 @@ from backend.engine.utils.permissions import (
     has_permission,
 )
 
+logger = logging.getLogger(__name__)
 
 def apply_payload(
         ctx: FormContext
@@ -308,52 +312,34 @@ class BaseForm:
         )
 
         ctx = FormContext(
-
             form=self,
-
             request=request,
-
             mode=mode,
-
             pk=pk,
-
             payload=payload,
         )
 
         try:
 
             for step in SUBMIT_PIPELINE:
+                logger.info("STEP: %s", step.__name__)
                 step(ctx)
 
         except ValidationError as e:
 
             return {
-
                 "status": "error",
-
-                "errors":
-                    validation_error_to_dict(
-                        e
-                    ),
+                "errors": validation_error_to_dict(e),
             }
 
-        except Exception as e:
+        except Exception:
 
-            return {
+            logger.exception("Unhandled exception in form submit")
+            traceback.print_exc()
 
-                "status": "error",
-
-                "errors": {
-                    "__all__": [
-                        str(e)
-                    ]
-                },
-            }
+            raise
 
         return {
-
             "status": "ok",
-
-            "id":
-                ctx.instance.pk,
+            "id": ctx.instance.pk,
         }

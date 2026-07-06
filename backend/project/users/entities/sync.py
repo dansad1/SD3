@@ -1,28 +1,32 @@
-from backend.project.companies.models import (
-    Company,
-)
+from backend.project.companies.models import Company
 
 
-def sync_user(
-    user,
-):
-    company_id = user.get_value(
-        "company",
-    )
+def sync_user(user):
+    print("=" * 80)
 
-    if not company_id:
-        return
+    company = user.get_value("company")
 
-    company = Company.objects.filter(
-        pk=company_id,
-    ).first()
+    print("TYPE:", type(company))
+    print("VALUE:", repr(company))
 
-    if not company:
-        return
+    if isinstance(company, dict):
+        print("DICT")
+        company = Company.objects.filter(
+            pk=company.get("value"),
+        ).first()
 
-    for service in (
-        company.services.all()
-    ):
-        service.users.add(
-            user,
+    elif isinstance(company, str):
+        print("STRING")
+        print("RAW:", company)
+        raise RuntimeError(
+            f"COMPANY STRING = {company!r}"
         )
+
+    elif isinstance(company, int):
+        print("INT")
+        company = Company.objects.filter(
+            pk=company,
+        ).first()
+
+    else:
+        print("OTHER:", type(company))

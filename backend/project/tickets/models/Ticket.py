@@ -3,9 +3,15 @@ from django.db import models
 from backend.generic.models import (
     TimeStampedModel,
 )
+from backend.generic.models.DynamicModelMixin import (
+    DynamicModelMixin,
+)
 
 
-class Ticket(TimeStampedModel):
+class Ticket(
+    DynamicModelMixin,
+    TimeStampedModel,
+):
 
     # =====================================================
     # SCHEMA
@@ -58,62 +64,19 @@ class Ticket(TimeStampedModel):
     # STRING
     # =====================================================
 
-    def __str__(self):
-
+    def __str__(
+        self,
+    ):
         return (
-            self.get_value("title")
+            self.get_value(
+                "title",
+            )
             or f"Ticket #{self.pk}"
         )
 
     # =====================================================
-    # DYNAMIC VALUES
-    # =====================================================
-
-    def get_dynamic_map(
-        self,
-    ):
-
-        if hasattr(
-            self,
-            "_dynamic_map",
-        ):
-            return self._dynamic_map
-
-        values = {}
-
-        for item in (
-            self.dynamic_values
-            .select_related(
-                "field",
-            )
-            .all()
-        ):
-
-            values[
-                item.field.name
-            ] = item.value
-
-        self._dynamic_map = values
-
-        return values
-
-    # =====================================================
     # VALUE
     # =====================================================
-
-    def get_value(
-        self,
-        field_name,
-        default=None,
-    ):
-
-        return (
-            self.get_dynamic_map()
-            .get(
-                field_name,
-                default,
-            )
-        )
 
     def set_value(
         self,
@@ -130,7 +93,6 @@ class Ticket(TimeStampedModel):
         )
 
         if field is None:
-
             raise ValueError(
                 f"Unknown field: {field_name}"
             )
@@ -140,12 +102,4 @@ class Ticket(TimeStampedModel):
             value,
         )
 
-        if hasattr(
-            self,
-            "_dynamic_map",
-        ):
-
-            delattr(
-                self,
-                "_dynamic_map",
-            )
+        self.invalidate_dynamic_cache()

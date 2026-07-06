@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.contenttypes.models import (
     ContentType,
 )
@@ -23,7 +25,6 @@ class DynamicValueAccessor(
         self,
         field,
     ):
-
         return getattr(
             field,
             "value_model",
@@ -34,10 +35,56 @@ class DynamicValueAccessor(
         self,
         obj,
     ):
+        return obj._meta.model_name
 
-        return (
-            obj._meta.model_name
-        )
+    # =====================================================
+    # STORAGE
+    # =====================================================
+
+    def encode(
+        self,
+        value,
+    ):
+        if value is None:
+            return None
+
+        if isinstance(
+            value,
+            (dict, list),
+        ):
+            return json.dumps(
+                value,
+                ensure_ascii=False,
+            )
+
+        return str(value)
+
+    def decode(
+        self,
+        value,
+    ):
+        if value in (
+            None,
+            "",
+        ):
+            return None
+
+        if not isinstance(
+            value,
+            str,
+        ):
+            return value
+
+        try:
+            return json.loads(
+                value,
+            )
+        except (
+            TypeError,
+            ValueError,
+            json.JSONDecodeError,
+        ):
+            return value
 
     # =====================================================
     # GET
@@ -48,11 +95,8 @@ class DynamicValueAccessor(
         obj,
         field,
     ):
-
-        value_model = (
-            self.get_value_model(
-                field,
-            )
+        value_model = self.get_value_model(
+            field,
         )
 
         # ===============================================
@@ -66,29 +110,28 @@ class DynamicValueAccessor(
             )
 
             item = (
-
                 value_model.objects
-
                 .select_related(
                     "field",
                 )
-
                 .filter(
                     **{
                         owner: obj,
                         "field": field.source,
                     }
                 )
-
                 .first()
-
             )
 
             if not item:
                 return None
 
-            return field.deserialize(
+            raw = self.decode(
                 item.value,
+            )
+
+            return field.deserialize(
+                raw,
             )
 
         # ===============================================
@@ -103,24 +146,24 @@ class DynamicValueAccessor(
         )
 
         item = (
-
             DynamicValue.objects
-
             .filter(
                 content_type=content_type,
                 object_id=obj.pk,
                 field_name=field.name,
             )
-
             .first()
-
         )
 
         if not item:
             return None
 
-        return field.deserialize(
+        raw = self.decode(
             item.value,
+        )
+
+        return field.deserialize(
+            raw,
         )
 
     # =====================================================
@@ -133,11 +176,16 @@ class DynamicValueAccessor(
         field,
         value,
     ):
+        value_model = self.get_value_model(
+            field,
+        )
 
-        value_model = (
-            self.get_value_model(
-                field,
-            )
+        serialized = field.serialize(
+            value,
+        )
+
+        encoded = self.encode(
+            serialized,
         )
 
         # ===============================================
@@ -151,22 +199,16 @@ class DynamicValueAccessor(
             )
 
             item, _ = (
-
                 value_model.objects
-
                 .get_or_create(
                     **{
                         owner: obj,
                         "field": field.source,
                     }
                 )
-
             )
 
-            item.value = field.serialize(
-                value,
-            )
-
+            item.value = encoded
             item.save()
 
             return value
@@ -183,21 +225,12 @@ class DynamicValueAccessor(
         )
 
         DynamicValue.objects.update_or_create(
-
             content_type=content_type,
-
             object_id=obj.pk,
-
             field_name=field.name,
-
             defaults={
-
-                "value": field.serialize(
-                    value,
-                ),
-
+                "value": encoded,
             },
-
         )
 
         return value

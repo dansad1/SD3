@@ -37,37 +37,10 @@ class DynamicField(BaseField):
         queryset,
         value,
     ):
-
-        if value in (
-            None,
-            "",
-            [],
-        ):
-            return queryset
-
-        filters = {
-            "dynamic_values__field__name": self.name,
-        }
-
-        if isinstance(
+        return self.field_type.apply_filter(
+            queryset,
+            self,
             value,
-            list,
-        ):
-            filters[
-                "dynamic_values__value__in"
-            ] = [
-                str(item)
-                for item in value
-            ]
-        else:
-            filters[
-                "dynamic_values__value"
-            ] = str(value)
-
-        return (
-            queryset
-            .filter(**filters)
-            .distinct()
         )
 
     # =====================================================
@@ -78,7 +51,6 @@ class DynamicField(BaseField):
         self,
         value,
     ):
-
         if (
             not value
             or not self.field_type.searchable
@@ -87,5 +59,7 @@ class DynamicField(BaseField):
 
         return Q(
             dynamic_values__field__name=self.name,
-            dynamic_values__value__icontains=str(value),
+            dynamic_values__value__icontains=str(
+                value,
+            ),
         )
