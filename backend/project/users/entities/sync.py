@@ -2,31 +2,24 @@ from backend.project.companies.models import Company
 
 
 def sync_user(user):
-    print("=" * 80)
+    company = user.get_value(
+        "company",
+    )
 
-    company = user.get_value("company")
+    user.services.clear()
 
-    print("TYPE:", type(company))
-    print("VALUE:", repr(company))
+    if not company:
+        return
 
-    if isinstance(company, dict):
-        print("DICT")
-        company = Company.objects.filter(
-            pk=company.get("value"),
-        ).first()
-
-    elif isinstance(company, str):
-        print("STRING")
-        print("RAW:", company)
-        raise RuntimeError(
-            f"COMPANY STRING = {company!r}"
+    if not isinstance(
+        company,
+        Company,
+    ):
+        raise TypeError(
+            f"Expected Company, got {type(company).__name__}",
         )
 
-    elif isinstance(company, int):
-        print("INT")
-        company = Company.objects.filter(
-            pk=company,
-        ).first()
-
-    else:
-        print("OTHER:", type(company))
+    for service in company.services.all():
+        service.users.add(
+            user,
+        )

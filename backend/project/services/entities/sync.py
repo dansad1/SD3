@@ -13,12 +13,9 @@ def get_service_users(
     users = User.objects.none()
 
     for company in service.companies.all():
-
         users |= User.objects.filter(
             dynamic_values__field__name="company",
-            dynamic_values__value=str(
-                company.pk,
-            ),
+            dynamic_values__value__contains=f'"value": {company.pk}',
         )
 
     return users.distinct()

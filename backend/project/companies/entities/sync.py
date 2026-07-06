@@ -6,9 +6,7 @@ from backend.project.services.entities.sync import (
 def sync_company(
     company,
 ):
-    for service in (
-        company.services.all()
-    ):
+    for service in company.services.all():
         sync_service(
             service,
         )
