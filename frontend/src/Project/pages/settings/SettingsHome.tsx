@@ -48,11 +48,7 @@ const SettingsHomePage = page(
             variant="menu"
           />
 
-          <Link
-            label="Импорт пользователей"
-            to="/page/import_users:page"
-            variant="menu"
-          />
+          
 
           <Link
             label="Журнал действий"
