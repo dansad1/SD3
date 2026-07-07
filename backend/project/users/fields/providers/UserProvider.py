@@ -1,6 +1,22 @@
-class BaseRelationProvider:
+from backend.engine.fields.providers.BaseRelationProvider import (
+    BaseRelationProvider,
+)
 
-    code = None
+from backend.engine.fields.providers.registry import (
+    register_relation_provider,
+)
+
+from backend.project.users.models import (
+    User,
+)
+
+
+@register_relation_provider
+class UserProvider(
+    BaseRelationProvider,
+):
+
+    code = "user"
 
     # =====================================================
     # OPTIONS
@@ -12,8 +28,33 @@ class BaseRelationProvider:
         request=None,
         instance=None,
     ):
-        return None
 
+        queryset = (
+            User.objects
+            .all()
+        )
+
+        options = [
+
+            {
+                "value": obj.pk,
+                "label": str(obj),
+            }
+
+            for obj in queryset
+
+        ]
+
+        options.sort(
+
+            key=lambda item: (
+                item["label"]
+                or ""
+            ).casefold()
+
+        )
+
+        return options
 
     # =====================================================
     # INITIAL
@@ -25,8 +66,21 @@ class BaseRelationProvider:
         request=None,
         instance=None,
     ):
-        return None
 
+        if not request:
+            return None
+
+
+        if not request.user.is_authenticated:
+            return None
+
+
+        # только заявитель
+        if field.name != "requester":
+            return None
+
+
+        return request.user
 
     # =====================================================
     # VALIDATION
@@ -39,8 +93,13 @@ class BaseRelationProvider:
         request=None,
         instance=None,
     ):
-        return value
 
+        return super().validate(
+            field,
+            value,
+            request=request,
+            instance=instance,
+        )
 
     # =====================================================
     # NORMALIZATION
@@ -53,8 +112,13 @@ class BaseRelationProvider:
         request=None,
         instance=None,
     ):
-        return value
 
+        return super().normalize(
+            field,
+            value,
+            request=request,
+            instance=instance,
+        )
 
     # =====================================================
     # SERIALIZATION
@@ -68,14 +132,12 @@ class BaseRelationProvider:
         instance=None,
     ):
 
-        if value is None:
-            return None
-
-        return {
-            "value": value.pk,
-            "label": str(value),
-        }
-
+        return super().serialize(
+            field,
+            value,
+            request=request,
+            instance=instance,
+        )
 
     # =====================================================
     # FILTER
@@ -87,33 +149,15 @@ class BaseRelationProvider:
         field,
         value,
     ):
-        return queryset.filter(
-            **{
-                field.name: value,
-            }
-        )
 
-
-    # =====================================================
-    # SAVE
-    # =====================================================
-
-    def save(
-        self,
-        instance,
-        field,
-        value,
-    ):
-
-        field.accessor.set(
-            instance,
+        return super().apply_filter(
+            queryset,
             field,
             value,
         )
 
-
     # =====================================================
-    # HOOKS
+    # BEFORE SAVE
     # =====================================================
 
     def before_save(
@@ -122,8 +166,12 @@ class BaseRelationProvider:
         field,
         value,
     ):
+
         pass
 
+    # =====================================================
+    # AFTER SAVE
+    # =====================================================
 
     def after_save(
         self,
@@ -131,4 +179,5 @@ class BaseRelationProvider:
         field,
         value,
     ):
+
         pass

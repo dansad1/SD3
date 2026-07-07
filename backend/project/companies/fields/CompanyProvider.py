@@ -57,6 +57,34 @@ class CompanyProvider(
         return options
 
     # =====================================================
+    # INITIAL
+    # =====================================================
+
+    def get_initial(
+        self,
+        field,
+        request=None,
+        instance=None,
+    ):
+
+        if not request:
+            return None
+
+        if field.name != "company":
+            return None
+
+        user = request.user
+
+        if not user.is_authenticated:
+            return None
+
+        return getattr(
+            user,
+            "company",
+            None,
+        )
+
+    # =====================================================
     # VALIDATION
     # =====================================================
 
