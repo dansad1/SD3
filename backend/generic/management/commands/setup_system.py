@@ -155,17 +155,16 @@ class Command(BaseCommand):
             )
         )
 
-        if created:
+        # Всегда обновляем пароль root
+        user.set_password(
+            "root"
+        )
 
-            user.set_password(
-                "root"
-            )
-
-            user.save(
-                update_fields=[
-                    "password",
-                ]
-            )
+        user.save(
+            update_fields=[
+                "password",
+            ]
+        )
 
         self.stdout.write(
             f"   {'🟢' if created else '✔'} root"
@@ -175,14 +174,9 @@ class Command(BaseCommand):
             "   ✔ login    : root"
         )
 
-        if created:
-            self.stdout.write(
-                "   ✔ password : root"
-            )
-        else:
-            self.stdout.write(
-                "   ✔ password : unchanged"
-            )
+        self.stdout.write(
+            "   ✔ password : root"
+        )
 
         self.stdout.write("")
 

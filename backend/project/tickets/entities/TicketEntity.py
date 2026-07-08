@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError
+
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
@@ -13,40 +15,31 @@ from backend.project.tickets.models import (
     TicketFieldSet,
 )
 
+from backend.project.tickets.services.TicketAssignmentValidator import (
+    TicketAssignmentValidator,
+)
+
+from backend.project.tickets.services.TicketLifecycleService import (
+    TicketLifecycleService,
+)
+
+from backend.project.tickets.services.TicketSLAService import (
+    TicketSLAService,
+)
+
+from backend.project.tickets.services.TicketTransitionService import (
+    TicketTransitionService,
+)
+
 
 class TicketEntity(BaseEntity):
 
+    # =====================================================
+    # BASE
+    # =====================================================
+
     model = Ticket
-
     entity = "tickets"
-
-    # =====================================================
-    # DEBUG
-    # =====================================================
-
-    def debug_queryset(
-        self,
-        title,
-        queryset,
-    ):
-        print("=" * 80)
-        print(title)
-        print("MODEL:", queryset.model)
-        print("LABEL:", queryset.model._meta.label)
-        print(
-            "FIELDS:",
-            [
-                f.name
-                for f in queryset.model._meta.get_fields()
-            ],
-        )
-
-        try:
-            print("SQL:", queryset.query)
-        except Exception as exc:
-            print("SQL ERROR:", exc)
-
-        print("=" * 80)
 
     # =====================================================
     # UI
@@ -60,6 +53,7 @@ class TicketEntity(BaseEntity):
         "company",
         "executor_group",
         "assigned_to",
+        "deadline",
         "created_at",
     ]
 
@@ -75,6 +69,14 @@ class TicketEntity(BaseEntity):
         "executor_group",
         "assigned_to",
         "archived",
+    ]
+
+    ordering = [
+        "-created_at",
+    ]
+
+    exclude_fields = [
+        "deleted_at",
     ]
 
     # =====================================================
@@ -93,30 +95,24 @@ class TicketEntity(BaseEntity):
     # QUERYSET
     # =====================================================
 
-    def get_select_related(self):
+    def get_select_related(
+        self,
+    ):
 
         return [
+            "type",
 
-            field.name
-
-            for field in self.model._meta.get_fields()
-
-            if (
-                getattr(
-                    field,
-                    "many_to_one",
-                    False,
-                )
-                and
-                not field.auto_created
-            )
         ]
 
-    def get_prefetch_related(self):
+    def get_prefetch_related(
+        self,
+    ):
 
         return [
             "dynamic_values",
             "dynamic_values__field",
+            "comments",
+            "attachments",
         ]
 
     # =====================================================
@@ -129,142 +125,34 @@ class TicketEntity(BaseEntity):
         obj=None,
     ):
 
-        print("\n")
-        print("#" * 80)
-        print("TicketEntity.get_fields()")
-        print("OBJ:", obj)
-        print("#" * 80)
-
-        fields = []
-
-        for field in self.model._meta.get_fields():
-
-            name = getattr(
-                field,
-                "name",
-                None,
-            )
-
-            if not name:
-                continue
-
-            if not self.include_model_field(field):
-                continue
-
-            fields.append(
-                DjangoField(field)
-            )
+        fields = super().get_fields(
+            request,
+            obj=obj,
+        )
 
         existing_names = {
             field.name
             for field in fields
         }
 
-        print("DJANGO FIELDS:", sorted(existing_names))
-
-        # =================================================
-        # EXISTING OBJECT
-        # =================================================
-
-        if obj is not None:
-
-            print("MODE: EDIT")
-
-            dynamic_fields = self.get_dynamic_fields(
-                request,
-                obj=obj,
-            )
-
-        # =================================================
-        # CREATE / LIST
-        # =================================================
-
-        else:
-
-            print("MODE: CREATE/LIST")
-
-            fieldset = (
-                TicketFieldSet.objects
-                .filter(
-                    code="default",
-                )
-                .first()
-            )
-
-            print("FIELDSET:", fieldset)
-
-            if fieldset:
-
-                print(
-                    "FIELDSET MODEL:",
-                    fieldset._meta.label,
-                )
-
-                print(
-                    "FIELDSET CLASS:",
-                    fieldset.__class__,
-                )
-
-                print(
-                    "RELATED MODEL:",
-                    fieldset.fields.model,
-                )
-
-                qs = (
-                    TicketField.objects
-                    .filter(
-                        fieldset=fieldset,
-                    )
-                    .order_by("id")
-                )
-
-                self.debug_queryset(
-                    "TicketField queryset",
-                    qs,
-                )
-
-                dynamic_fields = qs
-
-            else:
-
-                print("NO DEFAULT FIELDSET")
-
-                dynamic_fields = []
-
-        print(
-            "DYNAMIC COUNT:",
-            len(dynamic_fields),
-        )
-
-        for field in dynamic_fields:
-
-            print(
-                "FIELD:",
-                field.name,
-                field.field_type,
-            )
+        for field in self.get_dynamic_fields(
+            request,
+            obj=obj,
+        ):
 
             if field.name in existing_names:
-                print(
-                    "SKIP:",
-                    field.name,
-                    "(already exists)",
-                )
                 continue
 
             fields.append(
-                DynamicField(field)
+                DynamicField(
+                    field,
+                )
             )
-
-        print(
-            "FINAL:",
-            [f.name for f in fields],
-        )
 
         return fields
 
     # =====================================================
-    # DYNAMIC
+    # DYNAMIC FIELDS
     # =====================================================
 
     def get_dynamic_fields(
@@ -273,12 +161,11 @@ class TicketEntity(BaseEntity):
         obj=None,
     ):
 
-        print("\n")
-        print("=" * 80)
-        print("get_dynamic_fields()")
-        print("=" * 80)
-
         fieldset = None
+
+        # =============================================
+        # EDIT
+        # =============================================
 
         if (
             obj
@@ -286,44 +173,38 @@ class TicketEntity(BaseEntity):
             and obj.type
         ):
 
-            print("MODE: EDIT")
-
-            print("TYPE:", obj.type)
-            print(
-                "TYPE MODEL:",
-                obj.type._meta.label,
-            )
-
             fieldset = obj.type.fieldset
+
+        # =============================================
+        # CREATE
+        # =============================================
 
         else:
 
-            print("MODE: CREATE")
-
-            type_id = request.GET.get(
-                "type",
+            type_id = (
+                request.GET.get(
+                    "type",
+                )
+                if request
+                else None
             )
 
-            print("REQUEST TYPE:", type_id)
-
             if not type_id:
-                print("NO TYPE")
                 return []
 
             try:
-
-                type_id = int(type_id)
+                type_id = int(
+                    type_id,
+                )
 
             except (
                 TypeError,
                 ValueError,
             ):
-
-                print("INVALID TYPE")
                 return []
 
             ticket_type = (
-                self.model
+                Ticket
                 ._meta
                 .get_field("type")
                 .remote_field
@@ -338,50 +219,138 @@ class TicketEntity(BaseEntity):
                 .first()
             )
 
-            print("TICKET TYPE:", ticket_type)
-
             if ticket_type:
-
-                fieldset = (
-                    ticket_type.fieldset
-                )
+                fieldset = ticket_type.fieldset
 
         if not fieldset:
-
-            print("NO FIELDSET")
             return []
 
-        print("FIELDSET:", fieldset)
-
-        print(
-            "FIELDSET MODEL:",
-            fieldset._meta.label,
-        )
-
-        print(
-            "FIELDSET CLASS:",
-            fieldset.__class__,
-        )
-
-        print(
-            "RELATED MODEL:",
-            fieldset.fields.model,
-        )
-
-        qs = (
+        return (
             TicketField.objects
             .filter(
                 fieldset=fieldset,
             )
-            .order_by("id")
+            .order_by(
+                "id",
+            )
         )
 
-        self.debug_queryset(
-            "Dynamic queryset",
-            qs,
+    # =====================================================
+    # VALIDATION
+    # =====================================================
+
+    def validate(
+        self,
+        request,
+        payload,
+        instance=None,
+    ):
+
+        errors = {}
+
+        if not payload.get(
+            "type",
+        ):
+
+            errors["type"] = [
+                "Тип заявки обязателен",
+            ]
+
+        if errors:
+            raise ValidationError(
+                errors,
+            )
+
+        if instance:
+
+            TicketAssignmentValidator.validate(
+                actor=request.user,
+                assignee=(
+                    instance.assigned_to
+                ),
+            )
+
+            old_status = instance.status
+
+            new_status = (
+                payload.get("status")
+            )
+
+            if new_status:
+
+                TicketTransitionService.validate_transition(
+                    ticket=instance,
+                    old_status=old_status,
+                    new_status=new_status,
+                )
+
+        return payload
+
+    # =====================================================
+    # LIFECYCLE
+    # =====================================================
+
+    def after_save(
+        self,
+        ctx,
+    ):
+
+        ctx = super().after_save(
+            ctx,
         )
 
-        return qs
+        ticket = ctx.instance
+
+        TicketSLAService(
+            ticket,
+        ).recalculate()
+
+        if getattr(
+            ctx,
+            "created",
+            False,
+        ):
+
+            TicketLifecycleService.on_create(
+                ticket,
+                ctx.request.user,
+            )
+
+        else:
+
+            TicketLifecycleService.on_update(
+                ticket,
+                ctx.request.user,
+                getattr(
+                    ctx,
+                    "changes",
+                    {},
+                ),
+            )
+
+        return ctx
+
+    # =====================================================
+    # SCHEMA
+    # =====================================================
+
+    def customize_field_schema(
+        self,
+        request,
+        schema,
+        field=None,
+    ):
+
+        if schema["name"] in {
+            "id",
+            "created_at",
+            "updated_at",
+            "due_date",
+        }:
+
+            schema["readonly"] = True
+
+        return schema
 
     # =====================================================
     # REPRESENTATION
