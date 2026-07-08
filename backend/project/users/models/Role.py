@@ -29,8 +29,8 @@ class UserRole(TimeStampedModel):
         default=True,
     )
 
-    priority = models.IntegerField(
-        default=0,
+    is_executor = models.BooleanField(
+        default=False,
     )
 
     permissions = models.ManyToManyField(
@@ -44,7 +44,6 @@ class UserRole(TimeStampedModel):
     class Meta:
 
         ordering = [
-            "priority",
             "name",
         ]
 

@@ -28,7 +28,7 @@ class PriorityProvider(
         return (
             TicketPriority.objects
             .filter(
-                code="Низкий",
+                level=5,
             )
             .first()
         )

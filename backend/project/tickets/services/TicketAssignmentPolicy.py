@@ -1,102 +1,86 @@
-# backend/project/tickets/services/TicketAssignmentPolicy.py
+from django.core.exceptions import (
+    ValidationError,
+)
 
 from backend.project.users.models import (
     User,
-    UserRole,
-    UserField,
-    UserFieldValue,
 )
 
 
 class TicketAssignmentPolicy:
 
     @classmethod
-    def get_executor_queryset(cls):
+    def get_executor_queryset(
+        cls,
+    ):
 
-        role_field = (
-            UserField.objects
+        return (
+            User.objects
             .filter(
-                name="role",
+                is_active=True,
+                role__is_active=True,
+                role__is_executor=True,
             )
-            .first()
-        )
-
-        if not role_field:
-            return User.objects.none()
-
-        executor_roles = list(
-            UserRole.objects.filter(
-                is_executor=True,
+            .select_related(
+                "role",
             )
-        )
-
-        if not executor_roles:
-            return User.objects.none()
-
-        executor_ids = {
-            str(role.id)
-            for role in executor_roles
-        }
-
-        executor_names = {
-            role.name
-            for role in executor_roles
-        }
-
-        valid_values = (
-            executor_ids
-            |
-            executor_names
-        )
-
-        user_ids = (
-            UserFieldValue.objects
-            .filter(
-                field=role_field,
-                value__in=valid_values,
-            )
-            .values_list(
-                "user_id",
-                flat=True,
-            )
-        )
-
-        return User.objects.filter(
-            id__in=set(user_ids)
         )
 
     @classmethod
-    def get_allowed_assignees(
+    def get_allowed_executors(
         cls,
         actor,
     ):
+
         qs = cls.get_executor_queryset()
 
         if actor.has_perm(
-            "tickets.assign_any"
+            "tickets.assign_any",
         ):
             return qs
 
         if actor.has_perm(
-            "tickets.assign_self"
+            "tickets.assign_self",
         ):
             return qs.filter(
-                id=actor.id,
+                pk=actor.pk,
             )
 
         return User.objects.none()
 
     @classmethod
-    def can_assign(
+    def can_assign_executor(
         cls,
         actor,
-        assignee,
+        executor,
     ):
-        if not assignee:
+
+        if not executor:
             return True
 
-        return cls.get_allowed_assignees(
-            actor
-        ).filter(
-            id=assignee.id
-        ).exists()
+        return (
+            cls.get_allowed_executors(
+                actor,
+            )
+            .filter(
+                pk=executor.pk,
+            )
+            .exists()
+        )
+
+    @classmethod
+    def validate_executor(
+        cls,
+        actor,
+        executor,
+    ):
+
+        if cls.can_assign_executor(
+            actor,
+            executor,
+        ):
+            return
+
+        raise ValidationError(
+            "Недопустимый исполнитель."
+        )

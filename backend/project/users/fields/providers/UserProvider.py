@@ -1,9 +1,15 @@
+from django.core.exceptions import ValidationError
+
 from backend.engine.fields.providers.BaseRelationProvider import (
     BaseRelationProvider,
 )
 
 from backend.engine.fields.providers.registry import (
     register_relation_provider,
+)
+
+from backend.project.tickets.services.TicketAssignmentPolicy import (
+    TicketAssignmentPolicy,
 )
 
 from backend.project.users.models import (
@@ -29,10 +35,24 @@ class UserProvider(
         instance=None,
     ):
 
-        queryset = (
-            User.objects
-            .all()
-        )
+        if (
+            field.name == "executors"
+            and request
+        ):
+
+            queryset = (
+                TicketAssignmentPolicy
+                .get_allowed_executors(
+                    request.user,
+                )
+            )
+
+        else:
+
+            queryset = (
+                User.objects
+                .all()
+            )
 
         options = [
 
@@ -70,15 +90,11 @@ class UserProvider(
         if not request:
             return None
 
-
         if not request.user.is_authenticated:
             return None
 
-
-        # только заявитель
         if field.name != "requester":
             return None
-
 
         return request.user
 
@@ -93,6 +109,50 @@ class UserProvider(
         request=None,
         instance=None,
     ):
+
+        if (
+            field.name == "executors"
+            and value
+            and request
+        ):
+
+            # если поле множественное
+            values = (
+                value
+                if isinstance(
+                    value,
+                    list,
+                )
+                else [value]
+            )
+
+            allowed = set(
+                TicketAssignmentPolicy
+                .get_allowed_executors(
+                    request.user,
+                )
+                .values_list(
+                    "pk",
+                    flat=True,
+                )
+            )
+
+            for item in values:
+
+                pk = (
+                    item.get("value")
+                    if isinstance(
+                        item,
+                        dict,
+                    )
+                    else item
+                )
+
+                if pk not in allowed:
+
+                    raise ValidationError(
+                        "Недопустимый исполнитель."
+                    )
 
         return super().validate(
             field,
