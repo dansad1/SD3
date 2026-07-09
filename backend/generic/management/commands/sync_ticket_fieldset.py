@@ -61,11 +61,7 @@ class Command(BaseCommand):
             # КЛАССИФИКАЦИЯ
             # =====================================================
 
-            {
-                "name": "type",
-                "label": "Тип заявки",
-                "field_type": "relation",
-            },
+
 
             {
                 "name": "status",

@@ -5,11 +5,14 @@ from django.core.exceptions import (
 
 def save(ctx):
 
-    model = ctx.model
+    print("\n" + "=" * 100)
+    print("SAVE")
+    print("=" * 100)
+    print("MODE:", ctx.mode)
+    print("CTX.DATA:", repr(ctx.data))
+    print("=" * 100)
 
-    # =====================================================
-    # INSTANCE
-    # =====================================================
+    model = ctx.model
 
     if ctx.mode == "create":
 
@@ -26,40 +29,35 @@ def save(ctx):
 
         raise PermissionDenied
 
-    # =====================================================
-    # RUNTIME FIELDS
-    # =====================================================
-
     runtime_fields = {
-
         field.name: field
-
         for field in ctx.runtime_fields
-
     }
 
-    pre_save_items = []
-
-    post_save_items = []
-
-    # =====================================================
-    # SPLIT
-    # =====================================================
-
-    for name, value in (
-        ctx.data or {}
-    ).items():
-
-        field = runtime_fields.get(
-            name,
+    print("RUNTIME FIELDS:")
+    for field in ctx.runtime_fields:
+        print(
+            field.name,
+            field.type,
+            field.requires_post_save,
         )
 
-        if not field:
-            continue
+    pre_save_items = []
+    post_save_items = []
 
-        # ================================================
-        # PASSWORD
-        # ================================================
+    for name, value in (ctx.data or {}).items():
+
+        print(
+            "INPUT:",
+            name,
+            repr(value),
+        )
+
+        field = runtime_fields.get(name)
+
+        if not field:
+            print("  -> FIELD NOT FOUND")
+            continue
 
         if (
             field.type == "password"
@@ -69,67 +67,61 @@ def save(ctx):
                 "********",
             )
         ):
+            print("  -> PASSWORD SKIP")
             continue
 
-        if not field.should_save(
-            value,
-        ):
+        if not field.should_save(value):
+            print("  -> SHOULD_SAVE = FALSE")
             continue
-
-        item = (
-            field,
-            value,
-        )
 
         if field.requires_post_save:
 
+            print("  -> POST SAVE")
+
             post_save_items.append(
-                item,
+                (field, value),
             )
 
         else:
 
+            print("  -> PRE SAVE")
+
             pre_save_items.append(
-                item,
+                (field, value),
             )
 
-    # =====================================================
-    # PRE SAVE
-    # =====================================================
+    print("\nPRE SAVE ITEMS:")
+    for field, value in pre_save_items:
+        print(field.name, repr(value))
+
+    print("\nPOST SAVE ITEMS:")
+    for field, value in post_save_items:
+        print(field.name, repr(value))
 
     for field, value in pre_save_items:
 
+        print("PRE:", field.name)
+
         field.set_value(
             obj,
             value,
         )
 
-    # =====================================================
-    # VALIDATE
-    # =====================================================
-
     obj.full_clean()
-
-    # =====================================================
-    # SAVE
-    # =====================================================
-
     obj.save()
 
-    # =====================================================
-    # POST SAVE
-    # =====================================================
+    print("OBJECT PK:", obj.pk)
 
     for field, value in post_save_items:
 
+        print("POST:", field.name)
+
         field.set_value(
             obj,
             value,
         )
 
-    # =====================================================
-    # RESULT
-    # =====================================================
+    print("=" * 100)
 
     ctx.instance = obj
 

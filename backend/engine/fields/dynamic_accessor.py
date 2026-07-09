@@ -99,9 +99,18 @@ class DynamicValueAccessor(
             field,
         )
 
-        # ===============================================
+        print("\n" + "=" * 100)
+        print("DynamicValueAccessor.get()")
+        print("=" * 100)
+        print("Object      :", obj)
+        print("Object pk   :", obj.pk)
+        print("Field       :", field.name)
+        print("Source      :", field.source)
+        print("Value model :", value_model)
+
+        # =====================================================
         # NEW STORAGE
-        # ===============================================
+        # =====================================================
 
         if value_model:
 
@@ -109,99 +118,88 @@ class DynamicValueAccessor(
                 obj,
             )
 
-            item = (
+            print("Owner field :", owner)
+
+            qs = (
                 value_model.objects
-                .select_related(
-                    "field",
-                )
+                .select_related("field")
                 .filter(
                     **{
                         owner: obj,
                         "field": field.source,
                     }
                 )
-                .first()
             )
 
+            print("SQL :", qs.query)
+            print("COUNT :", qs.count())
+
+            item = qs.first()
+
+            print("ITEM :", item)
+
             if not item:
+                print("NO VALUE FOUND")
+                print("=" * 100)
                 return None
+
+            print("RAW DB VALUE :", item.value)
 
             raw = self.decode(
                 item.value,
             )
 
-            try:
+            print("DECODED :", repr(raw))
 
-                return field.deserialize(
-                    raw,
-                )
-
-            except Exception as exc:
-
-                print("\n" + "=" * 100)
-                print("DESERIALIZE ERROR (NEW STORAGE)")
-                print("=" * 100)
-                print("Owner model :", obj.__class__.__name__)
-                print("Owner pk    :", obj.pk)
-                print("Field       :", field.name)
-                print("Value model :", value_model.__name__)
-                print("Raw value   :", item.value)
-                print("Decoded     :", raw)
-                print("Exception   :", repr(exc))
-                print("=" * 100 + "\n")
-
-                raise
-
-        # ===============================================
-        # LEGACY STORAGE
-        # ===============================================
-
-        content_type = (
-            ContentType.objects.get_for_model(
-                obj,
-                for_concrete_model=False,
+            value = field.deserialize(
+                raw,
             )
+
+            print("RESULT :", repr(value))
+            print("=" * 100)
+
+            return value
+
+        print("USING LEGACY STORAGE")
+
+        content_type = ContentType.objects.get_for_model(
+            obj,
+            for_concrete_model=False,
         )
 
-        item = (
-            DynamicValue.objects
-            .filter(
-                content_type=content_type,
-                object_id=obj.pk,
-                field_name=field.name,
-            )
-            .first()
+        qs = DynamicValue.objects.filter(
+            content_type=content_type,
+            object_id=obj.pk,
+            field_name=field.name,
         )
+
+        print("SQL :", qs.query)
+        print("COUNT :", qs.count())
+
+        item = qs.first()
+
+        print("ITEM :", item)
 
         if not item:
+            print("NO LEGACY VALUE")
+            print("=" * 100)
             return None
 
         raw = self.decode(
             item.value,
         )
 
-        try:
+        print("RAW :", item.value)
+        print("DECODED :", repr(raw))
 
-            return field.deserialize(
-                raw,
-            )
+        value = field.deserialize(
+            raw,
+        )
 
-        except Exception as exc:
+        print("RESULT :", repr(value))
+        print("=" * 100)
 
-            print("\n" + "=" * 100)
-            print("DESERIALIZE ERROR (LEGACY STORAGE)")
-            print("=" * 100)
-            print("Owner model :", obj.__class__.__name__)
-            print("Owner pk    :", obj.pk)
-            print("Field       :", field.name)
-            print("ContentType :", content_type)
-            print("DynamicValue:", item.pk)
-            print("Raw value   :", item.value)
-            print("Decoded     :", raw)
-            print("Exception   :", repr(exc))
-            print("=" * 100 + "\n")
-
-            raise
+        return value
     # =====================================================
     # SET
     # =====================================================

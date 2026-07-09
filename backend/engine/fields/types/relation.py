@@ -92,7 +92,10 @@ class RelationFieldType(BaseFieldType):
 
         if not entity_name:
             raise ValidationError(
-                "Не задана связанная сущность",
+                f"Не задана связанная сущность. "
+                f"Поле={field.name}, "
+                f"Тип={field.type}, "
+                f"Options={field.options}"
             )
 
         entity = entity_registry.get(

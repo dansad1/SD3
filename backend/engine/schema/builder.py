@@ -9,18 +9,17 @@ from backend.engine.entity.EntityRegistry import (
 
 class EntitySchemaBuilder:
 
-    def __init__(self, entity):
-
+    def __init__(
+        self,
+        entity,
+    ):
         self.entity = entity
         self.model = entity.model
-
-    # =====================================================
-    # BUILD
-    # =====================================================
 
     def build(
         self,
         request,
+        fields,
         action="view",
     ):
 
@@ -36,18 +35,11 @@ class EntitySchemaBuilder:
             action,
         )
 
-        fields = (
-            self.entity.get_fields(
-                request
-            )
-            or []
-        )
-
         fields_schema = []
 
         seen = set()
 
-        for field in fields:
+        for field in fields or []:
 
             if not field.name:
                 continue
@@ -55,9 +47,7 @@ class EntitySchemaBuilder:
             if field.name in seen:
                 continue
 
-            seen.add(
-                field.name
-            )
+            seen.add(field.name)
 
             schema = field.get_schema()
 
@@ -66,7 +56,7 @@ class EntitySchemaBuilder:
             # =========================================
 
             entity_name = schema.get(
-                "entity"
+                "entity",
             )
 
             if entity_name:
@@ -75,7 +65,7 @@ class EntitySchemaBuilder:
 
                     relation_entity = (
                         entity_registry.get(
-                            entity_name
+                            entity_name,
                         )
                     )
 
@@ -83,15 +73,13 @@ class EntitySchemaBuilder:
 
                         schema["options"] = [
 
-                            relation_entity
-                            .represent_option(
-                                obj
+                            relation_entity.represent_option(
+                                obj,
                             )
 
                             for obj in (
-                                relation_entity
-                                .get_queryset(
-                                    request
+                                relation_entity.get_queryset(
+                                    request,
                                 )
                             )
 
@@ -101,40 +89,30 @@ class EntitySchemaBuilder:
 
                         schema["options"] = []
 
-                except Exception as e:
+                except Exception as exc:
 
                     print(
                         "[OPTIONS ERROR]",
                         field.name,
                         entity_name,
-                        e,
+                        exc,
                     )
 
                     schema["options"] = []
 
-            # =========================================
-            # ENTITY FIELD CUSTOMIZATION
-            # =========================================
-
             schema = (
-                self.entity
-                .customize_field_schema(
-                    field=field,
-                    schema=schema,
+                self.entity.customize_field_schema(
                     request=request,
+                    schema=schema,
+                    field=field,
                 )
             )
 
-            # =========================================
-            # VIEW MODE
-            # =========================================
-
             if action == "view":
-
                 schema["readonly"] = True
 
             fields_schema.append(
-                schema
+                schema,
             )
 
         return {
@@ -149,8 +127,8 @@ class EntitySchemaBuilder:
                 fields_schema,
 
             "capabilities":
-                self.entity
-                .get_capabilities_for_user(
-                    request
+                self.entity.get_capabilities_for_user(
+                    request,
                 ),
+
         }

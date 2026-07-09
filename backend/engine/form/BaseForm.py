@@ -54,15 +54,16 @@ from backend.engine.utils.permissions import (
 
 logger = logging.getLogger(__name__)
 
-def apply_payload(
-        ctx: FormContext
-):
-    ctx.data = (
-            ctx.payload or {}
-    ).copy()
+def apply_payload(ctx: FormContext):
+    ctx.data = (ctx.payload or {}).copy()
+
+    setattr(
+        ctx.request,
+        "_form_payload",
+        ctx.data,
+    )
 
     return ctx
-
 
 # =========================================================
 # SECURITY
@@ -148,7 +149,7 @@ def check_permission(
 # =========================================================
 
 def load_runtime_fields(
-        ctx: FormContext
+    ctx: FormContext,
 ):
     runtime_fields = (
         ctx.entity.get_fields(
@@ -158,9 +159,22 @@ def load_runtime_fields(
     )
 
     ctx.runtime_fields = (
-            runtime_fields
-            or []
+        runtime_fields
+        or []
     )
+
+    print("\n" + "=" * 100)
+    print("RUNTIME FIELDS")
+
+    for field in ctx.runtime_fields:
+
+        print(
+            f"{field.__class__.__name__:20} "
+            f"name={field.name:20} "
+            f"type={field.type}"
+        )
+
+    print("=" * 100)
 
     ctx.field_map = {
 
@@ -172,7 +186,15 @@ def load_runtime_fields(
     }
 
     return ctx
+def debug_data(ctx):
 
+    print("\n" + "=" * 100)
+    print("AFTER NORMALIZE")
+    print("=" * 100)
+    print(ctx.data)
+    print("=" * 100)
+
+    return ctx
 
 # =========================================================
 # PIPELINES
@@ -190,21 +212,18 @@ BUILD_PIPELINE = [
 SUBMIT_PIPELINE = [
     check_permission,
     load_instance,
+
+    apply_payload,
     load_runtime_fields,
     build_schema,
-    apply_payload,
+debug_data,
     filter_editable_fields,
-
     normalize,
-    before_save,
-    # =====================================================
-    # SAVE
-    # =====================================================
-    save,
 
+    before_save,
+    save,
     after_save,
 ]
-
 
 class BaseForm:
     code = None
