@@ -2,13 +2,20 @@
 # COMPANY ENTITY
 # =========================================================
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import (
+    ValidationError,
+)
 
-from backend.engine.entity.Base.BaseEntity import BaseEntity
-from backend.project.companies.entities.sync import sync_company
+from backend.engine.entity.Base.BaseEntity import (
+    BaseEntity,
+)
+from backend.project.companies.entities.sync import (
+    sync_company,
+)
 from backend.project.companies.models import (
     Company,
     CompanyField,
+    CompanyFieldAccess,
 )
 
 
@@ -19,6 +26,7 @@ class CompanyEntity(BaseEntity):
     # =====================================================
 
     model = Company
+
     entity = "company"
 
     # =====================================================
@@ -32,7 +40,7 @@ class CompanyEntity(BaseEntity):
         "name",
         "phone",
         "email",
-        "company"
+        "company",
     ]
 
     search_fields = [
@@ -43,7 +51,7 @@ class CompanyEntity(BaseEntity):
 
     filter_fields = [
         "archived",
-        "company"
+        "company",
     ]
 
     ordering = [
@@ -77,6 +85,7 @@ class CompanyEntity(BaseEntity):
     def get_select_related(
         self,
     ):
+
         return [
             "fieldset",
         ]
@@ -84,12 +93,48 @@ class CompanyEntity(BaseEntity):
     def get_prefetch_related(
         self,
     ):
-        #
-        # DynamicValue не имеет FK field
-        #
+
         return [
             "dynamic_values",
         ]
+
+    # =====================================================
+    # FIELD ACCESS
+    # =====================================================
+
+    def get_field_access_map(
+        self,
+        request,
+        obj=None,
+    ):
+
+        if (
+            not request.user.is_authenticated
+            or request.user.is_superuser
+            or not request.user.role
+        ):
+            return {}
+
+        return {
+
+            item.field.name:
+                item.access_level
+
+            for item in (
+
+                CompanyFieldAccess.objects
+
+                .select_related(
+                    "field",
+                )
+
+                .filter(
+                    role=request.user.role,
+                )
+
+            )
+
+        }
 
     # =====================================================
     # DYNAMIC FIELDS
@@ -101,81 +146,80 @@ class CompanyEntity(BaseEntity):
         obj=None,
     ):
 
-        # =============================================
-        # EXISTING COMPANY
-        # =============================================
-
         if obj and obj.fieldset_id:
+
             return (
+
                 CompanyField.objects
+
                 .filter(
                     fieldset=obj.fieldset,
                 )
+
                 .order_by(
                     "id",
                 )
-            )
 
-        # =============================================
-        # NO REQUEST
-        # =============================================
+            )
 
         if request is None:
+
             return (
+
                 CompanyField.objects
+
                 .all()
+
                 .order_by(
                     "id",
                 )
-            )
 
-        # =============================================
-        # CREATE MODE
-        # =============================================
+            )
 
         fieldset = request.GET.get(
             "fieldset",
         )
 
-        # =============================================
-        # DEFAULT
-        # =============================================
-
         if not fieldset or fieldset == "default":
+
             return (
+
                 CompanyField.objects
+
                 .all()
+
                 .order_by(
                     "id",
                 )
+
             )
 
-        # =============================================
-        # VALIDATION
-        # =============================================
-
         try:
-            fieldset_id = int(fieldset)
+
+            fieldset_id = int(
+                fieldset,
+            )
 
         except (
             TypeError,
             ValueError,
         ):
+
             return []
 
-        # =============================================
-        # RESULT
-        # =============================================
-
         return (
+
             CompanyField.objects
+
             .filter(
                 fieldset_id=fieldset_id,
                 fieldset__is_active=True,
             )
+
             .order_by(
                 "id",
             )
+
         )
 
     # =====================================================
@@ -186,10 +230,13 @@ class CompanyEntity(BaseEntity):
         self,
         obj,
     ):
+
         return {
             "value": obj.pk,
             "label": (
-                obj.get_value("name")
+                obj.get_value(
+                    "name",
+                )
                 or f"Company #{obj.pk}"
             ),
         }
@@ -204,15 +251,22 @@ class CompanyEntity(BaseEntity):
         payload,
         instance=None,
     ):
+
         errors = {}
 
-        if not payload.get("name"):
+        if not payload.get(
+            "name",
+        ):
+
             errors["name"] = [
                 "Название обязательно",
             ]
 
         if errors:
-            raise ValidationError(errors)
+
+            raise ValidationError(
+                errors,
+            )
 
         return payload
 
@@ -224,6 +278,7 @@ class CompanyEntity(BaseEntity):
         self,
         ctx,
     ):
+
         ctx = super().after_save(
             ctx,
         )
@@ -244,11 +299,13 @@ class CompanyEntity(BaseEntity):
         schema,
         field=None,
     ):
+
         if schema["name"] in {
             "id",
             "created_at",
             "updated_at",
         }:
+
             schema["readonly"] = True
 
         return schema
@@ -262,6 +319,7 @@ class CompanyEntity(BaseEntity):
         request,
         qs,
     ):
+
         qs = super().apply_queryset_filters(
             request,
             qs,
@@ -272,6 +330,7 @@ class CompanyEntity(BaseEntity):
         )
 
         if service:
+
             qs = qs.filter(
                 services=service,
             )

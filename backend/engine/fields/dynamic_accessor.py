@@ -91,9 +91,9 @@ class DynamicValueAccessor(
     # =====================================================
 
     def get(
-        self,
-        obj,
-        field,
+            self,
+            obj,
+            field,
     ):
         value_model = self.get_value_model(
             field,
@@ -130,9 +130,27 @@ class DynamicValueAccessor(
                 item.value,
             )
 
-            return field.deserialize(
-                raw,
-            )
+            try:
+
+                return field.deserialize(
+                    raw,
+                )
+
+            except Exception as exc:
+
+                print("\n" + "=" * 100)
+                print("DESERIALIZE ERROR (NEW STORAGE)")
+                print("=" * 100)
+                print("Owner model :", obj.__class__.__name__)
+                print("Owner pk    :", obj.pk)
+                print("Field       :", field.name)
+                print("Value model :", value_model.__name__)
+                print("Raw value   :", item.value)
+                print("Decoded     :", raw)
+                print("Exception   :", repr(exc))
+                print("=" * 100 + "\n")
+
+                raise
 
         # ===============================================
         # LEGACY STORAGE
@@ -162,19 +180,37 @@ class DynamicValueAccessor(
             item.value,
         )
 
-        return field.deserialize(
-            raw,
-        )
+        try:
 
+            return field.deserialize(
+                raw,
+            )
+
+        except Exception as exc:
+
+            print("\n" + "=" * 100)
+            print("DESERIALIZE ERROR (LEGACY STORAGE)")
+            print("=" * 100)
+            print("Owner model :", obj.__class__.__name__)
+            print("Owner pk    :", obj.pk)
+            print("Field       :", field.name)
+            print("ContentType :", content_type)
+            print("DynamicValue:", item.pk)
+            print("Raw value   :", item.value)
+            print("Decoded     :", raw)
+            print("Exception   :", repr(exc))
+            print("=" * 100 + "\n")
+
+            raise
     # =====================================================
     # SET
     # =====================================================
 
     def set(
-        self,
-        obj,
-        field,
-        value,
+            self,
+            obj,
+            field,
+            value,
     ):
         value_model = self.get_value_model(
             field,
@@ -198,18 +234,44 @@ class DynamicValueAccessor(
                 obj,
             )
 
+            if obj.pk is None:
+                raise RuntimeError(
+                    f"{obj.__class__.__name__} must be saved "
+                    f"before saving dynamic values."
+                )
+
+            if (
+                    getattr(
+                        field.source,
+                        "pk",
+                        None,
+                    )
+                    is None
+            ):
+                raise RuntimeError(
+                    f"Dynamic field '{field.name}' "
+                    f"is not saved."
+                )
+
+            lookup = {
+                f"{owner}_id": obj.pk,
+                "field_id": field.source.pk,
+            }
+
             item, _ = (
                 value_model.objects
                 .get_or_create(
-                    **{
-                        owner: obj,
-                        "field": field.source,
-                    }
+                    **lookup,
                 )
             )
 
             item.value = encoded
-            item.save()
+
+            item.save(
+                update_fields=[
+                    "value",
+                ],
+            )
 
             return value
 

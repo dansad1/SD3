@@ -28,9 +28,11 @@ class DynamicField(BaseField):
     def type(self):
         return self.source.field_type
 
-    # =====================================================
-    # FILTER
-    # =====================================================
+    @property
+    def requires_post_save(
+        self,
+    ):
+        return True
 
     def apply_filter(
         self,
@@ -42,10 +44,6 @@ class DynamicField(BaseField):
             self,
             value,
         )
-
-    # =====================================================
-    # SEARCH
-    # =====================================================
 
     def build_search_q(
         self,

@@ -18,6 +18,9 @@ from backend.engine.fields.types.registry import (
 )
 import json
 
+from backend.generic.models import DynamicField
+
+
 @register_field_type
 class RelationFieldType(BaseFieldType):
 
@@ -163,9 +166,23 @@ class RelationFieldType(BaseFieldType):
     # =====================================================
 
     def requires_post_save(
-        self,
-        field,
+            self,
+            field,
     ):
+        # =====================================================
+        # DYNAMIC RELATIONS
+        # =====================================================
+
+        if isinstance(
+                field,
+                DynamicField,
+        ):
+            return True
+
+        # =====================================================
+        # DJANGO RELATIONS
+        # =====================================================
+
         source = getattr(
             field,
             "source",
@@ -379,10 +396,46 @@ class RelationFieldType(BaseFieldType):
                 ):
                     pass
 
-        return self.normalize(
+        entity = self.get_entity(
             field,
+        )
+
+        model = entity.model
+
+        if field.is_multiple:
+            ids = [
+                self.extract_id(
+                    item,
+                )
+                for item in value
+            ]
+
+            objects = {
+                obj.pk: obj
+                for obj in model.objects.filter(
+                    pk__in=ids,
+                )
+            }
+
+            return [
+                objects[obj_id]
+                for obj_id in ids
+                if obj_id in objects
+            ]
+
+        object_id = self.extract_id(
             value,
         )
+
+        try:
+
+            return model.objects.get(
+                pk=object_id,
+            )
+
+        except model.DoesNotExist:
+
+            return None
     # =====================================================
     # FILTER
     # =====================================================

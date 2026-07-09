@@ -7,10 +7,8 @@ import {
   Stack,
   Heading,
   Text,
-  Action,
   Form,
-  Tabs,
-  If,
+  Action,
 } from "@/framework"
 
 const TicketFormPage = page(
@@ -26,9 +24,9 @@ const TicketFormPage = page(
 
       <Stack gap="lg">
 
-        {/* ============================================= */}
+        {/* ===================================== */}
         {/* HEADER */}
-        {/* ============================================= */}
+        {/* ===================================== */}
 
         <Stack gap="sm">
 
@@ -45,9 +43,9 @@ const TicketFormPage = page(
 
         </Stack>
 
-        {/* ============================================= */}
+        {/* ===================================== */}
         {/* ACTIONS */}
-        {/* ============================================= */}
+        {/* ===================================== */}
 
         <Stack gap="sm">
 
@@ -59,77 +57,28 @@ const TicketFormPage = page(
 
         </Stack>
 
-        {/* ============================================= */}
-        {/* CONTENT */}
-        {/* ============================================= */}
+        {/* ===================================== */}
+        {/* FORM */}
+        {/* ===================================== */}
 
-        <Tabs variant="line">
+        <Form
+          entity="tickets"
 
-          <Section title="Основное">
+          objectId="$query.id"
 
-            <Form
+          ctx={{
+            service: "$query.service",
+            type: "$query.type",
+          }}
 
-              entity="tickets"
+          submit={{
+            label: "Сохранить",
 
-              objectId="$query.id"
-
-              ctx={{
-
-                service:
-                  "$query.service",
-
-                type:
-                  "$query.type",
-
-              }}
-
-              submit={{
-
-                label: "Сохранить",
-
-                redirect: {
-
-                  to: "ticket:list",
-
-                },
-
-              }}
-
-            />
-
-          </Section>
-
-          <If when="$query.id">
-
-            <Section title="Комментарии">
-
-              {/* Потом Matrix или Custom */}
-
-            </Section>
-
-          </If>
-
-          <If when="$query.id">
-
-            <Section title="История">
-
-              {/* Timeline */}
-
-            </Section>
-
-          </If>
-
-          <If when="$query.id">
-
-            <Section title="Вложения">
-
-              {/* Attachments */}
-
-            </Section>
-
-          </If>
-
-        </Tabs>
+            redirect: {
+              to: "ticket:list",
+            },
+          }}
+        />
 
       </Stack>
 

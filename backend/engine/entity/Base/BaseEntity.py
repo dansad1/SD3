@@ -276,6 +276,23 @@ class BaseEntity:
 
         fields = []
 
+        access_map = {}
+
+        access_method = getattr(
+            self,
+            "get_field_access_map",
+            None,
+        )
+
+        if access_method:
+            access_map = (
+                    access_method(
+                        request,
+                        obj=obj,
+                    )
+                    or {}
+            )
+
         # =================================================
         # DJANGO FIELDS
         # =================================================
@@ -283,10 +300,6 @@ class BaseEntity:
         for field in (
                 self.model._meta.get_fields()
         ):
-
-            # ---------------------------------------------
-            # NAME
-            # ---------------------------------------------
 
             name = getattr(
                 field,
@@ -297,21 +310,15 @@ class BaseEntity:
             if not name:
                 continue
 
-            # ---------------------------------------------
-            # INCLUDE
-            # ---------------------------------------------
-
             if not self.include_model_field(
                     field
             ):
                 continue
 
-            # ---------------------------------------------
-            # DJANGO FIELD
-            # ---------------------------------------------
-
             fields.append(
-                DjangoField(field)
+                DjangoField(
+                    field
+                )
             )
 
         # =================================================
@@ -322,13 +329,26 @@ class BaseEntity:
                 request,
                 obj=obj,
         ):
-            fields.append(
-                DynamicField(field)
+
+            runtime = DynamicField(
+                field,
             )
 
-        # =================================================
-        # SORT
-        # =================================================
+            if access_map:
+
+                access = access_map.get(
+                    field.name,
+                )
+
+                if not access:
+                    continue
+
+                if access == "view":
+                    runtime.readonly = True
+
+            fields.append(
+                runtime,
+            )
 
         return fields
 

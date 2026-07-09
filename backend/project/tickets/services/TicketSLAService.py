@@ -1,5 +1,3 @@
-# backend/project/tickets/services/TicketSLAService.py
-
 from datetime import timedelta
 
 from django.utils import timezone
@@ -10,71 +8,113 @@ from backend.project.tickets.models import (
 
 
 class TicketSLAService:
-    """
-    SLA теперь работает от реальных FK:
-    ticket.status
-    ticket.priority
-    ticket.type
 
-    Без поиска status/priority в dynamic fields.
-    """
-
-    def __init__(self, ticket):
+    def __init__(
+        self,
+        ticket,
+    ):
         self.ticket = ticket
 
-    def get_sla_rule(self):
+    # =====================================================
+    # HELPERS
+    # =====================================================
+
+    def get_priority(
+        self,
+    ):
+        return self.ticket.get_value(
+            "priority",
+        )
+
+    def get_status(
+        self,
+    ):
+        return self.ticket.get_value(
+            "status",
+        )
+
+    # =====================================================
+    # SLA
+    # =====================================================
+
+    def get_sla_rule(
+        self,
+    ):
         if not self.ticket.type_id:
             return None
 
-        if not self.ticket.priority_id:
+        priority = self.get_priority()
+
+        if not priority:
             return None
 
         return (
             TicketSLA.objects
             .filter(
                 type=self.ticket.type,
-                priority=self.ticket.priority,
+                priority=priority,
             )
             .first()
         )
 
-    def compute_deadline(self, base_datetime=None):
+    def compute_deadline(
+        self,
+        base_datetime=None,
+    ):
         rule = self.get_sla_rule()
 
         if not rule:
             return None
 
-        base = base_datetime or self.ticket.created_at or timezone.now()
+        base = (
+            base_datetime
+            or self.ticket.created_at
+            or timezone.now()
+        )
 
-        return base + timedelta(hours=rule.hours)
+        return (
+            base
+            + timedelta(
+                hours=rule.hours,
+            )
+        )
 
-    def recalculate(self, force=False):
-        """
-        Пересчитывает deadline только если есть SLA.
-        """
-
+    def recalculate(
+        self,
+        force=False,
+    ):
         deadline = self.compute_deadline(
             base_datetime=self.ticket.created_at,
         )
 
-        if not deadline:
+        if deadline is None:
             return None
 
-        if not force and self.ticket.deadline == deadline:
+        current = self.ticket.get_value(
+            "due_date",
+        )
+
+        if (
+            not force
+            and current == deadline
+        ):
             return deadline
 
-        self.ticket.deadline = deadline
-
-        self.ticket.save(
-            update_fields=[
-                "deadline",
-            ]
+        self.ticket.set_value(
+            "due_date",
+            deadline,
         )
 
         return deadline
 
-    def is_paused(self):
-        status = self.ticket.status
+    # =====================================================
+    # STATE
+    # =====================================================
+
+    def is_paused(
+        self,
+    ):
+        status = self.get_status()
 
         if not status:
             return False
@@ -87,30 +127,60 @@ class TicketSLAService:
             )
         )
 
-    def is_overdue(self):
-        if not self.ticket.deadline:
+    def is_overdue(
+        self,
+    ):
+        deadline = self.ticket.get_value(
+            "due_date",
+        )
+
+        if not deadline:
             return False
 
         if self.is_paused():
             return False
 
-        return timezone.now() > self.ticket.deadline
+        return (
+            timezone.now()
+            > deadline
+        )
 
-    def get_remaining_seconds(self):
-        if not self.ticket.deadline:
+    def get_remaining_seconds(
+        self,
+    ):
+        deadline = self.ticket.get_value(
+            "due_date",
+        )
+
+        if not deadline:
             return None
 
         if self.is_paused():
             return None
 
-        delta = self.ticket.deadline - timezone.now()
+        delta = (
+            deadline
+            - timezone.now()
+        )
 
-        return int(delta.total_seconds())
+        return int(
+            delta.total_seconds(),
+        )
 
-    def get_summary(self):
+    # =====================================================
+    # SUMMARY
+    # =====================================================
+
+    def get_summary(
+        self,
+    ):
         return {
-            "deadline": self.ticket.deadline,
+            "due_date": self.ticket.get_value(
+                "due_date",
+            ),
             "is_overdue": self.is_overdue(),
             "is_paused": self.is_paused(),
-            "remaining_seconds": self.get_remaining_seconds(),
+            "remaining_seconds": (
+                self.get_remaining_seconds()
+            ),
         }

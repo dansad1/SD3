@@ -12,7 +12,7 @@ from backend.generic.models.DynamicValue import DynamicValue
 from backend.project.companies.entities.CompanyEntity import CompanyEntity
 from backend.project.companies.models import Company, CompanyFieldSet
 from backend.project.users.entities.UserEntity import UserEntity
-from backend.project.users.models import User, UserFieldSet
+from backend.project.users.models import User, UserFieldSet, UserRole
 
 fake = Faker("ru_RU")
 
@@ -69,11 +69,16 @@ class Command(BaseCommand):
 
     def get_request(self):
         request = SimpleNamespace()
+
         request.GET = {
             "fieldset": "default",
         }
-        return request
 
+        request.user = User.objects.get(
+            login="root",
+        )
+
+        return request
     def cleanup(self):
         self.stdout.write("🧹 cleanup")
 
@@ -185,24 +190,49 @@ class Command(BaseCommand):
         return companies
 
     def seed_users(
-        self,
-        count,
-        password,
-        request,
-        fieldset,
-        companies,
+            self,
+            count,
+            password,
+            request,
+            fieldset,
+            companies,
     ):
-        self.stdout.write("👤 Пользователи")
+        self.stdout.write(
+            "👤 Пользователи"
+        )
 
-        password_hash = make_password(password)
+        password_hash = make_password(
+            password,
+        )
 
         fields = self.get_user_fields(
             request=request,
         )
 
+        roles = {
+            role.code: role
+            for role in UserRole.objects.filter(
+                is_active=True,
+            )
+        }
+
+        role_pool = (
+                ["executor"] * 50
+                + ["senior_executor"] * 10
+                + ["dispatcher"] * 12
+                + ["company_manager"] * 15
+                + ["observer"] * 5
+                + ["auditor"] * 3
+                + ["helpdesk_manager"] * 3
+                + ["admin"] * 2
+        )
+
         for index in range(count):
-            first_name, last_name, login = self.make_login(
-                index,
+
+            first_name, last_name, login = (
+                self.make_login(
+                    index,
+                )
             )
 
             user = User.objects.create(
@@ -213,8 +243,12 @@ class Command(BaseCommand):
             )
 
             values = {
-                "full_name": f"{first_name} {last_name}",
-                "email": f"{login}@mail.ru",
+                "full_name": (
+                    f"{first_name} {last_name}"
+                ),
+                "email": (
+                    f"{login}@mail.ru"
+                ),
                 "phone": (
                     None
                     if random.random() < 0.10
@@ -223,9 +257,13 @@ class Command(BaseCommand):
                 "telegram": (
                     None
                     if random.random() < 0.20
-                    else f"@{fake.user_name()}"
+                    else (
+                        f"@{fake.user_name()}"
+                    )
                 ),
-                "department": random.choice(DEPARTMENTS),
+                "department": random.choice(
+                    DEPARTMENTS,
+                ),
             }
 
             if companies:
@@ -239,12 +277,25 @@ class Command(BaseCommand):
                 values=values,
             )
 
+            role = roles.get(
+                random.choice(
+                    role_pool,
+                )
+            )
+
+            if role:
+                user.role = role
+                user.save(
+                    update_fields=[
+                        "role",
+                    ]
+                )
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"✔ пользователей {count}"
             )
         )
-
     def print_summary(self, companies_count, users_count, password):
         self.stdout.write("")
         self.stdout.write("══════════════════════════════════════")

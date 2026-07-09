@@ -1,28 +1,28 @@
-from django.core.exceptions import (
-    ValidationError,
-)
-
 from django.contrib.auth.password_validation import (
     validate_password,
+)
+from django.core.exceptions import (
+    ValidationError,
 )
 
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
-
-from backend.generic.models import (
-    DynamicField,
-    DjangoField,
+from backend.project.users.entities.sync import (
+    sync_user,
 )
-from backend.project.users.entities.sync import sync_user
-
 from backend.project.users.models import (
     User,
     UserField,
+    UserFieldAccess,
 )
 
 
 class UserEntity(BaseEntity):
+
+    # =====================================================
+    # BASE
+    # =====================================================
 
     model = User
 
@@ -38,13 +38,13 @@ class UserEntity(BaseEntity):
         "is_active",
         "telegram",
         "department",
-        "company"
+        "company",
     ]
 
     search_fields = [
         "login",
         "telegram",
-        "company"
+        "company",
     ]
 
     filter_fields = [
@@ -66,7 +66,7 @@ class UserEntity(BaseEntity):
         "last_login",
         "created_at",
         "updated_at",
-        "fieldset"
+        "fieldset",
     }
 
     # =====================================================
@@ -85,14 +85,18 @@ class UserEntity(BaseEntity):
     # QUERYSET
     # =====================================================
 
-    def get_select_related(self):
+    def get_select_related(
+        self,
+    ):
 
         return [
             "role",
             "fieldset",
         ]
 
-    def get_prefetch_related(self):
+    def get_prefetch_related(
+        self,
+    ):
 
         return [
             "dynamic_values",
@@ -100,58 +104,43 @@ class UserEntity(BaseEntity):
         ]
 
     # =====================================================
-    # FIELDS
+    # FIELD ACCESS
     # =====================================================
 
-    def get_fields(
+    def get_field_access_map(
         self,
         request,
         obj=None,
     ):
 
-        fields = []
-
-        for field in self.model._meta.get_fields():
-
-            name = getattr(
-                field,
-                "name",
-                None,
-            )
-
-            if not name:
-                continue
-
-            if not self.include_model_field(
-                field
-            ):
-                continue
-
-            fields.append(
-                DjangoField(field)
-            )
-
-        existing_names = {
-            field.name
-            for field in fields
-        }
-
-        for field in self.get_dynamic_fields(
-            request,
-            obj=obj,
+        if (
+            not request.user.is_authenticated
+            or request.user.is_superuser
+            or not request.user.role
         ):
 
-            if (
-                field.name
-                in existing_names
-            ):
-                continue
+            return {}
 
-            fields.append(
-                DynamicField(field)
+        return {
+
+            item.field.name:
+                item.access_level
+
+            for item in (
+
+                UserFieldAccess.objects
+
+                .select_related(
+                    "field",
+                )
+
+                .filter(
+                    role=request.user.role,
+                )
+
             )
 
-        return fields
+        }
 
     # =====================================================
     # DYNAMIC FIELDS
@@ -164,11 +153,15 @@ class UserEntity(BaseEntity):
     ):
 
         return (
+
             UserField.objects
+
             .all()
+
             .order_by(
                 "id",
             )
+
         )
 
     # =====================================================
@@ -184,7 +177,7 @@ class UserEntity(BaseEntity):
             "value": obj.pk,
             "label": (
                 obj.get_value(
-                    "full_name"
+                    "full_name",
                 )
                 or obj.login
             ),
@@ -195,11 +188,12 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     def validate(
-            self,
-            request,
-            payload,
-            instance=None,
+        self,
+        request,
+        payload,
+        instance=None,
     ):
+
         errors = {}
 
         password = payload.get(
@@ -207,43 +201,50 @@ class UserEntity(BaseEntity):
         )
 
         if (
-                instance is None
-                and not password
+            instance is None
+            and not password
         ):
+
             errors["password"] = [
                 "Password required",
             ]
 
         if password not in (
-                None,
-                "",
-                "********",
+            None,
+            "",
+            "********",
         ):
+
             try:
+
                 validate_password(
                     password,
                     user=instance,
                 )
 
-            except ValidationError as e:
+            except ValidationError as exc:
+
                 errors["password"] = list(
-                    e.messages,
+                    exc.messages,
                 )
 
         if errors:
+
             raise ValidationError(
                 errors,
             )
 
         return payload
+
     # =====================================================
     # BEFORE SAVE
     # =====================================================
 
     def before_save(
-            self,
-            ctx,
+        self,
+        ctx,
     ):
+
         ctx = super().before_save(
             ctx,
         )
@@ -254,10 +255,11 @@ class UserEntity(BaseEntity):
         )
 
         if password not in (
-                None,
-                "",
-                "********",
+            None,
+            "",
+            "********",
         ):
+
             ctx.instance.set_password(
                 password,
             )
@@ -269,19 +271,20 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     def after_save(
-            self,
-            ctx,
+        self,
+        ctx,
     ):
+
         ctx = super().after_save(
             ctx,
         )
 
         sync_user(
             ctx.instance,
-
         )
 
         return ctx
+
     # =====================================================
     # BEFORE DELETE
     # =====================================================
@@ -292,16 +295,15 @@ class UserEntity(BaseEntity):
         instance,
     ):
 
-        if (
-            request.user.pk
-            == instance.pk
-        ):
+        if request.user.pk == instance.pk:
 
-            raise ValidationError({
-                "detail": [
-                    "You cannot delete yourself"
-                ]
-            })
+            raise ValidationError(
+                {
+                    "detail": [
+                        "You cannot delete yourself",
+                    ],
+                }
+            )
 
         super().before_delete(
             request,
@@ -309,7 +311,7 @@ class UserEntity(BaseEntity):
         )
 
     # =====================================================
-    # FIELD SCHEMA
+    # SCHEMA
     # =====================================================
 
     def customize_field_schema(
@@ -320,28 +322,27 @@ class UserEntity(BaseEntity):
     ):
 
         name = schema.get(
-            "name"
+            "name",
         )
 
         if name == "password":
 
-            schema.update({
-
-                "writeonly": True,
-
-                "widget": "password",
-            })
+            schema.update(
+                {
+                    "writeonly": True,
+                    "widget": "password",
+                }
+            )
 
         if (
             not request.user.is_superuser
-        ):
-
-            if name in {
+            and name in {
                 "is_superuser",
                 "is_staff",
-            }:
+            }
+        ):
 
-                schema["hidden"] = True
+            schema["hidden"] = True
 
         if name in {
             "created_at",

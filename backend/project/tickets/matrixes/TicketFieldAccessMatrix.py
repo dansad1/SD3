@@ -3,33 +3,24 @@ from django.db import transaction
 from backend.engine.matrix.Base.BaseMatrix import (
     BaseMatrix,
 )
-
 from backend.project.tickets.models import (
     TicketField,
     TicketFieldAccess,
 )
-
 from backend.project.users.models import (
     UserRole,
 )
 
 
-class TicketFieldAccessMatrix(
-    BaseMatrix
-):
+class TicketFieldAccessMatrix(BaseMatrix):
 
     class Meta:
 
         code = "ticket-field.access"
 
         capabilities = {
-
-            "view":
-                "ticket_fields.edit",
-
-            "edit":
-                "ticket_fields.edit",
-
+            "view": "ticket_fields.edit",
+            "edit": "ticket_fields.edit",
         }
 
     # =====================================================
@@ -42,69 +33,29 @@ class TicketFieldAccessMatrix(
     ):
 
         return {
-
             "rows": [
-
                 {
-
-                    "id":
-                        role.id,
-
-                    "label":
-                        str(role),
-
+                    "id": role.id,
+                    "label": str(role),
                 }
-
                 for role in (
-
                     UserRole.objects
-
-                    .order_by(
-
-                        "name",
-
-                    )
-
+                    .order_by("name")
                 )
-
             ],
-
             "columns": [
-
                 {
-
-                    "id":
-
-                        "view",
-
-                    "label":
-
-                        "👁 Просмотр",
-
+                    "id": "view",
+                    "label": "👁 Просмотр",
                 },
-
                 {
-
-                    "id":
-
-                        "edit",
-
-                    "label":
-
-                        "✏️ Редактирование",
-
+                    "id": "edit",
+                    "label": "✏️ Редактирование",
                 },
-
             ],
-
             "defaultCell": {
-
-                "widget":
-
-                    "checkbox",
-
+                "widget": "checkbox",
             },
-
         }
 
     # =====================================================
@@ -117,115 +68,57 @@ class TicketFieldAccessMatrix(
     ):
 
         field_id = self.get_param(
-
             request,
-
             "field",
-
         )
 
         if not field_id:
-
             raise RuntimeError(
-
-                "field param required"
-
+                "field param required",
             )
 
         field = TicketField.objects.get(
-
             pk=field_id,
-
         )
 
         accesses = {
-
-            access.role_id:
-
-                access.access_level
-
+            access.role_id: access.access_level
             for access in (
-
                 TicketFieldAccess.objects
-
-                .filter(
-
-                    field=field,
-
-                )
-
+                .filter(field=field)
             )
-
         }
 
         items = []
 
         for role in (
-
             UserRole.objects
-
-            .order_by(
-
-                "name",
-
-            )
-
+            .order_by("name")
         ):
 
-            level = accesses.get(
+            level = accesses.get(role.id)
 
-                role.id,
-
-                TicketFieldAccess.ACCESS_NONE,
-
-            )
-
-            items.append({
-
-                "row":
-
-                    role.id,
-
-                "column":
-
-                    "view",
-
-                "value":
-
-                    level in (
-
+            items.extend([
+                {
+                    "row": role.id,
+                    "column": "view",
+                    "value": level in (
                         TicketFieldAccess.ACCESS_VIEW,
-
                         TicketFieldAccess.ACCESS_EDIT,
-
                     ),
-
-            })
-
-            items.append({
-
-                "row":
-
-                    role.id,
-
-                "column":
-
-                    "edit",
-
-                "value":
-
-                    level ==
-
-                    TicketFieldAccess.ACCESS_EDIT,
-
-            })
+                },
+                {
+                    "row": role.id,
+                    "column": "edit",
+                    "value": (
+                        level ==
+                        TicketFieldAccess.ACCESS_EDIT
+                    ),
+                },
+            ])
 
         return {
-
-            "items":
-
-                items,
-
+            "items": items,
         }
 
     # =====================================================
@@ -234,285 +127,155 @@ class TicketFieldAccessMatrix(
 
     @transaction.atomic
     def save_changes(
-
         self,
-
         request,
-
         changes,
-
     ):
 
         field_id = self.get_param(
-
             request,
-
             "field",
-
         )
 
         if not field_id:
-
             raise RuntimeError(
-
-                "field param required"
-
+                "field param required",
             )
 
         field = TicketField.objects.get(
-
             pk=field_id,
-
         )
 
         accesses = {
-
-            access.role_id:
-
-                access.access_level
-
+            access.role_id: access.access_level
             for access in (
-
                 TicketFieldAccess.objects
-
-                .filter(
-
-                    field=field,
-
-                )
-
+                .filter(field=field)
             )
-
         }
 
         state = {}
 
-        #
-        # текущее состояние
-        #
+        # =================================================
+        # CURRENT STATE
+        # =================================================
 
         for role in (
-
             UserRole.objects
-
-            .order_by(
-
-                "name",
-
-            )
-
+            .order_by("name")
         ):
 
-            level = accesses.get(
-
-                role.id,
-
-                TicketFieldAccess.ACCESS_NONE,
-
-            )
+            level = accesses.get(role.id)
 
             state[role.id] = {
-
-                "view":
-
-                    level in (
-
-                        TicketFieldAccess.ACCESS_VIEW,
-
-                        TicketFieldAccess.ACCESS_EDIT,
-
-                    ),
-
-                "edit":
-
-                    level ==
-
+                "view": level in (
+                    TicketFieldAccess.ACCESS_VIEW,
                     TicketFieldAccess.ACCESS_EDIT,
-
+                ),
+                "edit": (
+                    level ==
+                    TicketFieldAccess.ACCESS_EDIT
+                ),
             }
 
-        #
-        # накладываем изменения
-        #
+        # =================================================
+        # APPLY CHANGES
+        # =================================================
 
         for change in changes:
 
             role_id = int(
-
-                change.get(
-
-                    "row",
-
-                )
-
-                or
-
-                change.get(
-
-                    "y",
-
-                )
-
+                change.get("row")
+                or change.get("y")
             )
 
             column = (
-
-                change.get(
-
-                    "column",
-
-                )
-
-                or
-
-                change.get(
-
-                    "x",
-
-                )
-
+                change.get("column")
+                or change.get("x")
             )
 
-            value = change.get(
+            value = change.get("value")
 
-                "value",
-
-            )
-
-            if isinstance(
-
-                value,
-
-                dict,
-
-            ):
-
-                value = value.get(
-
-                    "value",
-
-                )
+            if isinstance(value, dict):
+                value = value.get("value")
 
             state.setdefault(
-
                 role_id,
+                {},
+            )[column] = bool(value)
 
-                {}
-
-            )[column] = bool(
-
-                value
-
-            )
-
-        #
-        # сохраняем
-        #
+        # =================================================
+        # SAVE
+        # =================================================
 
         for role_id, values in state.items():
 
             can_view = values.get(
-
                 "view",
-
                 False,
-
             )
 
             can_edit = values.get(
-
                 "edit",
-
                 False,
-
             )
 
             if can_edit and not can_view:
 
                 role = UserRole.objects.get(
-
                     pk=role_id,
-
                 )
 
                 raise RuntimeError(
-
-                    f"Роль '{role}' "
-
-                    f"не может иметь "
-
-                    f"право редактирования "
-
-                    f"без права просмотра"
-
+                    f"Роль '{role}' не может иметь "
+                    f"право редактирования без "
+                    f"права просмотра"
                 )
 
-            if can_edit:
+            # ---------------------------------------------
+            # Нет прав -> удаляем запись
+            # ---------------------------------------------
 
-                access_level = (
+            if not can_view:
 
-                    TicketFieldAccess.ACCESS_EDIT
+                TicketFieldAccess.objects.filter(
+                    field=field,
+                    role_id=role_id,
+                ).delete()
 
-                )
+                continue
 
-            elif can_view:
+            # ---------------------------------------------
+            # Определяем уровень
+            # ---------------------------------------------
 
-                access_level = (
-
-                    TicketFieldAccess.ACCESS_VIEW
-
-                )
-
-            else:
-
-                access_level = (
-
-                    TicketFieldAccess.ACCESS_NONE
-
-                )
+            access_level = (
+                TicketFieldAccess.ACCESS_EDIT
+                if can_edit
+                else TicketFieldAccess.ACCESS_VIEW
+            )
 
             access, _ = (
-
                 TicketFieldAccess.objects
-
                 .get_or_create(
-
                     field=field,
-
                     role_id=role_id,
-
                     defaults={
-
-                        "access_level":
-
-                            TicketFieldAccess.ACCESS_NONE,
-
+                        "access_level": access_level,
                     },
+                )
+            )
 
+            if access.access_level != access_level:
+
+                access.access_level = access_level
+
+                access.save(
+                    update_fields=[
+                        "access_level",
+                    ]
                 )
 
-            )
-
-            access.access_level = (
-
-                access_level
-
-            )
-
-            access.save(
-
-                update_fields=[
-
-                    "access_level",
-
-                ]
-
-            )
-
         return {
-
-            "success":
-
-                True,
-
+            "success": True,
         }
