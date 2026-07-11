@@ -139,7 +139,7 @@
 
 .ui-richtext-widget .ck-source-editing-area textarea {
   width: 100% !important;
-  min-height: 420px !important;
+  min-height: 120px !important;
   padding: 16px;
   border: 0;
   outline: 0;

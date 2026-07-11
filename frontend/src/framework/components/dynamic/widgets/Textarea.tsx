@@ -11,7 +11,7 @@ export const TextareaWidget: WidgetRenderer = (
       {({ disabled }) => (
         <textarea
           className="ui-input"
-          rows={4}
+          rows={1}
           value={value == null ? "" : String(value)}
           onChange={e => onChange(e.target.value)}
           disabled={disabled}

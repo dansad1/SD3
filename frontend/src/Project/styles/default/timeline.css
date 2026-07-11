@@ -481,10 +481,62 @@
    ROOT
    ========================================================= */
 
+/* =========================================================
+   TIMELINE
+   ========================================================= */
+
 .ticket-timeline {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+
+    max-height: 650px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-right: 10px;
+
+    font-size: 14px;
+    line-height: 1.5;
+
+    scroll-behavior: smooth;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.ticket-timeline::-webkit-scrollbar {
+    width: 8px;
+}
+
+.ticket-timeline::-webkit-scrollbar-track {
+    background: #f3f4f6;
+}
+
+.ticket-timeline::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.ticket-timeline::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.ticket-timeline {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f3f4f6;
+}
+
+
+/* =========================================================
+   GROUP
+   ========================================================= */
+
+.ticket-timeline-group {
+    display: flex;
+    flex-direction: column;
 }
 
 
@@ -493,16 +545,22 @@
    ========================================================= */
 
 .ticket-timeline-day {
-    margin: 8px 0 2px;
+    align-self: center;
 
-    font-size: 12px;
+    margin: 10px 0;
+
+    padding: 3px 10px;
+
+    border-radius: 999px;
+
+    background: #f1f5f9;
+
+    color: #64748b;
+
+    font-size: 11px;
     font-weight: 600;
 
-    color: var(--color-text-secondary, #6b7280);
-
     text-transform: uppercase;
-
-    letter-spacing: .04em;
 }
 
 
@@ -511,15 +569,15 @@
    ========================================================= */
 
 .ticket-timeline-row {
-    display: grid;
-
-    grid-template-columns: 24px 1fr;
-
-    column-gap: 14px;
-
     position: relative;
 
-    min-height: 28px;
+    display: grid;
+
+    grid-template-columns: 28px 1fr;
+
+    gap: 10px;
+
+    padding-bottom: 18px;
 }
 
 .ticket-timeline-row:not(.ticket-timeline-row-last)::after {
@@ -527,18 +585,15 @@
 
     position: absolute;
 
-    left: 11px;
+    left: 13px;
 
-    top: 24px;
+    top: 28px;
 
-    bottom: -20px;
+    bottom: 0;
 
-    width: 1px;
+    width: 2px;
 
-    background: var(
-        --color-border,
-        #e5e7eb
-    );
+    background: #dbe4ef;
 }
 
 
@@ -551,29 +606,22 @@
 }
 
 .ticket-timeline-marker {
-    width: 22px;
-
-    height: 22px;
-
-    border-radius: 50%;
+    width: 28px;
+    height: 28px;
 
     display: flex;
 
     align-items: center;
-
     justify-content: center;
 
-    font-size: 11px;
-
-    font-weight: 600;
+    border-radius: 50%;
 
     background: white;
 
-    border: 1px solid
-        var(
-            --color-border,
-            #d1d5db
-        );
+    border: 2px solid #dbe4ef;
+
+    font-size: 12px;
+    font-weight: 700;
 }
 
 
@@ -583,32 +631,44 @@
 
 .ticket-timeline-action-create
 .ticket-timeline-marker {
+    border-color: #22c55e;
     color: #16a34a;
 }
 
 .ticket-timeline-action-update
 .ticket-timeline-marker {
+    border-color: #60a5fa;
     color: #2563eb;
 }
 
 .ticket-timeline-action-status
 .ticket-timeline-marker {
+    border-color: #fb923c;
     color: #ea580c;
 }
 
 .ticket-timeline-action-assign
 .ticket-timeline-marker {
-    color: #9333ea;
+    border-color: #c084fc;
+    color: #7c3aed;
 }
 
 .ticket-timeline-action-comment
 .ticket-timeline-marker {
+    border-color: #67e8f9;
     color: #0891b2;
 }
 
 .ticket-timeline-action-system
 .ticket-timeline-marker {
+    border-color: #cbd5e1;
     color: #64748b;
+}
+
+.ticket-timeline-action-delete
+.ticket-timeline-marker {
+    border-color: #fca5a5;
+    color: #dc2626;
 }
 
 
@@ -617,37 +677,46 @@
    ========================================================= */
 
 .ticket-timeline-content {
-    padding-bottom: 8px;
+    padding-bottom: 4px;
 }
+
+
+/* =========================================================
+   TITLE
+   ========================================================= */
 
 .ticket-timeline-title {
-    font-weight: 600;
+    font-size: 15px;
 
-    color: var(
-        --color-text,
-        #111827
-    );
+    font-weight: 700;
+
+    color: #1f2937;
 }
 
-.ticket-timeline-meta {
-    margin-top: 2px;
 
+/* =========================================================
+   META
+   ========================================================= */
+
+.ticket-timeline-meta {
     display: flex;
 
     align-items: center;
 
+    flex-wrap: wrap;
+
     gap: 6px;
+
+    margin-top: 2px;
+    margin-bottom: 10px;
 
     font-size: 12px;
 
-    color: var(
-        --color-text-secondary,
-        #6b7280
-    );
+    color: #6b7280;
 }
 
 .ticket-timeline-dot {
-    opacity: .5;
+    opacity: .4;
 }
 
 
@@ -660,11 +729,15 @@
 .ticket-timeline-transition,
 .ticket-timeline-object {
     margin-top: 8px;
-
-    line-height: 1.5;
 }
 
 .ticket-timeline-comment {
+    padding-left: 12px;
+
+    border-left: 3px solid #38bdf8;
+
+    color: #374151;
+
     white-space: pre-wrap;
 }
 
@@ -674,30 +747,29 @@
    ========================================================= */
 
 .ticket-timeline-create-summary {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
     margin-top: 10px;
-
-    display: grid;
-
-    row-gap: 4px;
 }
 
 .ticket-timeline-create-row {
     display: grid;
 
-    grid-template-columns: 180px 1fr;
+    grid-template-columns: 150px 1fr;
 
-    column-gap: 12px;
+    gap: 12px;
 }
 
 .ticket-timeline-create-label {
-    color: var(
-        --color-text-secondary,
-        #6b7280
-    );
+    color: #6b7280;
 }
 
 .ticket-timeline-create-value {
-    font-weight: 500;
+    font-weight: 600;
 }
 
 
@@ -706,28 +778,27 @@
    ========================================================= */
 
 .ticket-timeline-changes {
-    margin-top: 10px;
-
     display: flex;
 
     flex-direction: column;
 
-    gap: 6px;
+    gap: 2px;
+
+    margin-top: 8px;
 }
 
 .ticket-timeline-change-row {
     display: grid;
 
-    grid-template-columns: 180px 1fr;
+    grid-template-columns: 140px 1fr;
 
-    column-gap: 12px;
+    gap: 12px;
+
+    padding: 5px 0;
 }
 
 .ticket-timeline-change-label {
-    color: var(
-        --color-text-secondary,
-        #6b7280
-    );
+    color: #6b7280;
 }
 
 .ticket-timeline-change-values {
@@ -735,21 +806,63 @@
 
     align-items: center;
 
-    gap: 8px;
-
     flex-wrap: wrap;
+
+    gap: 6px;
 }
 
+
+/* =========================================================
+   VALUES
+   ========================================================= */
+
 .ticket-timeline-value-old {
-    color: #6b7280;
+    padding: 1px 6px;
+
+    border-radius: 4px;
+
+    background: #fff5f5;
+
+    color: #c24141;
+
+    text-decoration: line-through;
+
+    font-size: 13px;
 }
 
 .ticket-timeline-value-new {
+    padding: 1px 6px;
+
+    border-radius: 4px;
+
+    background: #f0fdf4;
+
+    color: #15803d;
+
+    font-size: 13px;
+
     font-weight: 600;
 }
 
 .ticket-timeline-arrow {
-    color: #9ca3af;
+    color: #94a3b8;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   TRANSITION
+   ========================================================= */
+
+.ticket-timeline-transition {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    font-weight: 600;
 }
 
 
@@ -758,14 +871,11 @@
    ========================================================= */
 
 .ticket-timeline-state {
-    padding: 20px;
+    padding: 30px;
 
     text-align: center;
 
-    color: var(
-        --color-text-secondary,
-        #6b7280
-    );
+    color: #64748b;
 }
 
 .ticket-timeline-error {
@@ -773,7 +883,21 @@
 }
 
 .ticket-timeline-retry {
-    margin-top: 12px;
+    margin-top: 10px;
+
+    padding: 6px 12px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 6px;
+
+    background: white;
+
+    cursor: pointer;
+}
+
+.ticket-timeline-retry:hover {
+    background: #f8fafc;
 }
 
 
@@ -783,15 +907,35 @@
 
 @media (max-width: 768px) {
 
+    .ticket-timeline {
+        max-height: 500px;
+    }
+
+    .ticket-timeline-row {
+        grid-template-columns: 24px 1fr;
+
+        gap: 8px;
+    }
+
+    .ticket-timeline-row:not(.ticket-timeline-row-last)::after {
+        left: 11px;
+    }
+
+    .ticket-timeline-marker {
+        width: 24px;
+        height: 24px;
+
+        font-size: 10px;
+    }
+
     .ticket-timeline-change-row,
     .ticket-timeline-create-row {
         grid-template-columns: 1fr;
 
-        row-gap: 2px;
+        gap: 2px;
     }
 
-    .ticket-timeline-row {
-        column-gap: 10px;
+    .ticket-timeline-title {
+        font-size: 14px;
     }
-
 }
