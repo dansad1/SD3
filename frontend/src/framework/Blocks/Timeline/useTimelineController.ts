@@ -1,4 +1,8 @@
-import { useEffect, useMemo, useState } from "react"
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 
 import { APIClient } from "@/framework/api/client/APIClient"
 import { resolveProps } from "@/framework/bind/expression/resolveProps"
@@ -6,15 +10,17 @@ import { usePageRuntimeContext } from "@/framework/page/runtime/usePageRuntimeCo
 
 import type { TimelineBlock } from "./types"
 
+
+// =========================================================
+// NORMALIZED VIEW MODEL
+// =========================================================
+
 export type TimelineChange = {
   before?: unknown
   after?: unknown
 
-  old_value?: unknown
-  new_value?: unknown
-
   label?: string
-  field_type?: string
+  fieldType?: string
 }
 
 export type TimelineActor = {
@@ -28,11 +34,10 @@ export type TimelineItem = {
   action: string
 
   date?: string
-  created?: string
 
   actor?: TimelineActor | null
 
-  object_repr?: string
+  objectRepr?: string
 
   changes?: Record<
     string,
@@ -63,40 +68,96 @@ export type TimelineViewModel = {
   reload: () => void
 }
 
+
+// =========================================================
+// RAW API TYPES
+// =========================================================
+
+type RawTimelineChange = {
+  field?: string
+
+  before?: unknown
+  after?: unknown
+
+  old_value?: unknown
+  new_value?: unknown
+
+  label?: string
+
+  field_type?: string
+  fieldType?: string
+}
+
+type RawTimelineItem = {
+  id: string | number
+
+  action: string
+
+  date?: string
+  created?: string
+
+  actor?: TimelineActor | null
+
+  object_repr?: string
+  objectRepr?: string
+
+  changes?:
+    | Record<
+        string,
+        RawTimelineChange
+      >
+    | RawTimelineChange[]
+
+  meta?: Record<
+    string,
+    unknown
+  >
+}
+
 type TimelineResponse =
-  | TimelineItem[]
+  | RawTimelineItem[]
   | {
-      items?: TimelineItem[]
-      rows?: TimelineItem[]
-      results?: TimelineItem[]
+      items?: RawTimelineItem[]
+      rows?: RawTimelineItem[]
+      results?: RawTimelineItem[]
     }
+
+
+// =========================================================
+// RESPONSE
+// =========================================================
 
 function normalizeResponse(
   response: TimelineResponse
-): TimelineItem[] {
+): RawTimelineItem[] {
   if (Array.isArray(response)) {
     return response
   }
 
   return (
-    response.items ||
-    response.rows ||
-    response.results ||
+    response.items ??
+    response.rows ??
+    response.results ??
     []
   )
 }
+
+
+// =========================================================
+// QUERY
+// =========================================================
 
 function buildQuery(
   params: Record<
     string,
     unknown
   >
-) {
-  const qs =
+): string {
+  const query =
     new URLSearchParams()
 
   Object.entries(
-    params || {}
+    params
   ).forEach(
     ([key, value]) => {
       if (
@@ -107,21 +168,158 @@ function buildQuery(
         return
       }
 
-      qs.set(
+      if (
+        typeof value === "object"
+      ) {
+        query.set(
+          key,
+          JSON.stringify(value)
+        )
+
+        return
+      }
+
+      query.set(
         key,
         String(value)
       )
     }
   )
 
-  return qs.toString()
+  return query.toString()
 }
+
+
+// =========================================================
+// CHANGE NORMALIZATION
+// =========================================================
+
+function normalizeChange(
+  change: RawTimelineChange
+): TimelineChange {
+  return {
+    before:
+      change.before ??
+      change.old_value,
+
+    after:
+      change.after ??
+      change.new_value,
+
+    label:
+      change.label,
+
+    fieldType:
+      change.fieldType ??
+      change.field_type,
+  }
+}
+
+function normalizeChanges(
+  changes: RawTimelineItem["changes"]
+): Record<
+  string,
+  TimelineChange
+> {
+  if (!changes) {
+    return {}
+  }
+
+  if (Array.isArray(changes)) {
+    return changes.reduce<
+      Record<
+        string,
+        TimelineChange
+      >
+    >(
+      (
+        result,
+        change,
+        index
+      ) => {
+        const field =
+          change.field ||
+          `change-${index}`
+
+        result[field] =
+          normalizeChange(
+            change
+          )
+
+        return result
+      },
+      {}
+    )
+  }
+
+  return Object.entries(
+    changes
+  ).reduce<
+    Record<
+      string,
+      TimelineChange
+    >
+  >(
+    (
+      result,
+      [field, change]
+    ) => {
+      result[field] =
+        normalizeChange(
+          change
+        )
+
+      return result
+    },
+    {}
+  )
+}
+
+
+// =========================================================
+// ITEM NORMALIZATION
+// =========================================================
+
+function normalizeItem(
+  item: RawTimelineItem
+): TimelineItem {
+  return {
+    id:
+      item.id,
+
+    action:
+      item.action,
+
+    date:
+      item.date ??
+      item.created,
+
+    actor:
+      item.actor ?? null,
+
+    objectRepr:
+      item.objectRepr ??
+      item.object_repr,
+
+    changes:
+      normalizeChanges(
+        item.changes
+      ),
+
+    meta:
+      item.meta ?? {},
+  }
+}
+
+
+// =========================================================
+// CONTROLLER
+// =========================================================
 
 export function useTimelineController(
   block: TimelineBlock
 ): TimelineViewModel {
-
-  const ctx =
+  const context =
     usePageRuntimeContext() as Record<
       string,
       unknown
@@ -132,9 +330,9 @@ export function useTimelineController(
       string,
       unknown
     >,
-    ctx
+    context
   ) as TimelineBlock & {
-    items?: TimelineItem[]
+    items?: RawTimelineItem[]
 
     source?: string
 
@@ -156,7 +354,7 @@ export function useTimelineController(
     remoteItems,
     setRemoteItems,
   ] = useState<
-    TimelineItem[]
+    RawTimelineItem[]
   >([])
 
   const [
@@ -180,103 +378,121 @@ export function useTimelineController(
     useMemo(
       () =>
         buildQuery(
-          props.params || {}
+          props.params ?? {}
         ),
       [props.params]
     )
 
-  useEffect(() => {
+ useEffect(() => {
 
-    if (props.items) {
-      return
-    }
+  if (
+    props.items ||
+    !props.source
+  ) {
+    return
+  }
 
-    if (!props.source) {
-      return
-    }
+  let cancelled =
+    false
 
-    let cancelled =
-      false
+  async function load() {
 
-    async function load() {
+    setLoading(true)
 
-      setLoading(true)
+    setError(null)
 
-      setError(null)
+    try {
 
-      try {
+      const api =
+        new APIClient()
 
-        const api =
-          new APIClient()
+      const url =
+        queryString
+          ? `/resource/${props.source}/?${queryString}`
+          : `/resource/${props.source}/`
 
-       const url = queryString
-  ? `/resource/${props.source}/?${queryString}`
-  : `/resource/${props.source}/`
-        const response =
-          await api.get<TimelineResponse>(
-            url
-          )
-
-        if (
-          cancelled
-        ) {
-          return
-        }
-
-        setRemoteItems(
-          normalizeResponse(
-            response
-          )
+      const response =
+        await api.get<TimelineResponse>(
+          url
         )
 
-      } catch (e) {
+      if (
+        cancelled
+      ) {
+        return
+      }
 
-        if (
-          cancelled
-        ) {
-          return
-        }
-
-        setError(
-          e instanceof Error
-            ? e.message
-            : "Не удалось загрузить историю"
+      setRemoteItems(
+        normalizeResponse(
+          response
         )
+      )
 
-      } finally {
+    } catch (e) {
 
-        if (
-          !cancelled
-        ) {
-          setLoading(
-            false
-          )
-        }
+      if (
+        cancelled
+      ) {
+        return
+      }
 
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Не удалось загрузить историю"
+      )
+
+    } finally {
+
+      if (
+        !cancelled
+      ) {
+        setLoading(
+          false
+        )
       }
 
     }
 
-    void load()
+  }
 
-    return () => {
-      cancelled =
-        true
-    }
+  void load()
 
-  }, [
-    props.items,
-    props.source,
-    queryString,
-    version,
-  ])
+  return () => {
+
+    cancelled =
+      true
+
+  }
+
+}, [
+
+  props.items,
+
+  props.source,
+
+  queryString,
+
+  version,
+
+])
 
   const items =
-    props.items ??
-    remoteItems
+    useMemo(
+      () =>
+        (
+          props.items ??
+          remoteItems
+        ).map(
+          normalizeItem
+        ),
+      [
+        props.items,
+        remoteItems,
+      ]
+    )
 
   return {
-
     items,
 
     loading,
@@ -301,10 +517,11 @@ export function useTimelineController(
       props.groupByDate !==
       false,
 
-    reload: () =>
+    reload: () => {
       setVersion(
-        value =>
-          value + 1
-      ),
+        current =>
+          current + 1
+      )
+    },
   }
 }

@@ -1,4 +1,4 @@
-import { TimelineView } from "./TimelineView"
+import { AuditTimelineView } from "./AuditTimelineView"
 import type { TimelineBlock as TimelineBlockType } from "./types"
 import { useTimelineController } from "./useTimelineController"
 
@@ -7,7 +7,14 @@ export function TimelineBlock({
 }: {
   block: TimelineBlockType
 }) {
-  const vm = useTimelineController(block)
+  const viewModel =
+    useTimelineController(
+      block
+    )
 
-  return <TimelineView {...vm} />
+  return (
+    <AuditTimelineView
+      {...viewModel}
+    />
+  )
 }

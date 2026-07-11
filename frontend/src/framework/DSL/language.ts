@@ -693,9 +693,19 @@ document: {
 },
 timeline: {
   props: {
-    source: "string",
-    params: "object",
-  }
+    source: "string" as Primitive,
+    params: "object" as Primitive,
+
+    variant: [
+      "audit",
+      "ticket",
+    ] as const,
+
+    compact: "boolean" as Primitive,
+    reverse: "boolean" as Primitive,
+    groupByDate: "boolean" as Primitive,
+    emptyText: "string" as Primitive,
+  },
 },
 status_flow: {
   props: {

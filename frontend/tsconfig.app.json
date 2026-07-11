@@ -40,6 +40,6 @@
     "moduleDetection": "force"
   },
 
-  "include": ["src"],
+  "include": ["src", "src/framework/Blocks/Timeline/.tsx"],
   "exclude": ["src/framework/DSL/Scripts", "node_modules"]
 }

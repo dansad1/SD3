@@ -2,12 +2,20 @@ from backend.engine.Resource.BaseResource import (
     BaseResource,
 )
 
-from backend.project.audit.models import (
+from backend.project.audit.models.EntityJournal import (
     EntityJournal,
 )
 
+from backend.project.tickets.models import (
+    Ticket,
+    TicketAttachment,
+    TicketComment,
+)
 
-class TicketHistoryResource(BaseResource):
+
+class TicketHistoryResource(
+    BaseResource,
+):
 
     code = "ticket.history"
 
@@ -17,70 +25,259 @@ class TicketHistoryResource(BaseResource):
         **params,
     ):
 
-        ticket_id = params.get("id")
+        ticket_id = params.get(
+            "id",
+        )
 
         if not ticket_id:
             return []
 
         events = []
 
-        # =================================================
-        # AUDIT
-        # =================================================
+        ticket = (
+            Ticket.objects
+            .filter(
+                pk=ticket_id,
+            )
+            .first()
+        )
+
+        if ticket:
+
+            events.append({
+
+                "id":
+                    f"ticket-{ticket.pk}",
+
+                "type":
+                    "create",
+
+                "action":
+                    "create",
+
+                "created":
+                    ticket.created_at.isoformat(),
+
+                "actor":
+                    None,
+
+                "meta": {
+
+                    "title":
+                        "Заявка создана",
+
+                },
+
+            })
 
         journal = (
+
             EntityJournal.objects
+
             .filter(
-                entity="ticket",
-                object_id=str(ticket_id),
+                entity="tickets",
+                object_id=str(
+                    ticket_id,
+                ),
             )
-            .select_related("actor")
-            .order_by("-created")
+
+            .select_related(
+                "actor",
+            )
+
+            .order_by(
+                "-created",
+            )
+
         )
 
         for item in journal:
 
+            changes = (
+                item.changes
+                or {}
+            )
+
+            event_type = (
+                "field_changes"
+            )
+
+            if (
+                len(changes) == 1
+            ):
+
+                field = next(
+                    iter(changes)
+                )
+
+                if field == "status":
+                    event_type = "status"
+
+                elif field in {
+                    "executor",
+                    "assignee",
+                }:
+                    event_type = "assign"
+
             events.append({
 
-                "id": f"audit-{item.pk}",
+                "id":
+                    f"audit-{item.pk}",
 
-                "type": "change",
+                "type":
+                    event_type,
 
-                "action": item.action,
+                "action":
+                    event_type,
 
-                "created": item.created.isoformat(),
+                "created":
+                    item.created.isoformat(),
 
-                "actor": (
+                "actor":
                     {
-                        "id": item.actor_id,
-                        "label": str(item.actor),
+                        "id":
+                            item.actor_id,
+
+                        "label":
+                            str(item.actor),
                     }
                     if item.actor
-                    else None
-                ),
+                    else None,
 
-                "changes": item.changes,
+                "changes":
+                    changes,
+
+                "meta":
+                    item.meta,
+
             })
 
-        # =================================================
-        # COMMENTS
-        # =================================================
+        comments = (
 
-        # TicketComment.objects...
+            TicketComment.objects
 
-        # =================================================
-        # ATTACHMENTS
-        # =================================================
+            .filter(
+                ticket_id=ticket_id,
+            )
 
-        # TicketAttachment.objects...
+            .select_related(
+                "author",
+            )
 
-        # =================================================
-        # SORT
-        # =================================================
+            .order_by(
+                "-created_at",
+            )
+
+        )
+
+        for item in comments:
+
+            events.append({
+
+                "id":
+                    f"comment-{item.pk}",
+
+                "type":
+                    "comment",
+
+                "action":
+                    "comment",
+
+                "created":
+                    item.created_at.isoformat(),
+
+                "actor":
+                    {
+                        "id":
+                            item.author_id,
+
+                        "label":
+                            str(item.author),
+                    }
+                    if item.author
+                    else None,
+
+                "meta": {
+
+                    "text":
+                        item.text,
+
+                },
+
+            })
+
+        attachments = (
+
+            TicketAttachment.objects
+
+            .filter(
+                ticket_id=ticket_id,
+            )
+
+            .select_related(
+                "uploaded_by",
+            )
+
+            .order_by(
+                "-created_at",
+            )
+
+        )
+
+        for item in attachments:
+
+            events.append({
+
+                "id":
+                    f"attachment-{item.pk}",
+
+                "type":
+                    "attachment",
+
+                "action":
+                    "attachment",
+
+                "created":
+                    item.created_at.isoformat(),
+
+                "actor":
+                    {
+                        "id":
+                            item.uploaded_by_id,
+
+                        "label":
+                            str(
+                                item.uploaded_by
+                            ),
+                    }
+                    if item.uploaded_by
+                    else None,
+
+                "meta": {
+
+                    "title":
+                        "Добавлено вложение",
+
+                    "text":
+                        item.original_name,
+
+                    "size":
+                        item.size,
+
+                    "mime_type":
+                        item.mime_type,
+
+                },
+
+            })
 
         events.sort(
-            key=lambda x: x["created"],
+
+            key=lambda item:
+                item["created"],
+
             reverse=True,
+
         )
 
         return events

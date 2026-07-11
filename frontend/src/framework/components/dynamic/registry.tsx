@@ -19,6 +19,7 @@ import type {
 } from "./types"
 import { PermissionEditorWidget } from "./widgets/PermissionEditor"
 import { MetaWidget } from "./widgets/meta"
+import { TimelineWidget } from "./widgets/TimelineWidget"
 
 /* =========================================================
    TYPES
@@ -324,6 +325,22 @@ export const widgetRegistry = {
         },
 
     },
+    Timeline: {
+
+    component: TimelineWidget,
+
+    aliases: [
+        "timeline",
+        "Timeline",
+        "history",
+    ],
+
+    layout: {
+        preferredSpan: 12,
+        grow: false,
+    },
+
+},
 
 } satisfies Record<string, WidgetDefinition>
 

@@ -405,10 +405,10 @@ class TicketEntity(BaseEntity):
     # =====================================================
 
     def customize_field_schema(
-        self,
-        request,
-        schema,
-        field=None,
+            self,
+            request,
+            schema,
+            field=None,
     ):
 
         if schema["name"] in {
@@ -417,11 +417,13 @@ class TicketEntity(BaseEntity):
             "updated_at",
             "due_date",
         }:
-
             schema["readonly"] = True
 
-        return schema
+        if schema["name"] == "lifecycle":
+            schema["widget"] = "timeline"
+            schema["label"] = "Жизненный цикл"
 
+        return schema
     # =====================================================
     # REPRESENTATION
     # =====================================================
