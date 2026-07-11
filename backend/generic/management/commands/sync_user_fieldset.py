@@ -34,14 +34,6 @@ class Command(BaseCommand):
 
         fields = [
 
-            {
-                "name": "login",
-                "label": "Логин",
-                "field_type": "string",
-                "required": True,
-                "unique": True,
-                "is_system": True,
-            },
 
             {
                 "name": "full_name",

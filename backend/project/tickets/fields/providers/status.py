@@ -28,7 +28,7 @@ class StatusProvider(
         return (
             TicketStatus.objects
             .filter(
-                code="low",
+                code="new",
             )
             .first()
         )
