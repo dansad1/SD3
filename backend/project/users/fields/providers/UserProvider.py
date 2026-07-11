@@ -1,20 +1,24 @@
-from django.core.exceptions import ValidationError
+import logging
+
+from django.core.exceptions import (
+    ValidationError,
+)
 
 from backend.engine.fields.providers.BaseRelationProvider import (
     BaseRelationProvider,
 )
-
 from backend.engine.fields.providers.registry import (
     register_relation_provider,
 )
-
 from backend.project.tickets.services.TicketAssignmentPolicy import (
     TicketAssignmentPolicy,
 )
-
 from backend.project.users.models import (
     User,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 @register_relation_provider
@@ -35,10 +39,30 @@ class UserProvider(
         instance=None,
     ):
 
+        logger.warning("=" * 80)
+        logger.warning("UserProvider.get_options")
+        logger.warning("field=%s", field.name)
+        logger.warning("request=%s", request)
+
+        if request:
+
+            logger.warning(
+                "user=%s",
+                getattr(
+                    request,
+                    "user",
+                    None,
+                ),
+            )
+
         if (
             field.name == "executors"
             and request
         ):
+
+            logger.warning(
+                "Using TicketAssignmentPolicy",
+            )
 
             queryset = (
                 TicketAssignmentPolicy
@@ -49,10 +73,36 @@ class UserProvider(
 
         else:
 
+            logger.warning(
+                "Using default queryset",
+            )
+
             queryset = (
                 User.objects
-                .all()
+                .filter(
+                    is_active=True,
+                )
             )
+
+        logger.warning(
+            "SQL=%s",
+            queryset.query,
+        )
+
+        logger.warning(
+            "COUNT=%s",
+            queryset.count(),
+        )
+
+        logger.warning(
+            "IDS=%s",
+            list(
+                queryset.values_list(
+                    "pk",
+                    flat=True,
+                )
+            ),
+        )
 
         options = [
 
@@ -65,14 +115,12 @@ class UserProvider(
 
         ]
 
-        options.sort(
-
-            key=lambda item: (
-                item["label"]
-                or ""
-            ).casefold()
-
+        logger.warning(
+            "OPTIONS=%s",
+            options,
         )
+
+        logger.warning("=" * 80)
 
         return options
 
@@ -87,6 +135,11 @@ class UserProvider(
         instance=None,
     ):
 
+        logger.warning(
+            "UserProvider.get_initial field=%s",
+            field.name,
+        )
+
         if not request:
             return None
 
@@ -95,6 +148,11 @@ class UserProvider(
 
         if field.name != "requester":
             return None
+
+        logger.warning(
+            "Initial requester=%s",
+            request.user,
+        )
 
         return request.user
 
@@ -110,13 +168,17 @@ class UserProvider(
         instance=None,
     ):
 
+        logger.warning("=" * 80)
+        logger.warning("UserProvider.validate")
+        logger.warning("field=%s", field.name)
+        logger.warning("value=%s", value)
+
         if (
             field.name == "executors"
             and value
             and request
         ):
 
-            # если поле множественное
             values = (
                 value
                 if isinstance(
@@ -126,16 +188,12 @@ class UserProvider(
                 else [value]
             )
 
-            allowed = set(
-                TicketAssignmentPolicy
-                .get_allowed_executors(
-                    request.user,
-                )
-                .values_list(
-                    "pk",
-                    flat=True,
-                )
+            logger.warning(
+                "VALUES=%s",
+                values,
             )
+
+            users = []
 
             for item in values:
 
@@ -148,11 +206,45 @@ class UserProvider(
                     else item
                 )
 
-                if pk not in allowed:
+                logger.warning(
+                    "Loading user %s",
+                    pk,
+                )
+
+                user = (
+                    User.objects
+                    .filter(
+                        pk=pk,
+                    )
+                    .first()
+                )
+
+                logger.warning(
+                    "Loaded=%s",
+                    user,
+                )
+
+                if not user:
 
                     raise ValidationError(
-                        "Недопустимый исполнитель."
+                        "Пользователь не найден."
                     )
+
+                users.append(
+                    user,
+                )
+
+            logger.warning(
+                "Users=%s",
+                users,
+            )
+
+            TicketAssignmentPolicy.validate_executors(
+                actor=request.user,
+                executors=users,
+            )
+
+        logger.warning("=" * 80)
 
         return super().validate(
             field,
@@ -173,6 +265,11 @@ class UserProvider(
         instance=None,
     ):
 
+        logger.warning(
+            "UserProvider.normalize %s",
+            field.name,
+        )
+
         return super().normalize(
             field,
             value,
@@ -192,6 +289,11 @@ class UserProvider(
         instance=None,
     ):
 
+        logger.warning(
+            "UserProvider.serialize %s",
+            field.name,
+        )
+
         return super().serialize(
             field,
             value,
@@ -210,6 +312,12 @@ class UserProvider(
         value,
     ):
 
+        logger.warning(
+            "UserProvider.apply_filter field=%s value=%s",
+            field.name,
+            value,
+        )
+
         return super().apply_filter(
             queryset,
             field,
@@ -227,7 +335,10 @@ class UserProvider(
         value,
     ):
 
-        pass
+        logger.warning(
+            "UserProvider.before_save %s",
+            field.name,
+        )
 
     # =====================================================
     # AFTER SAVE
@@ -240,4 +351,7 @@ class UserProvider(
         value,
     ):
 
-        pass
+        logger.warning(
+            "UserProvider.after_save %s",
+            field.name,
+        )

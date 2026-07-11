@@ -39,12 +39,14 @@ class UserEntity(BaseEntity):
         "telegram",
         "department",
         "company",
+        "full_name"
     ]
 
     search_fields = [
         "login",
         "telegram",
         "company",
+        "full_name"
     ]
 
     filter_fields = [

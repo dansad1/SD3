@@ -105,7 +105,10 @@ class EntitySchemaBuilder:
                 "entity",
             )
 
-            if entity_name:
+            if (
+                entity_name
+                and "options" not in schema
+            ):
 
                 try:
 
