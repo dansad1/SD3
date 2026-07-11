@@ -137,7 +137,7 @@ const TicketsListPage = page(
               },
 
               ctx: {
-                entity: "ticket",
+                entity: "tickets",
               },
             },
 

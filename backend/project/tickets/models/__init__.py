@@ -12,3 +12,4 @@ from .TicketStatusTransition import *
 from .ExecutorGroup import *
 from .Ticket import *
 from .TicketFieldValue import *
+from .TicketEvent import *

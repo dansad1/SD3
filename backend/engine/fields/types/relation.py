@@ -247,13 +247,18 @@ class RelationFieldType(BaseFieldType):
     # =====================================================
 
     def normalize(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
+        # =====================================================
+        # EMPTY
+        # =====================================================
+
         if value in (
-            None,
-            "",
+                None,
+                "",
+                [],
         ):
             return (
                 []
@@ -261,24 +266,44 @@ class RelationFieldType(BaseFieldType):
                 else None
             )
 
+        if (
+                isinstance(value, dict)
+                and not (
+                value.get("value")
+                or value.get("id")
+        )
+        ):
+            return (
+                []
+                if field.is_multiple
+                else None
+            )
+
+        # =====================================================
+        # ENTITY
+        # =====================================================
+
         entity = self.get_entity(
             field,
         )
 
         model = entity.model
 
+        # =====================================================
+        # MULTIPLE
+        # =====================================================
+
         if field.is_multiple:
+
             ids = [
-                self.extract_id(
-                    item,
-                )
+                self.extract_id(item)
                 for item in value
             ]
 
             unique_ids = list(
                 dict.fromkeys(
                     ids,
-                ),
+                )
             )
 
             queryset = model.objects.filter(
@@ -291,13 +316,13 @@ class RelationFieldType(BaseFieldType):
             }
 
             missing = (
-                set(unique_ids)
-                - set(objects.keys())
+                    set(unique_ids)
+                    - set(objects.keys())
             )
 
             if missing:
                 raise ValidationError(
-                    f"Objects not found: {sorted(missing)}",
+                    f"Objects not found: {sorted(missing)}"
                 )
 
             return [
@@ -305,19 +330,25 @@ class RelationFieldType(BaseFieldType):
                 for obj_id in ids
             ]
 
+        # =====================================================
+        # SINGLE
+        # =====================================================
+
         object_id = self.extract_id(
             value,
         )
 
         try:
+
             return model.objects.get(
                 pk=object_id,
             )
-        except model.DoesNotExist:
-            raise ValidationError(
-                f"Object {object_id} not found",
-            )
 
+        except model.DoesNotExist:
+
+            raise ValidationError(
+                f"Object {object_id} not found"
+            )
     # =====================================================
     # SERIALIZE
     # =====================================================

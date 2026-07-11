@@ -1,3 +1,5 @@
+import inspect
+
 from django.core.exceptions import (
     PermissionDenied,
 )
@@ -13,14 +15,20 @@ class EntitySchemaBuilder:
         self,
         entity,
     ):
+
         self.entity = entity
         self.model = entity.model
+
+    # =====================================================
+    # BUILD
+    # =====================================================
 
     def build(
         self,
         request,
-        fields,
         action="view",
+        fields=None,
+        obj=None,
     ):
 
         if action not in (
@@ -35,25 +43,63 @@ class EntitySchemaBuilder:
             action,
         )
 
+        if fields is None:
+
+            fields = (
+
+                self.entity.get_fields(
+                    request=request,
+                    obj=obj,
+                )
+
+                or []
+
+            )
+
         fields_schema = []
 
         seen = set()
 
-        for field in fields or []:
+        for field in fields:
 
-            if not field.name:
+            name = getattr(
+                field,
+                "name",
+                None,
+            )
+
+            if not name:
                 continue
 
-            if field.name in seen:
+            if name in seen:
                 continue
 
-            seen.add(field.name)
+            seen.add(
+                name,
+            )
 
-            schema = field.get_schema()
+            # =================================================
+            # FIELD SCHEMA
+            # =================================================
 
-            # =========================================
+            try:
+
+                schema = field.get_schema(
+                    request=request,
+                    instance=obj,
+                )
+
+            except TypeError:
+
+                #
+                # Backward compatibility
+                #
+
+                schema = field.get_schema()
+
+            # =================================================
             # RELATION OPTIONS
-            # =========================================
+            # =================================================
 
             entity_name = schema.get(
                 "entity",
@@ -74,13 +120,15 @@ class EntitySchemaBuilder:
                         schema["options"] = [
 
                             relation_entity.represent_option(
-                                obj,
+                                item,
                             )
 
-                            for obj in (
+                            for item in (
+
                                 relation_entity.get_queryset(
                                     request,
                                 )
+
                             )
 
                         ]
@@ -93,27 +141,61 @@ class EntitySchemaBuilder:
 
                     print(
                         "[OPTIONS ERROR]",
-                        field.name,
+                        name,
                         entity_name,
                         exc,
                     )
 
                     schema["options"] = []
 
-            schema = (
-                self.entity.customize_field_schema(
+            # =================================================
+            # ENTITY CUSTOMIZATION
+            # =================================================
+
+            method = (
+                self.entity.customize_field_schema
+            )
+
+            parameters = inspect.signature(
+                method,
+            ).parameters
+
+            if "obj" in parameters:
+
+                schema = method(
+                    request=request,
+                    schema=schema,
+                    field=field,
+                    obj=obj,
+                )
+
+            else:
+
+                #
+                # Backward compatibility
+                #
+
+                schema = method(
                     request=request,
                     schema=schema,
                     field=field,
                 )
-            )
+
+            # =================================================
+            # VIEW MODE
+            # =================================================
 
             if action == "view":
+
                 schema["readonly"] = True
 
             fields_schema.append(
                 schema,
             )
+
+        # =====================================================
+        # RESULT
+        # =====================================================
 
         return {
 

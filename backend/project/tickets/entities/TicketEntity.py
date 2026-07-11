@@ -8,7 +8,7 @@ from backend.engine.entity.Base.BaseEntity import (
 from backend.project.tickets.models import (
     Ticket,
     TicketField,
-    TicketFieldAccess, TicketType,
+    TicketFieldAccess, TicketType, TicketFieldSet,
 )
 from backend.project.tickets.services.TicketAssignmentValidator import (
     TicketAssignmentValidator,
@@ -46,7 +46,7 @@ class TicketEntity(BaseEntity):
         "company",
         "executor_group",
         "assigned_to",
-        "deadline",
+        "due_date",
         "created_at",
     ]
 
@@ -153,24 +153,37 @@ class TicketEntity(BaseEntity):
     # DYNAMIC FIELDS
     # =====================================================
 
-
-
     def get_dynamic_fields(
             self,
             request,
             obj=None,
     ):
 
-        print("\n" + "=" * 80)
-        print("TicketEntity.get_dynamic_fields()")
-        print("=" * 80)
+        # =====================================================
+        # EDIT
+        # =====================================================
 
-        fieldset = None
+        if (
+                obj is not None
+                and obj.type_id
+        ):
+            return (
 
-        print(
-            "REQUEST.GET =",
-            dict(request.GET) if request else None,
-        )
+                TicketField.objects
+
+                .filter(
+                    fieldset=obj.type.fieldset,
+                )
+
+                .order_by(
+                    "id",
+                )
+
+            )
+
+        # =====================================================
+        # CREATE
+        # =====================================================
 
         payload = getattr(
             request,
@@ -178,177 +191,116 @@ class TicketEntity(BaseEntity):
             {},
         ) if request else {}
 
-        print(
-            "PAYLOAD =",
-            payload,
-        )
+        type_id = None
 
-        # =====================================================
-        # EDIT
-        # =====================================================
+        if payload:
 
-        if obj is not None:
-
-            print("\nMODE = EDIT")
-            print("OBJECT =", obj)
-            print("PK =", obj.pk)
-            print("TYPE_ID =", obj.type_id)
-
-            if obj.type_id:
-
-                print("TYPE =", obj.type)
-
-                fieldset = getattr(
-                    obj.type,
-                    "fieldset",
-                    None,
-                )
-
-                print("FIELDSET =", fieldset)
-
-            else:
-
-                print("TYPE_ID IS NONE")
-
-        # =====================================================
-        # CREATE
-        # =====================================================
-
-        else:
-
-            print("\nMODE = CREATE")
-
-            type_id = None
-
-            # ---------------------------------------------
-            # PAYLOAD
-            # ---------------------------------------------
-
-            if payload:
-
-                type_id = payload.get(
-                    "type",
-                )
-
-                if hasattr(
-                        type_id,
-                        "pk",
-                ):
-                    type_id = type_id.pk
-
-                elif isinstance(
-                        type_id,
-                        dict,
-                ):
-                    type_id = type_id.get(
-                        "value",
-                    )
-
-            # ---------------------------------------------
-            # QUERY
-            # ---------------------------------------------
-
-            if (
-                    not type_id
-                    and request
-            ):
-                type_id = request.GET.get(
-                    "type",
-                )
-
-            print(
-                "TYPE_ID =",
-                type_id,
+            type_id = payload.get(
+                "type",
             )
 
-            if not type_id:
-                print("NO TYPE")
-
-                print("=" * 80)
-
-                return []
-
-            try:
-
-                type_id = int(
+            if hasattr(
                     type_id,
-                )
-
-            except (
-                    TypeError,
-                    ValueError,
+                    "pk",
             ):
 
-                print(
-                    "INVALID TYPE:",
+                type_id = type_id.pk
+
+            elif isinstance(
                     type_id,
+                    dict,
+            ):
+
+                type_id = type_id.get(
+                    "value",
                 )
 
-                print("=" * 80)
+        if (
+                not type_id
+                and request
+        ):
+            type_id = request.GET.get(
+                "type",
+            )
 
-                return []
+        # =====================================================
+        # DEFAULT FIELDSET
+        # =====================================================
 
-            ticket_type = (
+        if not type_id:
 
-                TicketType.objects
+            fieldset = (
 
-                .select_related(
-                    "fieldset",
-                )
+                TicketFieldSet.objects
 
                 .filter(
-                    pk=type_id,
+                    code="default",
+                    is_active=True,
                 )
 
                 .first()
 
             )
 
-            print(
-                "TICKET TYPE =",
-                ticket_type,
+            if not fieldset:
+                return []
+
+            return (
+
+                TicketField.objects
+
+                .filter(
+                    fieldset=fieldset,
+                )
+
+                .order_by(
+                    "id",
+                )
+
             )
 
-            if ticket_type:
-
-                fieldset = (
-                    ticket_type.fieldset
-                )
-
-                print(
-                    "FIELDSET =",
-                    fieldset,
-                )
-
-            else:
-
-                print(
-                    "TYPE NOT FOUND",
-                )
-
         # =====================================================
-        # FIELDSET
+        # TYPE FIELDSET
         # =====================================================
 
-        if fieldset is None:
-            print(
-                "FIELDSET IS NONE",
+        try:
+
+            type_id = int(
+                type_id,
             )
 
-            print("=" * 80)
+        except (
+                TypeError,
+                ValueError,
+        ):
 
             return []
 
-        # =====================================================
-        # FIELDS
-        # =====================================================
+        ticket_type = (
 
-        fields = (
+            TicketType.objects
+
+            .select_related(
+                "fieldset",
+            )
+
+            .filter(
+                pk=type_id,
+            )
+
+            .first()
+
+        )
+
+        if not ticket_type:
+            return []
+
+        return (
 
             TicketField.objects
 
             .filter(
-                fieldset=fieldset,
+                fieldset=ticket_type.fieldset,
             )
 
             .order_by(
@@ -356,22 +308,6 @@ class TicketEntity(BaseEntity):
             )
 
         )
-
-        print(
-            "FIELDS COUNT =",
-            fields.count(),
-        )
-
-        for field in fields:
-            print(
-                f"  - {field.id}: "
-                f"{field.name} "
-                f"({field.field_type})"
-            )
-
-        print("=" * 80)
-
-        return fields
     # =====================================================
     # VALIDATION
     # =====================================================
