@@ -1,9 +1,5 @@
-from backend.engine.Resource.BaseResource import (
-    BaseResource,
-)
-
-from backend.project.audit.models.EntityJournal import (
-    EntityJournal,
+from backend.project.audit.resources.EntityHistoryResource import (
+    EntityHistoryResource,
 )
 
 from backend.project.tickets.models import (
@@ -14,17 +10,18 @@ from backend.project.tickets.models import (
 
 
 class TicketHistoryResource(
-    BaseResource,
+    EntityHistoryResource,
 ):
 
     code = "ticket.history"
+
+    ENTITY = "tickets"
 
     def get(
         self,
         request,
         **params,
     ):
-
         ticket_id = params.get(
             "id",
         )
@@ -42,122 +39,73 @@ class TicketHistoryResource(
             .first()
         )
 
-        if ticket:
+        if not ticket:
+            return []
 
-            events.append({
+        # =====================================================
+        # CREATE
+        # =====================================================
 
-                "id":
-                    f"ticket-{ticket.pk}",
+        events.append({
 
-                "type":
-                    "create",
+            "id":
+                f"ticket-{ticket.pk}",
 
-                "action":
-                    "create",
+            "action":
+                "create",
 
-                "created":
-                    ticket.created_at.isoformat(),
+            "created":
+                ticket.created_at.isoformat(),
 
-                "actor":
-                    None,
+            "actor":
+                None,
 
-                "meta": {
+            "object_repr":
+                str(ticket),
 
-                    "title":
-                        "Заявка создана",
+            "changes":
+                {},
 
-                },
+            "meta": {
 
-            })
+                "title":
+                    "Заявка создана",
 
-        journal = (
+                "text":
+                    "Заявка была создана.",
 
-            EntityJournal.objects
+            },
 
-            .filter(
-                entity="tickets",
-                object_id=str(
-                    ticket_id,
-                ),
-            )
+        })
 
-            .select_related(
-                "actor",
-            )
+        # =====================================================
+        # AUDIT
+        # =====================================================
 
-            .order_by(
-                "-created",
+        events.extend(
+
+            self.get_history(
+
+                request=request,
+
+                entity=self.ENTITY,
+
+                object_id=ticket.pk,
+
             )
 
         )
 
-        for item in journal:
-
-            changes = (
-                item.changes
-                or {}
-            )
-
-            event_type = (
-                "field_changes"
-            )
-
-            if (
-                len(changes) == 1
-            ):
-
-                field = next(
-                    iter(changes)
-                )
-
-                if field == "status":
-                    event_type = "status"
-
-                elif field in {
-                    "executor",
-                    "assignee",
-                }:
-                    event_type = "assign"
-
-            events.append({
-
-                "id":
-                    f"audit-{item.pk}",
-
-                "type":
-                    event_type,
-
-                "action":
-                    event_type,
-
-                "created":
-                    item.created.isoformat(),
-
-                "actor":
-                    {
-                        "id":
-                            item.actor_id,
-
-                        "label":
-                            str(item.actor),
-                    }
-                    if item.actor
-                    else None,
-
-                "changes":
-                    changes,
-
-                "meta":
-                    item.meta,
-
-            })
+        # =====================================================
+        # COMMENTS
+        # =====================================================
 
         comments = (
 
             TicketComment.objects
 
             .filter(
-                ticket_id=ticket_id,
+                ticket=ticket,
             )
 
             .select_related(
@@ -177,9 +125,6 @@ class TicketHistoryResource(
                 "id":
                     f"comment-{item.pk}",
 
-                "type":
-                    "comment",
-
                 "action":
                     "comment",
 
@@ -187,17 +132,29 @@ class TicketHistoryResource(
                     item.created_at.isoformat(),
 
                 "actor":
-                    {
-                        "id":
-                            item.author_id,
+                    (
+                        {
+                            "id":
+                                item.author_id,
 
-                        "label":
-                            str(item.author),
-                    }
-                    if item.author
-                    else None,
+                            "label":
+                                str(item.author),
+
+                        }
+                        if item.author
+                        else None
+                    ),
+
+                "object_repr":
+                    None,
+
+                "changes":
+                    {},
 
                 "meta": {
+
+                    "title":
+                        "Комментарий",
 
                     "text":
                         item.text,
@@ -206,12 +163,16 @@ class TicketHistoryResource(
 
             })
 
+        # =====================================================
+        # ATTACHMENTS
+        # =====================================================
+
         attachments = (
 
             TicketAttachment.objects
 
             .filter(
-                ticket_id=ticket_id,
+                ticket=ticket,
             )
 
             .select_related(
@@ -231,9 +192,6 @@ class TicketHistoryResource(
                 "id":
                     f"attachment-{item.pk}",
 
-                "type":
-                    "attachment",
-
                 "action":
                     "attachment",
 
@@ -241,17 +199,24 @@ class TicketHistoryResource(
                     item.created_at.isoformat(),
 
                 "actor":
-                    {
-                        "id":
-                            item.uploaded_by_id,
+                    (
+                        {
+                            "id":
+                                item.uploaded_by_id,
 
-                        "label":
-                            str(
-                                item.uploaded_by
-                            ),
-                    }
-                    if item.uploaded_by
-                    else None,
+                            "label":
+                                str(item.uploaded_by),
+
+                        }
+                        if item.uploaded_by
+                        else None
+                    ),
+
+                "object_repr":
+                    None,
+
+                "changes":
+                    {},
 
                 "meta": {
 
@@ -271,10 +236,14 @@ class TicketHistoryResource(
 
             })
 
+        # =====================================================
+        # SORT
+        # =====================================================
+
         events.sort(
 
-            key=lambda item:
-                item["created"],
+            key=lambda event:
+                event["created"],
 
             reverse=True,
 

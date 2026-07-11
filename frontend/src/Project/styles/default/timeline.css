@@ -477,3 +477,321 @@
     gap: 4px;
   }
 }
+/* =========================================================
+   ROOT
+   ========================================================= */
+
+.ticket-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+
+/* =========================================================
+   DAY
+   ========================================================= */
+
+.ticket-timeline-day {
+    margin: 8px 0 2px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    color: var(--color-text-secondary, #6b7280);
+
+    text-transform: uppercase;
+
+    letter-spacing: .04em;
+}
+
+
+/* =========================================================
+   ROW
+   ========================================================= */
+
+.ticket-timeline-row {
+    display: grid;
+
+    grid-template-columns: 24px 1fr;
+
+    column-gap: 14px;
+
+    position: relative;
+
+    min-height: 28px;
+}
+
+.ticket-timeline-row:not(.ticket-timeline-row-last)::after {
+    content: "";
+
+    position: absolute;
+
+    left: 11px;
+
+    top: 24px;
+
+    bottom: -20px;
+
+    width: 1px;
+
+    background: var(
+        --color-border,
+        #e5e7eb
+    );
+}
+
+
+/* =========================================================
+   MARKER
+   ========================================================= */
+
+.ticket-timeline-rail {
+    position: relative;
+}
+
+.ticket-timeline-marker {
+    width: 22px;
+
+    height: 22px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    background: white;
+
+    border: 1px solid
+        var(
+            --color-border,
+            #d1d5db
+        );
+}
+
+
+/* =========================================================
+   COLORS
+   ========================================================= */
+
+.ticket-timeline-action-create
+.ticket-timeline-marker {
+    color: #16a34a;
+}
+
+.ticket-timeline-action-update
+.ticket-timeline-marker {
+    color: #2563eb;
+}
+
+.ticket-timeline-action-status
+.ticket-timeline-marker {
+    color: #ea580c;
+}
+
+.ticket-timeline-action-assign
+.ticket-timeline-marker {
+    color: #9333ea;
+}
+
+.ticket-timeline-action-comment
+.ticket-timeline-marker {
+    color: #0891b2;
+}
+
+.ticket-timeline-action-system
+.ticket-timeline-marker {
+    color: #64748b;
+}
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.ticket-timeline-content {
+    padding-bottom: 8px;
+}
+
+.ticket-timeline-title {
+    font-weight: 600;
+
+    color: var(
+        --color-text,
+        #111827
+    );
+}
+
+.ticket-timeline-meta {
+    margin-top: 2px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    font-size: 12px;
+
+    color: var(
+        --color-text-secondary,
+        #6b7280
+    );
+}
+
+.ticket-timeline-dot {
+    opacity: .5;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
+
+.ticket-timeline-description,
+.ticket-timeline-comment,
+.ticket-timeline-transition,
+.ticket-timeline-object {
+    margin-top: 8px;
+
+    line-height: 1.5;
+}
+
+.ticket-timeline-comment {
+    white-space: pre-wrap;
+}
+
+
+/* =========================================================
+   CREATE SUMMARY
+   ========================================================= */
+
+.ticket-timeline-create-summary {
+    margin-top: 10px;
+
+    display: grid;
+
+    row-gap: 4px;
+}
+
+.ticket-timeline-create-row {
+    display: grid;
+
+    grid-template-columns: 180px 1fr;
+
+    column-gap: 12px;
+}
+
+.ticket-timeline-create-label {
+    color: var(
+        --color-text-secondary,
+        #6b7280
+    );
+}
+
+.ticket-timeline-create-value {
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   CHANGES
+   ========================================================= */
+
+.ticket-timeline-changes {
+    margin-top: 10px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+.ticket-timeline-change-row {
+    display: grid;
+
+    grid-template-columns: 180px 1fr;
+
+    column-gap: 12px;
+}
+
+.ticket-timeline-change-label {
+    color: var(
+        --color-text-secondary,
+        #6b7280
+    );
+}
+
+.ticket-timeline-change-values {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+}
+
+.ticket-timeline-value-old {
+    color: #6b7280;
+}
+
+.ticket-timeline-value-new {
+    font-weight: 600;
+}
+
+.ticket-timeline-arrow {
+    color: #9ca3af;
+}
+
+
+/* =========================================================
+   STATES
+   ========================================================= */
+
+.ticket-timeline-state {
+    padding: 20px;
+
+    text-align: center;
+
+    color: var(
+        --color-text-secondary,
+        #6b7280
+    );
+}
+
+.ticket-timeline-error {
+    color: #dc2626;
+}
+
+.ticket-timeline-retry {
+    margin-top: 12px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .ticket-timeline-change-row,
+    .ticket-timeline-create-row {
+        grid-template-columns: 1fr;
+
+        row-gap: 2px;
+    }
+
+    .ticket-timeline-row {
+        column-gap: 10px;
+    }
+
+}

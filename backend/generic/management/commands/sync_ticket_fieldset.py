@@ -81,11 +81,7 @@ class Command(BaseCommand):
                 "field_type": "relation",
             },
 
-            {
-                "name": "lifecycle",
-                "label": "Жизненный цикл",
-                "field_type": "relation",
-            },
+
 
             # =====================================================
             # УЧАСТНИКИ
@@ -133,7 +129,11 @@ class Command(BaseCommand):
                 "field_type": "relation",
                 "is_multiple": True,
             },
-
+            {
+                "name": "lifecycle",
+                "label": "Жизненный цикл",
+                "field_type": "relation",
+            },
         ]
 
         synced_names = []

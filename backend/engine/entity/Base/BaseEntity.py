@@ -27,7 +27,7 @@ from backend.engine.entity.Base.representation import (
     represent,
 )
 from backend.generic.models import DjangoField, DynamicField
-from backend.project.audit.utils.logging import log_entity_event, serialize_instance
+from backend.project.audit.utils.logging import log_entity_event, serialize_instance, make_json_safe
 
 
 class BaseEntity:
@@ -431,7 +431,30 @@ class BaseEntity:
     # =====================================================
     # SAVE LIFECYCLE
     # =====================================================
+    def serialize_for_audit(
+            self,
+            request,
+            instance,
+    ):
+        if not instance:
+            return {}
 
+        data = {}
+
+        for field in self.get_fields(
+                request=request,
+                obj=instance,
+        ):
+            try:
+                data[field.name] = make_json_safe(
+                    field.get_audit_value(
+                        instance,
+                    )
+                )
+            except Exception:
+                continue
+
+        return data
     def before_save(
             self,
             ctx,
@@ -443,8 +466,9 @@ class BaseEntity:
         )
 
         if instance and instance.pk:
-            ctx.before_state = serialize_instance(
-                instance
+            ctx.before_state = self.serialize_for_audit(
+                request=ctx.request,
+                instance=instance,
             )
         else:
             ctx.before_state = {}
@@ -466,8 +490,9 @@ class BaseEntity:
         if not instance:
             return ctx
 
-        ctx.after_state = serialize_instance(
-            instance
+        ctx.after_state = self.serialize_for_audit(
+            request=ctx.request,
+            instance=instance,
         )
 
         ctx.changes = ChangeDetector().detect_from_state(
@@ -504,8 +529,9 @@ class BaseEntity:
             instance,
     ):
         instance._audit_before_delete = {
-            "state": serialize_instance(
-                instance
+            "state": self.serialize_for_audit(
+                request=request,
+                instance=instance,
             ),
             "id": instance.pk,
             "repr": str(instance),

@@ -2,6 +2,8 @@ import inspect
 
 from django.db.models import Q
 
+from backend.project.audit.utils.logging import make_json_safe
+
 
 class BaseField:
 
@@ -377,4 +379,20 @@ class BaseField:
                 f"{self.name}__icontains":
                     value,
             }
+        )
+
+    def get_audit_value(
+            self,
+            instance,
+    ):
+        value = self.get_value(
+            instance,
+        )
+
+        value = self.serialize(
+            value,
+        )
+
+        return make_json_safe(
+            value,
         )
