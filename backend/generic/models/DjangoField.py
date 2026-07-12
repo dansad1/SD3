@@ -54,63 +54,133 @@ class DjangoField(BaseField):
 
         field = self.source
 
+        # ==========================================
+        # SPECIAL
+        # ==========================================
+
         if (
-            field.name == "password"
-            and isinstance(
-                field,
-                models.CharField,
-            )
+                field.name == "password"
+                and isinstance(
+            field,
+            models.CharField,
+        )
         ):
             return "password"
 
+        # ==========================================
+        # FILES
+        # ==========================================
+
         if isinstance(
-            field,
-            (
-                models.ForeignKey,
-                models.ManyToManyField,
-                ForeignObjectRel,
-            ),
+                field,
+                (
+                        models.FileField,
+                        models.ImageField,
+                ),
+        ):
+            return "file"
+
+        # ==========================================
+        # RELATIONS
+        # ==========================================
+
+        if isinstance(
+                field,
+                (
+                        models.ForeignKey,
+                        models.OneToOneField,
+                        models.ManyToManyField,
+                        ForeignObjectRel,
+                ),
         ):
             return "relation"
 
+        # ==========================================
+        # TEXT
+        # ==========================================
+
         if isinstance(
-            field,
-            (
-                models.CharField,
-                models.SlugField,
-            ),
+                field,
+                (
+                        models.CharField,
+                        models.SlugField,
+                        models.URLField,
+                        models.UUIDField,
+                ),
         ):
             return "string"
 
         if isinstance(
-            field,
-            (
-                models.IntegerField,
-                models.FloatField,
-                models.DecimalField,
-            ),
+                field,
+                models.TextField,
+        ):
+            return "text"
+
+        if isinstance(
+                field,
+                models.EmailField,
+        ):
+            return "email"
+
+        # ==========================================
+        # NUMBERS
+        # ==========================================
+
+        if isinstance(
+                field,
+                (
+                        models.SmallIntegerField,
+                        models.IntegerField,
+                        models.BigIntegerField,
+                        models.PositiveIntegerField,
+                        models.PositiveSmallIntegerField,
+                        models.FloatField,
+                        models.DecimalField,
+                ),
         ):
             return "number"
 
-        type_map = {
-            models.TextField: "text",
-            models.EmailField: "email",
-            models.BooleanField: "boolean",
-            models.DateTimeField: "datetime",
-            models.DateField: "date",
-            models.JSONField: "json",
-        }
+        # ==========================================
+        # BOOLEAN
+        # ==========================================
 
-        for cls, code in type_map.items():
-
-            if isinstance(
+        if isinstance(
                 field,
-                cls,
-            ):
-                return code
+                models.BooleanField,
+        ):
+            return "boolean"
+
+        # ==========================================
+        # DATE
+        # ==========================================
+
+        if isinstance(
+                field,
+                models.DateTimeField,
+        ):
+            return "datetime"
+
+        if isinstance(
+                field,
+                models.DateField,
+        ):
+            return "date"
+
+        # ==========================================
+        # JSON
+        # ==========================================
+
+        if isinstance(
+                field,
+                models.JSONField,
+        ):
+            return "json"
+
+        # ==========================================
+        # FALLBACK
+        # ==========================================
 
         return "string"
-
     # =====================================================
     # META
     # =====================================================

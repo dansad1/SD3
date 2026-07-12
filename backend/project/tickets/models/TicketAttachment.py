@@ -2,9 +2,8 @@
 
 from django.db import models
 
-from backend.generic.models import TimeStampedModel
-from backend.project.tickets.utils.upload_paths import (
-    ticket_attachment_upload_path,
+from backend.generic.models import (
+    TimeStampedModel,
 )
 
 
@@ -24,33 +23,20 @@ class TicketAttachment(TimeStampedModel):
         related_name="attachments",
     )
 
+    stored_file = models.ForeignKey(
+        "generic.StoredFile",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="ticket_attachments",
+    )
+
     uploaded_by = models.ForeignKey(
         "users.User",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="ticket_attachments",
-    )
-
-    file = models.FileField(
-        upload_to=ticket_attachment_upload_path,
-    )
-
-    original_name = models.CharField(
-        max_length=255,
-    )
-
-    mime_type = models.CharField(
-        max_length=255,
-        blank=True,
-    )
-
-    size = models.BigIntegerField(
-        default=0,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
     )
 
     class Meta:
@@ -64,8 +50,24 @@ class TicketAttachment(TimeStampedModel):
         )
 
         ordering = [
-            "-created_at"
+            "-created_at",
         ]
+
+    @property
+    def file(self):
+        return self.stored_file.file
+
+    @property
+    def original_name(self):
+        return self.stored_file.original_name
+
+    @property
+    def mime_type(self):
+        return self.stored_file.mime_type
+
+    @property
+    def size(self):
+        return self.stored_file.size
 
     def __str__(self):
 

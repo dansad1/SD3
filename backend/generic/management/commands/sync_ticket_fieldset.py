@@ -126,7 +126,7 @@ class Command(BaseCommand):
             {
                 "name": "attachments",
                 "label": "Вложения",
-                "field_type": "relation",
+                "field_type": "file",
                 "is_multiple": True,
             },
             {

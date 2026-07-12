@@ -1,14 +1,27 @@
-import { useUploadController } from "./useUploadController"
+// src/framework/Blocks/Action/upload/UploadWidget.tsx
+
 import { UploadDropzone } from "./UploadDropzone"
+
 import {
-  UploadRuntimeList,
   UploadDoneList,
   UploadFooter,
+  UploadRuntimeList,
 } from "./UploadLists"
-import type { UploadBlock } from "./types"
 
-export function UploadWidget({ block }: { block: UploadBlock }) {
-  const ctrl = useUploadController(block)
+import { useUploadController } from "./useUploadController"
+
+import type {
+  UploadBlock,
+} from "./types"
+
+
+export function UploadWidget({
+  block,
+}: {
+  block: UploadBlock
+}) {
+  const controller =
+    useUploadController(block)
 
   return (
     <div className="upload">
@@ -19,25 +32,41 @@ export function UploadWidget({ block }: { block: UploadBlock }) {
       )}
 
       <UploadDropzone
-        disabled={ctrl.disabled}
+        disabled={
+          controller.disabled
+          || controller.uploading
+        }
         multiple={block.multiple}
         accept={block.accept}
-        onFiles={ctrl.uploadMany}
+        onFiles={controller.uploadMany}
       />
 
-      <UploadRuntimeList items={ctrl.runtime} />
+      <UploadRuntimeList
+        items={controller.runtime}
+        onRemoveError={
+          controller.removeRuntime
+        }
+      />
 
       <UploadDoneList
-        items={ctrl.tempFiles}
+        items={controller.tempFiles}
         autoCommit={block.auto_commit}
-        onDiscard={ctrl.discardOne}
+        discardingIds={
+          controller.discardingIds
+        }
+        onDiscard={controller.discardOne}
       />
 
       <UploadFooter
         visible={
-          !block.auto_commit && ctrl.tempFiles.length > 0
+          !block.auto_commit
+          && controller.tempFiles.length > 0
         }
-        onCommit={ctrl.commitAll}
+        disabled={
+          controller.committing
+          || controller.uploading
+        }
+        onCommit={controller.commitAll}
       />
     </div>
   )

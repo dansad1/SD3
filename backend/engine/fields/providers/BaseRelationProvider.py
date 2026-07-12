@@ -14,7 +14,6 @@ class BaseRelationProvider:
     ):
         return None
 
-
     # =====================================================
     # INITIAL
     # =====================================================
@@ -26,7 +25,6 @@ class BaseRelationProvider:
         instance=None,
     ):
         return None
-
 
     # =====================================================
     # VALIDATION
@@ -41,7 +39,6 @@ class BaseRelationProvider:
     ):
         return value
 
-
     # =====================================================
     # NORMALIZATION
     # =====================================================
@@ -54,7 +51,6 @@ class BaseRelationProvider:
         instance=None,
     ):
         return value
-
 
     # =====================================================
     # SERIALIZATION
@@ -69,13 +65,22 @@ class BaseRelationProvider:
     ):
 
         if value is None:
-            return None
+            return [] if field.is_multiple else None
+
+        if field.is_multiple:
+
+            return [
+                {
+                    "value": item.pk,
+                    "label": str(item),
+                }
+                for item in value
+            ]
 
         return {
             "value": value.pk,
             "label": str(value),
         }
-
 
     # =====================================================
     # FILTER
@@ -87,12 +92,20 @@ class BaseRelationProvider:
         field,
         value,
     ):
+
+        if field.is_multiple:
+
+            return queryset.filter(
+                **{
+                    f"{field.name}__in": value,
+                }
+            )
+
         return queryset.filter(
             **{
                 field.name: value,
             }
         )
-
 
     # =====================================================
     # SAVE
@@ -111,7 +124,6 @@ class BaseRelationProvider:
             value,
         )
 
-
     # =====================================================
     # HOOKS
     # =====================================================
@@ -123,7 +135,6 @@ class BaseRelationProvider:
         value,
     ):
         pass
-
 
     def after_save(
         self,

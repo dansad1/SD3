@@ -1,47 +1,59 @@
-import type { Json } from "@/framework/types/json"
-import type { BaseBlock } from "../../BlockType"
+// src/framework/Blocks/Action/upload/types.ts
+
+export type UploadPrimitive =
+  | string
+  | number
+  | boolean
+
+
+export type UploadCtx = Record<
+  string,
+  UploadPrimitive
+>
+
 
 export type UploadTempItem = {
   id: number
   name: string
   size?: number
+  mime_type?: string
   url?: string
-  mime?: string
 }
 
-export type UploadRefreshEffect =
-  | {
-      type: "entity"
-      entity: string
-    }
-  | {
-      type: "page_action"
-      action: string
-    }
 
-export type UploadBlock = BaseBlock & {
+export type UploadResponse = {
+  files: UploadTempItem[]
+}
+
+
+export type UploadRuntimeStatus =
+  | "uploading"
+  | "error"
+
+
+export type UploadRuntimeItem = {
+  localId: string
+  name: string
+  progress: number
+  status: UploadRuntimeStatus
+  error?: string
+}
+
+
+export type UploadBlock = {
   type: "upload"
 
-  name: string
   label?: string
-  multiple?: boolean
 
   upload_action: string
   commit_action: string
 
-  ctx?: Record<string, unknown>
-
-  refresh?: UploadRefreshEffect[]
-
   auto_commit?: boolean
+  multiple?: boolean
   disabled?: boolean
-
   accept?: string
 
   files?: UploadTempItem[]
-}
-export type UploadCtx = Record<string, Json>
-export type UploadResponse = {
-  status: "ok"
-  files: UploadTempItem[]
+
+  ctx?: Record<string, unknown>
 }

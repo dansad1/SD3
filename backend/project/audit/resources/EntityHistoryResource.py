@@ -168,26 +168,53 @@ class EntityHistoryResource(BaseResource):
             field,
             value,
     ):
-        if value in (None, ""):
+
+        if value in (
+                None,
+                "",
+        ):
             return "—"
 
-        if isinstance(value, dict):
-            return (
-                    value.get("label")
-                    or value.get("text")
-                    or value.get("value")
+        if isinstance(
+                value,
+                dict,
+        ):
+            return str(
+
+                value.get("label")
+
+                or value.get("text")
+
+                or value.get("name")
+
+                or value.get("value")
+
+                or "—"
+
             )
 
-        if isinstance(value, list):
+        if isinstance(
+                value,
+                (
+                        list,
+                        tuple,
+                        set,
+                ),
+        ):
             return ", ".join(
-                self.serialize_value(
-                    field,
-                    item,
+
+                str(
+                    self.serialize_value(
+                        field,
+                        item,
+                    )
                 )
+
                 for item in value
+
             )
 
-        return value
+        return str(value)
     def get_choice_label(
         self,
         field,

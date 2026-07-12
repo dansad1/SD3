@@ -1,6 +1,5 @@
 from django.db import models
 
-
 FIELD_TYPES = [
 
     # ==========================================
@@ -35,6 +34,7 @@ FIELD_TYPES = [
     # ==========================================
 
     ("json", "JSON"),
+    ("file", "File"),
 
     # ==========================================
     # GENERIC RELATION
@@ -62,8 +62,9 @@ FIELD_TYPES = [
     ("status", "Status"),
     ("priority", "Priority"),
 ]
-class TimeStampedModel(models.Model):
 
+
+class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True,
         editable=False,
@@ -81,10 +82,7 @@ class TimeStampedModel(models.Model):
 from django.db import models
 
 
-
-
 class BaseField(TimeStampedModel):
-
     name = models.SlugField(
         max_length=100,
     )

@@ -1,12 +1,45 @@
+import json
 import logging
 
 from django.core.exceptions import ValidationError
 
 from backend.generic.models import DynamicField
+
 logger = logging.getLogger(__name__)
 
 
 class DynamicValueService:
+
+    @staticmethod
+    def decode(
+        value,
+    ):
+
+        if value in (
+            None,
+            "",
+        ):
+            return None
+
+        if not isinstance(
+            value,
+            str,
+        ):
+            return value
+
+        try:
+
+            return json.loads(
+                value,
+            )
+
+        except (
+            TypeError,
+            ValueError,
+            json.JSONDecodeError,
+        ):
+
+            return value
 
     @classmethod
     def get_map(
@@ -32,10 +65,14 @@ class DynamicValueService:
 
             try:
 
+                raw = cls.decode(
+                    item.value,
+                )
+
                 values[
                     item.field.name
                 ] = field.deserialize(
-                    item.value,
+                    raw,
                 )
 
             except ValidationError as exc:
@@ -82,8 +119,7 @@ class DynamicValueService:
         return (
             cls.get_map(
                 instance,
-            )
-            .get(
+            ).get(
                 name,
                 default,
             )

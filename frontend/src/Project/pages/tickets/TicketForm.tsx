@@ -32,7 +32,7 @@ const TicketFormPage = page(
 
           <Heading
             level={1}
-            text="Тикет №$ticket.id"
+            text="Тикет $ticket.name"
             fallback="Новая заявка"
           />
 
