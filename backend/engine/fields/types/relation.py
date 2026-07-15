@@ -28,7 +28,7 @@ class RelationFieldType(BaseFieldType):
     label = "Relation"
     widget = "select"
 
-    sortable = False
+    sortable = True
     searchable = True
     filterable = True
 
