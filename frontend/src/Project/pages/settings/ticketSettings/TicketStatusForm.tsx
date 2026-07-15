@@ -9,6 +9,9 @@ import {
   Text,
   Form,
   Action,
+  Tabs,
+  If,
+  Timeline,
 } from "@/framework"
 
 const TicketStatusFormPage = page(
@@ -60,28 +63,47 @@ const TicketStatusFormPage = page(
         </Stack>
 
         {/* ===================================== */}
-        {/* FORM */}
+        {/* CONTENT */}
         {/* ===================================== */}
 
-        <Form
+        <Tabs variant="line">
 
-          entity="ticket_statuses"
+          <Section title="Основное">
 
-          objectId="$query.id"
+            <Stack gap="lg">
 
-          submit={{
+              <Form
+                entity="ticket_statuses"
+                objectId="$query.id"
+                submit={{
+                  label: "Сохранить",
+                  redirect: {
+                    to: "ticket_status:list",
+                  },
+                }}
+              />
 
-            label: "Сохранить",
+            </Stack>
 
-            redirect: {
-              to: "ticket_status:list",
-            },
+          </Section>
 
-          }}
+          <If when="$query.id">
 
-          
+            <Section title="История">
 
-        />
+              <Timeline
+                source="entity.history"
+                params={{
+                  entity: "ticket_statuses",
+                  id: "$query.id",
+                }}
+              />
+
+            </Section>
+
+          </If>
+
+        </Tabs>
 
       </Stack>
 

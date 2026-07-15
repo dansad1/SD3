@@ -12,6 +12,7 @@ import {
   Table,
   Action,
   If,
+  Timeline,
 } from "@/framework"
 
 const CompanyFormPage = page(
@@ -39,15 +40,12 @@ const CompanyFormPage = page(
             fallback="Новая компания"
           />
 
-            <Text
-  value="Создание и редактирование компании"
-
-  variant="muted"
-
-  size="md"
-
-  weight="regular"
-/>
+          <Text
+            value="Создание и редактирование компании"
+            variant="muted"
+            size="md"
+            weight="regular"
+          />
 
         </Stack>
 
@@ -79,25 +77,17 @@ const CompanyFormPage = page(
 
             <Stack gap="lg">
 
-             <Form
+              <Form
+                entity="company"
+                objectId="$query.id"
+                submit={{
+                  label: "Сохранить",
+                  redirect: {
+                    to: "company:list",
+                  },
+                }}
+              />
 
-  entity="company"
-
-  objectId="$query.id"
-
-  submit={{
-
-    label: "Сохранить",
-
-    redirect: {
-      to: "company:list",
-    },
-
-  }}
-
-  
-
-/>
             </Stack>
 
           </Section>
@@ -108,98 +98,83 @@ const CompanyFormPage = page(
 
           <If when="$query.id">
 
-    <Section title="Пользователи">
+            <Section title="Пользователи">
 
-        <Stack gap="md">
+              <Stack gap="md">
 
-            <Action
-                label="Добавить пользователей"
-                variant="primary"
-                action="entity.relation"
-                picker={{
+                <Action
+                  label="Добавить пользователей"
+                  variant="primary"
+                  action="entity.relation"
+                  picker={{
                     entity: "user",
                     title: "Выберите пользователей",
                     multiple: true,
-                }}
-                ctx={{
+                  }}
+                  ctx={{
                     entity: "company",
                     id: "$query.id",
                     field: "users",
                     operation: "add",
-                }}
-            />
+                  }}
+                />
 
-            <Table
-
-                entity="user"
-
-                filter={{
+                <Table
+                  entity="user"
+                  filter={{
                     company: "$query.id",
-                }}
-
-                features={{
+                  }}
+                  features={{
                     search: true,
                     selection: false,
                     rowClick: true,
                     rowActions: true,
-                }}
-
-                rowClick={{
+                  }}
+                  rowClick={{
                     to: "user:form",
                     ctx: {
+                      id: "$row.id",
+                    },
+                  }}
+                  rowActions={[
+                    {
+                      key: "edit",
+                      label: "Редактировать",
+                      variant: "secondary",
+                      to: "user:form",
+                      ctx: {
                         id: "$row.id",
+                      },
                     },
-                }}
-
-                rowActions={[
-
                     {
-                        key: "edit",
-
-                        label: "Редактировать",
-
-                        variant: "secondary",
-
-                        to: "user:form",
-
-                        ctx: {
-                            id: "$row.id",
-                        },
+                      key: "remove",
+                      label: "Удалить из компании",
+                      variant: "danger",
+                      action: "entity.relation",
+                      ctx: {
+                        entity: "company",
+                        id: "$query.id",
+                        field: "users",
+                        operation: "remove",
+                        relationId: "$row.id",
+                      },
+                      confirm: {
+                        message: "Удалить пользователя из компании?",
+                      },
                     },
+                  ]}
+                />
 
-                    {
-                        key: "remove",
+              </Stack>
 
-                        label: "Удалить из компании",
+            </Section>
 
-                        variant: "danger",
-
-                        action: "entity.relation",
-
-                        ctx: {
-                            entity: "company",
-                            id: "$query.id",
-                            field: "users",
-                            operation: "remove",
-                            relationId: "$row.id",
-                        },
-
-                        confirm: {
-                            message:
-                                "Удалить пользователя из компании?",
-                        },
-                    },
-
-                ]}
-
-            />
-        </Stack>
-    </Section>
-</If>
+          </If>
 
           {/* ============================================= */}
           {/* DEPARTMENTS */}
           {/* ============================================= */}
+
           <If when="$query.id">
 
             <Section title="Отделы">
@@ -216,65 +191,46 @@ const CompanyFormPage = page(
                 />
 
                 <Table
-
                   entity="department"
-
                   filter={{
                     company: "$query.id",
                   }}
-
                   features={{
                     search: true,
                     selection: false,
                     rowClick: true,
                     rowActions: true,
                   }}
-
                   rowClick={{
                     to: "department:form",
                     ctx: {
                       id: "$row.id",
                     },
                   }}
-
                   rowActions={[
-
                     {
                       key: "edit",
-
                       label: "Редактировать",
-
                       variant: "secondary",
-
                       to: "department:form",
-
                       ctx: {
                         id: "$row.id",
                       },
                     },
-
                     {
                       key: "delete",
-
                       label: "Удалить",
-
                       variant: "danger",
-
                       action: "entity.delete",
-
                       ctx: {
                         entity: "department",
                         id: "$row.id",
                       },
-
                       confirm: {
-                        message:
-                          "Удалить отдел?",
+                        message: "Удалить отдел?",
                       },
                     },
-
                   ]}
-
                 />
 
               </Stack>
@@ -282,9 +238,33 @@ const CompanyFormPage = page(
             </Section>
 
           </If>
+
+          {/* ============================================= */}
+          {/* HISTORY */}
+          {/* ============================================= */}
+
+          <If when="$query.id">
+
+            <Section title="История">
+
+              <Timeline
+                source="entity.history"
+                params={{
+                  entity: "company",
+                  id: "$query.id",
+                }}
+              />
+
+            </Section>
+
+          </If>
+
         </Tabs>
+
       </Stack>
+
     </Section>
+
   </Container>
 
 )

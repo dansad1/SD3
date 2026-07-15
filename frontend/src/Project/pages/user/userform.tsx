@@ -9,6 +9,9 @@ import {
   Text,
   Form,
   Action,
+  Tabs,
+  If,
+  Timeline,
 } from "@/framework"
 
 const UserFormPage = page(
@@ -26,16 +29,17 @@ const UserFormPage = page(
         {/* ===================================== */}
 
         <Stack gap="sm">
-<Heading
-  level={1}
-  text="Пользователь: $user.login"
-  fallback="Новый пользователь"
-/>
+
+          <Heading
+            level={1}
+            text="Пользователь: $user.login"
+            fallback="Новый пользователь"
+          />
 
           <Text
-  value="Создание и редактирование пользователя"
-  variant="muted"
-/>
+            value="Создание и редактирование пользователя"
+            variant="muted"
+          />
 
         </Stack>
 
@@ -54,29 +58,54 @@ const UserFormPage = page(
         </Stack>
 
         {/* ===================================== */}
-        {/* FORM */}
+        {/* CONTENT */}
         {/* ===================================== */}
 
-        <Form
-  entity="user"
+        <Tabs variant="line">
 
-  objectId="$query.id"
+          <Section title="Основное">
 
-  submit={{
-    label: "Сохранить",
+            <Stack gap="lg">
 
-    redirect: {
-      to: "user:list",
-    },
-  }}
+              <Form
+                entity="user"
+                objectId="$query.id"
+                submit={{
+                  label: "Сохранить",
+                  redirect: {
+                    to: "user:list",
+                  },
+                }}
+              />
 
-  
-/>
+            </Stack>
+
+          </Section>
+
+          <If when="$query.id">
+
+            <Section title="История">
+
+              <Timeline
+                source="entity.history"
+                params={{
+                  entity: "user",
+                  id: "$query.id",
+                }}
+              />
+
+            </Section>
+
+          </If>
+
+        </Tabs>
+
       </Stack>
 
     </Section>
 
   </Container>
+
 )
 
 export default UserFormPage

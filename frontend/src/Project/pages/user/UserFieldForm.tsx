@@ -12,8 +12,8 @@ import {
   Action,
   If,
   Matrix,
+  Timeline,
 } from "@/framework"
-
 
 const UserFieldFormPage = page(
 
@@ -35,27 +35,18 @@ const UserFieldFormPage = page(
         <Stack gap="sm">
 
           <Heading
-
             level={1}
-
             text="Поле пользователя"
-
           />
 
           <Text
-
             value="Создание и редактирование поля пользователя"
-
             variant="muted"
-
             size="md"
-
             weight="regular"
-
           />
 
         </Stack>
-
 
         {/* ===================================== */}
         {/* ACTIONS */}
@@ -64,24 +55,18 @@ const UserFieldFormPage = page(
         <Stack gap="sm">
 
           <Action
-
             label="← Назад к списку"
-
             to="userfield:list"
-
             variant="secondary"
-
           />
 
         </Stack>
-
 
         {/* ===================================== */}
         {/* TABS */}
         {/* ===================================== */}
 
         <Tabs variant="line">
-
 
           {/* ================================= */}
           {/* MAIN */}
@@ -90,29 +75,17 @@ const UserFieldFormPage = page(
           <Section title="Основное">
 
             <Form
-
               entity="user-fields"
-
               objectId="$query.id"
-
               submit={{
-
                 label: "Сохранить",
-
                 redirect: {
-
                   to: "userfields:list",
-
                 },
-
               }}
-
-
             />
 
           </Section>
-
-
 
           {/* ================================= */}
           {/* ACCESS */}
@@ -125,17 +98,10 @@ const UserFieldFormPage = page(
               <Stack gap="md">
 
                 <Matrix
-
                   source="user-field.access"
-
                   params={{
-
-                    field:
-
-                      "$query.id",
-
+                    field: "$query.id",
                   }}
-
                 />
 
               </Stack>
@@ -144,6 +110,25 @@ const UserFieldFormPage = page(
 
           </If>
 
+          {/* ================================= */}
+          {/* HISTORY */}
+          {/* ================================= */}
+
+          <If when="$query.id">
+
+            <Section title="История">
+
+              <Timeline
+                source="entity.history"
+                params={{
+                  entity: "user-fields",
+                  id: "$query.id",
+                }}
+              />
+
+            </Section>
+
+          </If>
 
         </Tabs>
 
