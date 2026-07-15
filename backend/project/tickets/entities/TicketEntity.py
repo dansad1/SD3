@@ -22,6 +22,7 @@ from backend.project.tickets.services.TicketFieldService import (
 from backend.project.tickets.services.StatusTransitionService import (
     StatusTransitionService,
 )
+from backend.project.tickets.services.TicketSchemaService import TicketSchemaService
 
 
 class TicketEntity(BaseEntity):
@@ -265,35 +266,15 @@ class TicketEntity(BaseEntity):
     # =====================================================
 
     def customize_field_schema(
-        self,
-        request,
-        schema,
-        field=None,
+            self,
+            request,
+            schema,
+            field=None,
     ):
-        field_name = schema.get(
-            "name",
+        return TicketSchemaService.customize(
+            request=request,
+            schema=schema,
         )
-
-        readonly_fields = {
-            "id",
-            "created_at",
-            "updated_at",
-            "due_date",
-        }
-
-        if field_name in readonly_fields:
-            schema["readonly"] = True
-
-        if field_name == "lifecycle":
-            schema.update(
-                {
-                    "widget": "timeline",
-                    "label": "Жизненный цикл",
-                },
-            )
-
-        return schema
-
     # =====================================================
     # REPRESENTATION
     # =====================================================

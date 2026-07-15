@@ -1,15 +1,16 @@
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
-from backend.project.users.entities.services.UserAfterSaveService import UserAfterSaveService
-from backend.project.users.entities.services.UserDeleteService import UserDeleteService
-from backend.project.users.entities.services.UserFieldAccessService import UserFieldAccessService
-from backend.project.users.entities.services.UserFieldService import UserFieldService
-from backend.project.users.entities.services.UserPasswordService import UserPasswordService
+from backend.project.users.services.UserAfterSaveService import UserAfterSaveService
+from backend.project.users.services.UserDeleteService import UserDeleteService
+from backend.project.users.services.UserFieldAccessService import UserFieldAccessService
+from backend.project.users.services.UserFieldService import UserFieldService
+from backend.project.users.services.UserPasswordService import UserPasswordService
 
 from backend.project.users.models import (
     User,
 )
+from backend.project.users.services.UserSchemaService import UserSchemaService
 
 
 class UserEntity(BaseEntity):
@@ -201,45 +202,15 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     def customize_field_schema(
-        self,
-        request,
-        schema,
-        field=None,
+            self,
+            request,
+            schema,
+            field=None,
     ):
-        name = schema.get(
-            "name",
+        return UserSchemaService.customize(
+            request=request,
+            schema=schema,
         )
-
-        if name == "password":
-
-            schema.update(
-                {
-                    "widget": "password",
-                    "writeonly": True,
-                }
-            )
-
-            return schema
-
-        if (
-            not request.user.is_superuser
-            and name in {
-                "is_superuser",
-                "is_staff",
-            }
-        ):
-
-            schema["hidden"] = True
-
-        if name in {
-            "created_at",
-            "updated_at",
-            "last_login",
-        }:
-
-            schema["readonly"] = True
-
-        return schema
 
     # =====================================================
     # REPRESENTATION

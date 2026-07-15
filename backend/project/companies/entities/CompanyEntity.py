@@ -1,21 +1,23 @@
-# =========================================================
-# COMPANY ENTITY
-# =========================================================
-
-from django.core.exceptions import (
-    ValidationError,
-)
-
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
-from backend.project.companies.entities.sync import (
-    sync_company,
-)
 from backend.project.companies.models import (
     Company,
-    CompanyField,
-    CompanyFieldAccess,
+)
+from backend.project.companies.services.CompanyAfterSaveService import (
+    CompanyAfterSaveService,
+)
+from backend.project.companies.services.CompanyFieldAccessService import (
+    CompanyFieldAccessService,
+)
+from backend.project.companies.services.CompanyFieldService import (
+    CompanyFieldService,
+)
+from backend.project.companies.services.CompanySchemaService import (
+    CompanySchemaService,
+)
+from backend.project.companies.services.CompanyValidationService import (
+    CompanyValidationService,
 )
 
 
@@ -85,7 +87,6 @@ class CompanyEntity(BaseEntity):
     def get_select_related(
         self,
     ):
-
         return [
             "fieldset",
         ]
@@ -93,7 +94,6 @@ class CompanyEntity(BaseEntity):
     def get_prefetch_related(
         self,
     ):
-
         return [
             "dynamic_values",
         ]
@@ -102,70 +102,17 @@ class CompanyEntity(BaseEntity):
     # FIELD ACCESS
     # =====================================================
 
-    # =====================================================
-    # FIELD ACCESS
-    # =====================================================
-
     def get_field_access_map(
-            self,
-            request,
-            obj=None,
+        self,
+        request,
+        obj=None,
     ):
-
-        if (
-                not request.user.is_authenticated
-                or request.user.is_superuser
-        ):
-            return {}
-
-        role = getattr(
-            request.user,
-            "role",
-            None,
-        )
-
-        if role is None:
-            return {}
-
-        cache_name = "_user_field_access_map"
-
-        access_map = getattr(
-            request,
-            cache_name,
-            None,
-        )
-
-        if access_map is not None:
-            return access_map
-
-        access_map = {
-
-            access.field.name:
-                access.access_level
-
-            for access in (
-
-                CompanyFieldAccess.objects
-
-                .select_related(
-                    "field",
-                )
-
-                .filter(
-                    role=role,
-                )
-
+        return (
+            CompanyFieldAccessService
+            .get_access_map(
+                request,
             )
-
-        }
-
-        setattr(
-            request,
-            cache_name,
-            access_map,
         )
-
-        return access_map
 
     # =====================================================
     # DYNAMIC FIELDS
@@ -176,81 +123,12 @@ class CompanyEntity(BaseEntity):
         request,
         obj=None,
     ):
-
-        if obj and obj.fieldset_id:
-
-            return (
-
-                CompanyField.objects
-
-                .filter(
-                    fieldset=obj.fieldset,
-                )
-
-                .order_by(
-                    "id",
-                )
-
-            )
-
-        if request is None:
-
-            return (
-
-                CompanyField.objects
-
-                .all()
-
-                .order_by(
-                    "id",
-                )
-
-            )
-
-        fieldset = request.GET.get(
-            "fieldset",
-        )
-
-        if not fieldset or fieldset == "default":
-
-            return (
-
-                CompanyField.objects
-
-                .all()
-
-                .order_by(
-                    "id",
-                )
-
-            )
-
-        try:
-
-            fieldset_id = int(
-                fieldset,
-            )
-
-        except (
-            TypeError,
-            ValueError,
-        ):
-
-            return []
-
         return (
-
-            CompanyField.objects
-
-            .filter(
-                fieldset_id=fieldset_id,
-                fieldset__is_active=True,
+            CompanyFieldService
+            .get_fields(
+                request=request,
+                company=obj,
             )
-
-            .order_by(
-                "id",
-            )
-
         )
 
     # =====================================================
@@ -261,7 +139,6 @@ class CompanyEntity(BaseEntity):
         self,
         obj,
     ):
-
         return {
             "value": obj.pk,
             "label": (
@@ -282,40 +159,26 @@ class CompanyEntity(BaseEntity):
         payload,
         instance=None,
     ):
-
-        errors = {}
-
-        if not payload.get(
-            "name",
-        ):
-
-            errors["name"] = [
-                "Название обязательно",
-            ]
-
-        if errors:
-
-            raise ValidationError(
-                errors,
-            )
+        CompanyValidationService.validate(
+            payload,
+        )
 
         return payload
 
     # =====================================================
-    # LIFECYCLE
+    # AFTER SAVE
     # =====================================================
 
     def after_save(
         self,
         ctx,
     ):
-
         ctx = super().after_save(
             ctx,
         )
 
-        sync_company(
-            ctx.instance,
+        CompanyAfterSaveService.process(
+            ctx,
         )
 
         return ctx
@@ -330,16 +193,13 @@ class CompanyEntity(BaseEntity):
         schema,
         field=None,
     ):
-
-        if schema["name"] in {
-            "id",
-            "created_at",
-            "updated_at",
-        }:
-
-            schema["readonly"] = True
-
-        return schema
+        return (
+            CompanySchemaService
+            .customize(
+                request=request,
+                schema=schema,
+            )
+        )
 
     # =====================================================
     # FILTERS
@@ -350,7 +210,6 @@ class CompanyEntity(BaseEntity):
         request,
         qs,
     ):
-
         qs = super().apply_queryset_filters(
             request,
             qs,
