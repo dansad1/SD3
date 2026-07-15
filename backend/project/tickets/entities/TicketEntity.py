@@ -85,15 +85,19 @@ class TicketEntity(BaseEntity):
         "delete": "tickets.delete",
     }
 
+    # =====================================================
+    # FIELD ACCESS
+    # =====================================================
+
     def get_field_access_map(
-        self,
-        request,
-        obj=None,
+            self,
+            request,
+            obj=None,
     ):
 
         if (
-            not request.user.is_authenticated
-            or request.user.is_superuser
+                not request.user.is_authenticated
+                or request.user.is_superuser
         ):
             return {}
 
@@ -103,15 +107,26 @@ class TicketEntity(BaseEntity):
             None,
         )
 
-        if not role:
+        if role is None:
             return {}
 
-        return {
+        cache_name = "_user_field_access_map"
 
-            item.field.name:
-                item.access_level
+        access_map = getattr(
+            request,
+            cache_name,
+            None,
+        )
 
-            for item in (
+        if access_map is not None:
+            return access_map
+
+        access_map = {
+
+            access.field.name:
+                access.access_level
+
+            for access in (
 
                 TicketFieldAccess.objects
 
@@ -126,6 +141,14 @@ class TicketEntity(BaseEntity):
             )
 
         }
+
+        setattr(
+            request,
+            cache_name,
+            access_map,
+        )
+
+        return access_map
 
     # =====================================================
     # QUERYSET

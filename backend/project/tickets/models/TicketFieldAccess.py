@@ -1,12 +1,13 @@
 from django.db import models
 
-from backend.generic.models.BaseFieldAccess import BaseFieldAccess
-from backend.project.users.models import (
-    UserRole,
+from backend.generic.models.BaseFieldAccess import (
+    BaseFieldAccess,
 )
 
 
-class TicketFieldAccess(BaseFieldAccess):
+class TicketFieldAccess(
+    BaseFieldAccess,
+):
 
     field = models.ForeignKey(
         "tickets.TicketField",
@@ -14,7 +15,9 @@ class TicketFieldAccess(BaseFieldAccess):
         related_name="accesses",
     )
 
-    class Meta(BaseFieldAccess.Meta):
+    class Meta(
+        BaseFieldAccess.Meta,
+    ):
 
         unique_together = (
             "field",

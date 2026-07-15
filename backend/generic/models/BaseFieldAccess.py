@@ -29,6 +29,8 @@ class BaseFieldAccess(
     access_level = models.CharField(
         max_length=16,
         choices=ACCESS_CHOICES,
+        default=ACCESS_EDIT,
+        db_index=True,
     )
 
     class Meta:

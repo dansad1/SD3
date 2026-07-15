@@ -109,26 +109,48 @@ class UserEntity(BaseEntity):
     # FIELD ACCESS
     # =====================================================
 
+    # =====================================================
+    # FIELD ACCESS
+    # =====================================================
+
     def get_field_access_map(
-        self,
-        request,
-        obj=None,
+            self,
+            request,
+            obj=None,
     ):
 
         if (
-            not request.user.is_authenticated
-            or request.user.is_superuser
-            or not request.user.role
+                not request.user.is_authenticated
+                or request.user.is_superuser
         ):
-
             return {}
 
-        return {
+        role = getattr(
+            request.user,
+            "role",
+            None,
+        )
 
-            item.field.name:
-                item.access_level
+        if role is None:
+            return {}
 
-            for item in (
+        cache_name = "_user_field_access_map"
+
+        access_map = getattr(
+            request,
+            cache_name,
+            None,
+        )
+
+        if access_map is not None:
+            return access_map
+
+        access_map = {
+
+            access.field.name:
+                access.access_level
+
+            for access in (
 
                 UserFieldAccess.objects
 
@@ -137,13 +159,20 @@ class UserEntity(BaseEntity):
                 )
 
                 .filter(
-                    role=request.user.role,
+                    role=role,
                 )
 
             )
 
         }
 
+        setattr(
+            request,
+            cache_name,
+            access_map,
+        )
+
+        return access_map
     # =====================================================
     # DYNAMIC FIELDS
     # =====================================================

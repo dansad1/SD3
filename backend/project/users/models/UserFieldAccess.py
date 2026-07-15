@@ -1,9 +1,13 @@
 from django.db import models
 
-from backend.generic.models.BaseFieldAccess import BaseFieldAccess
+from backend.generic.models.BaseFieldAccess import (
+    BaseFieldAccess,
+)
 
 
-class UserFieldAccess(BaseFieldAccess):
+class UserFieldAccess(
+    BaseFieldAccess,
+):
 
     field = models.ForeignKey(
         "users.UserField",
@@ -11,7 +15,9 @@ class UserFieldAccess(BaseFieldAccess):
         related_name="accesses",
     )
 
-    class Meta(BaseFieldAccess.Meta):
+    class Meta(
+        BaseFieldAccess.Meta,
+    ):
 
         unique_together = (
             "field",

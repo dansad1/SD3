@@ -286,11 +286,14 @@ class BaseEntity:
 
         if access_method:
             access_map = (
+
                     access_method(
                         request,
                         obj=obj,
                     )
+
                     or {}
+
             )
 
         # =================================================
@@ -311,14 +314,27 @@ class BaseEntity:
                 continue
 
             if not self.include_model_field(
-                    field
+                    field,
             ):
                 continue
 
-            fields.append(
-                DjangoField(
-                    field
+            runtime = DjangoField(
+                field,
+            )
+
+            if access_map:
+
+                access = access_map.get(
+                    runtime.name,
                 )
+
+                if not access:
+                    continue
+
+                runtime.access_level = access
+
+            fields.append(
+                runtime,
             )
 
         # =================================================
@@ -337,21 +353,19 @@ class BaseEntity:
             if access_map:
 
                 access = access_map.get(
-                    field.name,
+                    runtime.name,
                 )
 
                 if not access:
                     continue
 
-                if access == "view":
-                    runtime.readonly = True
+                runtime.access_level = access
 
             fields.append(
                 runtime,
             )
 
         return fields
-
     # =====================================================
     # DYNAMIC FIELDS
     # =====================================================
