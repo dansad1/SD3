@@ -29,8 +29,6 @@ class TicketHistoryResource(
         if not ticket_id:
             return []
 
-        events = []
-
         ticket = (
             Ticket.objects
             .filter(
@@ -42,6 +40,8 @@ class TicketHistoryResource(
         if not ticket:
             return []
 
+        events = []
+
         # =====================================================
         # CREATE
         # =====================================================
@@ -50,6 +50,9 @@ class TicketHistoryResource(
 
             "id":
                 f"ticket-{ticket.pk}",
+
+            "type":
+                "create",
 
             "action":
                 "create",
@@ -110,6 +113,7 @@ class TicketHistoryResource(
 
             .select_related(
                 "author",
+                "edited_by",
             )
 
             .order_by(
@@ -120,10 +124,27 @@ class TicketHistoryResource(
 
         for item in comments:
 
+            can_manage = (
+
+                request.user.is_authenticated
+
+                and (
+
+                    request.user.is_superuser
+
+                    or item.author_id == request.user.pk
+
+                )
+
+            )
+
             events.append({
 
                 "id":
                     f"comment-{item.pk}",
+
+                "type":
+                    "comment",
 
                 "action":
                     "comment",
@@ -153,11 +174,44 @@ class TicketHistoryResource(
 
                 "meta": {
 
+                    "id":
+                        item.pk,
+
                     "title":
                         "Комментарий",
 
                     "text":
                         item.text,
+
+                    "hidden":
+                        item.hide_from_client,
+
+                    "edited":
+                        bool(
+                            item.edited_at,
+                        ),
+
+                    "edited_at":
+                        (
+                            item.edited_at.isoformat()
+                            if item.edited_at
+                            else None
+                        ),
+
+                    "edited_by":
+                        (
+                            str(
+                                item.edited_by,
+                            )
+                            if item.edited_by
+                            else None
+                        ),
+
+                    "can_edit":
+                        can_manage,
+
+                    "can_delete":
+                        can_manage,
 
                 },
 
@@ -191,6 +245,9 @@ class TicketHistoryResource(
 
                 "id":
                     f"attachment-{item.pk}",
+
+                "type":
+                    "attachment",
 
                 "action":
                     "attachment",

@@ -1,49 +1,32 @@
-from django.core.exceptions import (
-    ValidationError,
-)
+from django.core.exceptions import ValidationError
 
 from backend.engine.fields.types.base import (
     BaseFieldType,
 )
-
 from backend.engine.fields.types.registry import (
     register_field_type,
 )
-
 from backend.generic.models import (
     StoredFile,
 )
 
 
 @register_field_type
-class FileFieldType(
-    BaseFieldType,
-):
-
+class FileFieldType(BaseFieldType):
     code = "file"
-
     label = "Файл"
-
     widget = "file"
 
     sortable = False
-
     searchable = False
-
     filterable = False
 
     features = [
-
         "required",
-
         "help_text",
-
         "accept",
-
         "max_size",
-
         "max_files",
-
     ]
 
     # =====================================================
@@ -51,9 +34,9 @@ class FileFieldType(
     # =====================================================
 
     def validate(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
 
         value = super().validate(
@@ -62,73 +45,62 @@ class FileFieldType(
         )
 
         if value in (
-            None,
-            "",
-            [],
+                None,
+                "",
+                [],
         ):
             return [] if field.is_multiple else None
 
         if field.is_multiple:
 
             if not isinstance(
-                value,
-                (
-                    list,
-                    tuple,
-                ),
-            ):
-                value = [
                     value,
-                ]
+                    (
+                            list,
+                            tuple,
+                    ),
+            ):
+                value = [value]
 
             return [
-                self.validate_file(
-                    item,
-                )
+                self.validate_file(item)
                 for item in value
             ]
 
-        return self.validate_file(
-            value,
-        )
+        return self.validate_file(value)
 
     # =====================================================
     # FILE
     # =====================================================
 
     def validate_file(
-        self,
-        value,
+            self,
+            value,
     ):
 
         if isinstance(
-            value,
-            dict,
+                value,
+                dict,
         ):
             value = (
-                value.get("id")
-                or value.get("value")
+                    value.get("id")
+                    or value.get("value")
             )
 
         try:
-
-            value = int(
-                value,
-            )
+            value = int(value)
 
         except (
-            TypeError,
-            ValueError,
+                TypeError,
+                ValueError,
         ):
-
             raise ValidationError(
                 "Некорректный файл",
             )
 
         if not StoredFile.objects.filter(
-            pk=value,
+                pk=value,
         ).exists():
-
             raise ValidationError(
                 "Файл не найден",
             )
@@ -140,127 +112,121 @@ class FileFieldType(
     # =====================================================
 
     def normalize(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
         return value
 
     # =====================================================
     # SERIALIZE
-    # UI -> DB
     # =====================================================
 
     def serialize(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
 
         if value in (
-            None,
-            "",
-            [],
+                None,
+                "",
+                [],
         ):
             return [] if field.is_multiple else None
 
         if field.is_multiple:
 
             if not isinstance(
-                value,
-                (
-                    list,
-                    tuple,
-                ),
-            ):
-                value = [
                     value,
-                ]
+                    (
+                            list,
+                            tuple,
+                    ),
+            ):
+                value = [value]
 
             result = []
 
             for item in value:
 
                 if isinstance(
-                    item,
-                    dict,
+                        item,
+                        dict,
                 ):
                     item = (
-                        item.get("id")
-                        or item.get("value")
+                            item.get("id")
+                            or item.get("value")
                     )
 
-                if item not in (
-                    None,
-                    "",
-                ):
-                    result.append(
-                        int(item),
-                    )
+                result.append(
+                    int(item)
+                )
 
             return result
 
         if isinstance(
-            value,
-            dict,
+                value,
+                dict,
         ):
             value = (
-                value.get("id")
-                or value.get("value")
+                    value.get("id")
+                    or value.get("value")
             )
 
         return int(value)
 
     # =====================================================
     # DESERIALIZE
-    # DB -> UI
     # =====================================================
 
     def deserialize(
-        self,
-        field,
-        value,
+            self,
+            field,
+            value,
     ):
 
         if value in (
-            None,
-            "",
-            [],
+                None,
+                "",
+                [],
         ):
             return [] if field.is_multiple else None
 
         if field.is_multiple:
 
             if not isinstance(
-                value,
-                (
-                    list,
-                    tuple,
-                ),
-            ):
-                value = [
                     value,
-                ]
+                    (
+                            list,
+                            tuple,
+                    ),
+            ):
+                value = [value]
 
-            ids = [
-                int(v)
-                for v in value
-            ]
+            ids = []
+
+            for item in value:
+                try:
+                    ids.append(
+                        int(item)
+                    )
+                except (
+                        TypeError,
+                        ValueError,
+                ):
+                    continue
 
             files = StoredFile.objects.in_bulk(
                 ids,
             )
 
             return [
-
                 self.serialize_object(
                     files[file_id],
                 )
-
                 for file_id in ids
-
                 if file_id in files
-
             ]
 
         try:
@@ -270,9 +236,9 @@ class FileFieldType(
             )
 
         except (
-            StoredFile.DoesNotExist,
-            TypeError,
-            ValueError,
+                StoredFile.DoesNotExist,
+                TypeError,
+                ValueError,
         ):
 
             return None
@@ -286,25 +252,14 @@ class FileFieldType(
     # =====================================================
 
     def serialize_object(
-        self,
-        file,
+            self,
+            file,
     ):
 
         return {
-
-            "id":
-                file.pk,
-
-            "name":
-                file.original_name,
-
-            "size":
-                file.size,
-
-            "mime_type":
-                file.mime_type,
-
-            "url":
-                file.file.url,
-
+            "id": file.pk,
+            "name": file.original_name,
+            "size": file.size,
+            "mime_type": file.mime_type,
+            "url": file.file.url,
         }

@@ -130,6 +130,11 @@ class Command(BaseCommand):
                 "is_multiple": True,
             },
             {
+                "name": "comment",
+                "label": "Комментарий",
+                "field_type": "comments",
+            },
+            {
                 "name": "lifecycle",
                 "label": "Жизненный цикл",
                 "field_type": "relation",

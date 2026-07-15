@@ -22,68 +22,50 @@ class Command(BaseCommand):
         events = [
 
             (
-                "assigned_by_requester",
-                "Назначение заявителем",
+                "ticket.created",
+                "Создание заявки",
                 "ticket",
             ),
 
             (
-                "ticket_changed",
+                "ticket.changed",
                 "Изменение заявки",
                 "ticket",
             ),
 
             (
-                "comment_created",
-                "Новые комментарии в заявке",
+                "ticket.closed",
+                "Закрытие заявки",
                 "ticket",
             ),
 
             (
-                "executors_changed",
-                "Изменение списка исполнителей",
-                "participants",
+                "ticket.comment_added",
+                "Добавлен комментарий",
+                "comments",
             ),
 
             (
-                "watchers_changed",
-                "Изменение списка наблюдателей",
-                "participants",
-            ),
-
-            (
-                "approvers_changed",
-                "Изменение списка согласующих",
-                "participants",
-            ),
-
-            (
-                "executor_group_changed",
-                "Изменение группы исполнителей",
-                "participants",
-            ),
-
-            (
-                "execution_expired",
-                "Истечение срока исполнения заявки",
-                "sla",
-            ),
-
-            (
-                "reaction_expired",
-                "Истечение срока реакции на заявку",
-                "sla",
-            ),
-
-            (
-                "approved",
+                "ticket.approved",
                 "Заявка согласована",
                 "approval",
             ),
 
             (
-                "rated",
-                "Заявитель оценил заявку",
+                "ticket.reaction_expired",
+                "Истечение срока реакции",
+                "sla",
+            ),
+
+            (
+                "ticket.execution_expired",
+                "Истечение срока исполнения",
+                "sla",
+            ),
+
+            (
+                "ticket.rated",
+                "Получена оценка",
                 "feedback",
             ),
 
@@ -93,7 +75,9 @@ class Command(BaseCommand):
 
         for code, name, group in events:
 
-            synced_codes.append(code)
+            synced_codes.append(
+                code,
+            )
 
             event, created = (
                 NotificationEvent.objects
@@ -120,6 +104,7 @@ class Command(BaseCommand):
         )
 
         if deleted:
+
             self.stdout.write(
                 self.style.WARNING(
                     f"Удалено событий: {deleted}"

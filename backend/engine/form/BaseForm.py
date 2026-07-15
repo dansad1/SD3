@@ -47,12 +47,14 @@ from backend.engine.form.Base.serialize import (
 from backend.engine.form.Base.schema import (
     build_schema,
 )
+from backend.engine.form.Base.special_save import save_special_fields
 
 from backend.engine.utils.permissions import (
     has_permission,
 )
 
 logger = logging.getLogger(__name__)
+
 
 def apply_payload(ctx: FormContext):
     ctx.data = (ctx.payload or {}).copy()
@@ -65,20 +67,20 @@ def apply_payload(ctx: FormContext):
 
     return ctx
 
+
 # =========================================================
 # SECURITY
 # =========================================================
 def filter_editable_fields(
-    ctx: FormContext
+        ctx: FormContext
 ):
-
     editable = {
 
         field.name
 
         for field in (
-            ctx.runtime_fields
-            or []
+                ctx.runtime_fields
+                or []
         )
 
         if getattr(
@@ -93,13 +95,14 @@ def filter_editable_fields(
         k: v
 
         for k, v in (
-            ctx.data or {}
+                ctx.data or {}
         ).items()
 
         if k in editable
     }
 
     return ctx
+
 
 # =========================================================
 # PERMISSION
@@ -149,7 +152,7 @@ def check_permission(
 # =========================================================
 
 def load_runtime_fields(
-    ctx: FormContext,
+        ctx: FormContext,
 ):
     runtime_fields = (
         ctx.entity.get_fields(
@@ -159,15 +162,14 @@ def load_runtime_fields(
     )
 
     ctx.runtime_fields = (
-        runtime_fields
-        or []
+            runtime_fields
+            or []
     )
 
     print("\n" + "=" * 100)
     print("RUNTIME FIELDS")
 
     for field in ctx.runtime_fields:
-
         print(
             f"{field.__class__.__name__:20} "
             f"name={field.name:20} "
@@ -186,8 +188,9 @@ def load_runtime_fields(
     }
 
     return ctx
-def debug_data(ctx):
 
+
+def debug_data(ctx):
     print("\n" + "=" * 100)
     print("AFTER NORMALIZE")
     print("=" * 100)
@@ -195,6 +198,7 @@ def debug_data(ctx):
     print("=" * 100)
 
     return ctx
+
 
 # =========================================================
 # PIPELINES
@@ -216,14 +220,16 @@ SUBMIT_PIPELINE = [
     apply_payload,
     load_runtime_fields,
     build_schema,
-debug_data,
+    debug_data,
     filter_editable_fields,
     normalize,
 
     before_save,
+    save_special_fields,
     save,
     after_save,
 ]
+
 
 class BaseForm:
     code = None

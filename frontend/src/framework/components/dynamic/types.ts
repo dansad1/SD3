@@ -1,4 +1,5 @@
 import type { FieldType } from "@/framework/api/form/types"
+import type { StoredFile } from "@/framework/Blocks/Action/upload/types"
 import type { FC, CSSProperties } from "react"
 
 /* =========================================================
@@ -29,9 +30,10 @@ export type Value =
   | boolean
   | string[]
   | File
+  | StoredFile
+  | StoredFile[]
   | null
   | InsertCommand
-
 /* =========================================================
    OPTION
 ========================================================= */

@@ -38,7 +38,19 @@ export type UploadRuntimeItem = {
   status: UploadRuntimeStatus
   error?: string
 }
+export type StoredFile = {
 
+  id: number
+
+  name: string
+
+  size: number
+
+  mime_type: string
+
+  url: string
+
+}
 
 export type UploadBlock = {
   type: "upload"

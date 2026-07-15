@@ -31,13 +31,13 @@ def serialize(ctx):
         try:
 
             # =============================================
-            # COMPATIBILITY
+            # VALUE
             # =============================================
 
             try:
 
                 value = field.get_value(
-                    ctx.instance
+                    ctx.instance,
                 )
 
             except TypeError:
@@ -46,6 +46,15 @@ def serialize(ctx):
                     None,
                     ctx.instance,
                 )
+
+            # =============================================
+            # DEBUG BEFORE SERIALIZE
+            # =============================================
+
+            print("=" * 80)
+            print(f"FIELD      : {field.name}")
+            print(f"TYPE       : {field.type}")
+            print(f"RAW VALUE  : {value!r}")
 
             # =============================================
             # SERIALIZE
@@ -65,6 +74,13 @@ def serialize(ctx):
                 )
 
             # =============================================
+            # DEBUG AFTER SERIALIZE
+            # =============================================
+
+            print(f"SERIALIZED : {serialized!r}")
+            print("=" * 80)
+
+            # =============================================
             # RESULT
             # =============================================
 
@@ -74,11 +90,23 @@ def serialize(ctx):
 
             print(
                 f"[SERIALIZE ERROR] "
-                f"field={field.name}:",
-                e,
+                f"field={field.name}: {e}",
             )
 
             data[field.name] = None
+
+    # =====================================================
+    # FINAL DEBUG
+    # =====================================================
+
+    print("\n" + "#" * 80)
+    print("FINAL DATA")
+    print("#" * 80)
+
+    for key, value in data.items():
+        print(f"{key}: {value!r}")
+
+    print("#" * 80 + "\n")
 
     # =====================================================
     # RESULT

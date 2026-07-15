@@ -1,4 +1,5 @@
-# backend/project/notifications/management/commands/seed_notification_templates.py
+
+
 
 from django.apps import apps
 from django.core.management.base import BaseCommand
@@ -24,63 +25,67 @@ BASE_STYLE = """
         color: #ffffff;
         padding: 20px 24px;
     ">
-      <h2 style="margin: 0; font-size: 20px;">
+      <h2 style="margin:0;font-size:20px;">
         {{ title }}
       </h2>
     </div>
 
-    <div style="padding: 24px; color: #111827;">
+    <div style="padding:24px;color:#111827;">
+
       {{ content|safe }}
 
       <div style="
-          margin-top: 24px;
-          padding: 16px;
-          background: #f9fafb;
-          border-radius: 10px;
+          margin-top:24px;
+          padding:16px;
+          background:#f9fafb;
+          border-radius:10px;
       ">
-        <p style="margin: 0 0 8px;">
-          <b>Заявка:</b> #{{ ticket.id }} — {{ ticket.title }}
-        </p>
-        <p style="margin: 0 0 8px;">
-          <b>Статус:</b> {{ ticket.status }}
-        </p>
-        <p style="margin: 0;">
-          <a href="{{ site_url }}/tickets/{{ ticket.id }}"
-             style="
-                 display: inline-block;
-                 margin-top: 12px;
-                 background: #2563eb;
-                 color: #ffffff;
-                 text-decoration: none;
-                 padding: 10px 16px;
-                 border-radius: 8px;
-             ">
+        <p><b>Заявка:</b> #{{ ticket.id }} — {{ ticket.title }}</p>
+
+        <p><b>Статус:</b> {{ ticket.status }}</p>
+
+        <p><b>Изменения:</b></p>
+
+        {{ changes_html|safe }}
+
+        <p style="margin-top:16px;">
+          <a
+            href="{{ site_url }}/tickets/{{ ticket.id }}"
+            style="
+                display:inline-block;
+                background:#2563eb;
+                color:#fff;
+                text-decoration:none;
+                padding:10px 16px;
+                border-radius:8px;
+            "
+          >
             Открыть заявку
           </a>
         </p>
       </div>
+
     </div>
 
     <div style="
-        padding: 16px 24px;
-        color: #6b7280;
-        font-size: 12px;
-        border-top: 1px solid #e5e7eb;
+        padding:16px 24px;
+        color:#6b7280;
+        font-size:12px;
+        border-top:1px solid #e5e7eb;
     ">
-      Это автоматическое уведомление servicedesk.
+      Это автоматическое уведомление ServiceDesk.
     </div>
+
   </div>
 </div>
 """
 
 
 def html(title, content):
-    return BASE_STYLE.replace(
-        "{{ title }}",
-        title,
-    ).replace(
-        "{{ content|safe }}",
-        content,
+    return (
+        BASE_STYLE
+        .replace("{{ title }}", title)
+        .replace("{{ content|safe }}", content)
     )
 
 
@@ -89,166 +94,182 @@ class Command(BaseCommand):
     help = "Seed notification templates"
 
     @transaction.atomic
-    def handle(
-        self,
-        *args,
-        **options,
-    ):
+    def handle(self, *args, **options):
+
         NotificationTemplate = apps.get_model(
             "notifications",
             "NotificationTemplate",
         )
 
+        changed_body = html(
+            "Заявка изменена",
+            """
+            <p>
+                Заявка была обновлена.
+            </p>
+
+            <p>
+                Ниже приведен список измененных полей.
+            </p>
+            """,
+        )
+
         templates = [
+
+            # =====================================================
+            # TICKET
+            # =====================================================
+
             {
-                "code": "assigned_by_requester",
-                "name": "Назначение заявителем",
-                "subject": "Вас назначили по заявке #{{ ticket.id }}",
+                "code": "ticket.created",
+                "name": "Создание заявки",
+                "subject": "Создана заявка #{{ ticket.id }}",
                 "body": html(
-                    "Вас назначили исполнителем",
+                    "Создана новая заявка",
                     """
-                    <p>Здравствуйте, {{ user.full_name }}.</p>
                     <p>
-                      Заявитель назначил вас исполнителем по заявке.
-                      Посмотрите, пожалуйста, что там за радость.
+                        Создана новая заявка.
                     </p>
                     """,
                 ),
             },
+
             {
-                "code": "ticket_changed",
+                "code": "ticket.changed",
                 "name": "Изменение заявки",
                 "subject": "Изменена заявка #{{ ticket.id }}",
+                "body": changed_body,
+            },
+
+            {
+                "code": "ticket.closed",
+                "name": "Заявка закрыта",
+                "subject": "Заявка #{{ ticket.id }} закрыта",
                 "body": html(
-                    "Заявка изменена",
+                    "Заявка закрыта",
                     """
-                    <p>В заявке появились изменения.</p>
-                    <p>{{ changed_by.full_name }} обновил данные заявки.</p>
+                    <p>
+                        Работа по заявке завершена.
+                    </p>
                     """,
                 ),
             },
+
+            # =====================================================
+            # COMMENTS
+            # =====================================================
+
             {
-                "code": "comment_created",
-                "name": "Новый комментарий",
+                "code": "ticket.comment_added",
+                "name": "Комментарий",
                 "subject": "Новый комментарий в заявке #{{ ticket.id }}",
                 "body": html(
-                    "Новый комментарий",
+                    "Добавлен комментарий",
                     """
-                    <p><b>{{ comment.author.full_name }}</b> оставил комментарий:</p>
-                    <blockquote style="
-                        margin: 16px 0;
-                        padding: 12px 16px;
-                        background: #f3f4f6;
-                        border-left: 4px solid #2563eb;
-                    ">
-                      {{ comment.text }}
+                    <p>
+                        Добавлен новый комментарий.
+                    </p>
+
+                    <blockquote
+                        style="
+                            margin:16px 0;
+                            padding:12px 16px;
+                            background:#f3f4f6;
+                            border-left:4px solid #2563eb;
+                        "
+                    >
+                        {{ comment.text }}
                     </blockquote>
                     """,
                 ),
             },
+
+            # =====================================================
+            # APPROVAL
+            # =====================================================
+
             {
-                "code": "executors_changed",
-                "name": "Изменение исполнителей",
-                "subject": "Изменились исполнители заявки #{{ ticket.id }}",
-                "body": html(
-                    "Изменились исполнители",
-                    """
-                    <p>Список исполнителей был обновлён.</p>
-                    <p>Проверьте, не попали ли вы в эту прекрасную компанию.</p>
-                    """,
-                ),
-            },
-            {
-                "code": "watchers_changed",
-                "name": "Изменение наблюдателей",
-                "subject": "Изменились наблюдатели заявки #{{ ticket.id }}",
-                "body": html(
-                    "Изменились наблюдатели",
-                    """
-                    <p>Список наблюдателей по заявке был изменён.</p>
-                    """,
-                ),
-            },
-            {
-                "code": "approvers_changed",
-                "name": "Изменение согласующих",
-                "subject": "Изменились согласующие заявки #{{ ticket.id }}",
-                "body": html(
-                    "Изменились согласующие",
-                    """
-                    <p>Список согласующих был обновлён.</p>
-                    <p>Если вы среди них — пора согласовывать.</p>
-                    """,
-                ),
-            },
-            {
-                "code": "executor_group_changed",
-                "name": "Изменение группы исполнителей",
-                "subject": "Изменилась группа исполнителей заявки #{{ ticket.id }}",
-                "body": html(
-                    "Группа исполнителей изменена",
-                    """
-                    <p>Заявка передана другой группе исполнителей.</p>
-                    """,
-                ),
-            },
-            {
-                "code": "execution_expired",
-                "name": "Просрочено исполнение",
-                "subject": "Просрочено исполнение заявки #{{ ticket.id }}",
-                "body": html(
-                    "Срок исполнения истёк",
-                    """
-                    <p style="color: #b91c1c;">
-                      Ай-ай-ай. Срок исполнения заявки истёк.
-                    </p>
-                    <p>Надо посмотреть и решить, пока оно не стало легендой.</p>
-                    """,
-                ),
-            },
-            {
-                "code": "reaction_expired",
-                "name": "Просрочена реакция",
-                "subject": "Просрочена реакция на заявку #{{ ticket.id }}",
-                "body": html(
-                    "Срок реакции истёк",
-                    """
-                    <p style="color: #b91c1c;">
-                      По заявке не было реакции в установленный срок.
-                    </p>
-                    """,
-                ),
-            },
-            {
-                "code": "approved",
+                "code": "ticket.approved",
                 "name": "Заявка согласована",
                 "subject": "Заявка #{{ ticket.id }} согласована",
                 "body": html(
                     "Заявка согласована",
                     """
-                    <p>Хорошие новости: заявка согласована.</p>
-                    <p>Можно двигаться дальше.</p>
+                    <p>
+                        Заявка успешно согласована.
+                    </p>
                     """,
                 ),
             },
+
+            # =====================================================
+            # SLA
+            # =====================================================
+
             {
-                "code": "rated",
-                "name": "Оценка заявки",
-                "subject": "Заявитель оценил заявку #{{ ticket.id }}",
+                "code": "ticket.execution_expired",
+                "name": "Просрочено исполнение",
+                "subject": "Просрочено исполнение заявки #{{ ticket.id }}",
+                "body": html(
+                    "Просрочено исполнение",
+                    """
+                    <p style="color:#b91c1c;">
+                        Истек срок исполнения заявки.
+                    </p>
+                    """,
+                ),
+            },
+
+            {
+                "code": "ticket.reaction_expired",
+                "name": "Просрочена реакция",
+                "subject": "Просрочена реакция по заявке #{{ ticket.id }}",
+                "body": html(
+                    "Просрочена реакция",
+                    """
+                    <p style="color:#b91c1c;">
+                        Истек срок реакции по заявке.
+                    </p>
+                    """,
+                ),
+            },
+
+            # =====================================================
+            # FEEDBACK
+            # =====================================================
+
+            {
+                "code": "ticket.rated",
+                "name": "Получена оценка",
+                "subject": "Получена оценка по заявке #{{ ticket.id }}",
                 "body": html(
                     "Получена оценка",
                     """
-                    <p>Заявитель поставил оценку: <b>{{ rating.value }}</b>.</p>
-                    <p>{{ rating.comment }}</p>
+                    <p>
+                        Заявитель оценил выполнение заявки.
+                    </p>
+
+                    <p>
+                        <b>Оценка:</b>
+                        {{ rating.value }}
+                    </p>
+
+                    {% if rating.comment %}
+                    <p>
+                        <b>Комментарий:</b><br>
+                        {{ rating.comment }}
+                    </p>
+                    {% endif %}
                     """,
                 ),
             },
+
         ]
 
         for item in templates:
+
             template, created = (
-                NotificationTemplate.objects
-                .update_or_create(
+                NotificationTemplate.objects.update_or_create(
                     code=item["code"],
                     defaults={
                         "name": item["name"],

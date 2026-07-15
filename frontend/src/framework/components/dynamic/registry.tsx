@@ -20,6 +20,7 @@ import type {
 import { PermissionEditorWidget } from "./widgets/PermissionEditor"
 import { MetaWidget } from "./widgets/meta"
 import { TimelineWidget } from "./widgets/TimelineWidget"
+import { CommentWidget } from "./widgets/CommentWidget"
 
 /* =========================================================
    TYPES
@@ -239,6 +240,23 @@ export const widgetRegistry = {
         },
 
     },
+    Comments: {
+
+    component: CommentWidget,
+
+    aliases: [
+        "comments",
+        "Comments",
+        "comment",
+        "Comment",
+    ],
+
+    layout: {
+        preferredSpan: 12,
+        grow: false,
+    },
+
+},
 
 
     PasswordInput: {

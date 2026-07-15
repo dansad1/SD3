@@ -4,7 +4,17 @@ from django.db import models
 from backend.generic.models import TimeStampedModel
 
 
-class TicketComment(TimeStampedModel):
+from django.conf import settings
+from django.db import models
+
+from backend.generic.models import (
+    TimeStampedModel,
+)
+
+
+class TicketComment(
+    TimeStampedModel,
+):
 
     ticket = models.ForeignKey(
         "tickets.Ticket",
@@ -26,10 +36,21 @@ class TicketComment(TimeStampedModel):
         default=False,
     )
 
+    edited_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
 
-
+    edited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
 
     class Meta:
+
         verbose_name = (
             "Комментарий заявки"
         )
@@ -38,9 +59,12 @@ class TicketComment(TimeStampedModel):
             "Комментарии заявок"
         )
 
+        ordering = [
+            "-created_at",
+        ]
+
     def __str__(self):
 
         return (
-            f"Комментарий "
-            f"#{self.pk}"
+            f"Комментарий #{self.pk}"
         )

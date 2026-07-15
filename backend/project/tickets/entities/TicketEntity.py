@@ -16,6 +16,7 @@ from backend.project.tickets.services.TicketAssignmentValidator import (
 from backend.project.tickets.services.TicketLifecycleService import (
     TicketLifecycleService,
 )
+from backend.project.tickets.services.TicketNotificationService import TicketNotificationService
 from backend.project.tickets.services.TicketSLAService import (
     TicketSLAService,
 )
@@ -361,8 +362,8 @@ class TicketEntity(BaseEntity):
     # =====================================================
 
     def after_save(
-        self,
-        ctx,
+            self,
+            ctx,
     ):
 
         ctx = super().after_save(
@@ -371,14 +372,22 @@ class TicketEntity(BaseEntity):
 
         ticket = ctx.instance
 
+        # =====================================================
+        # SLA
+        # =====================================================
+
         TicketSLAService(
             ticket,
         ).recalculate()
 
+        # =====================================================
+        # BUSINESS LOGIC
+        # =====================================================
+
         if getattr(
-            ctx,
-            "created",
-            False,
+                ctx,
+                "created",
+                False,
         ):
 
             TicketLifecycleService.on_create(
@@ -394,12 +403,30 @@ class TicketEntity(BaseEntity):
                 getattr(
                     ctx,
                     "changes",
-                    [],
+                    {},
                 ),
             )
 
-        return ctx
+        # =====================================================
+        # NOTIFICATIONS
+        # =====================================================
 
+        TicketNotificationService.process(
+            ticket=ticket,
+            created=getattr(
+                ctx,
+                "created",
+                False,
+            ),
+            changes=getattr(
+                ctx,
+                "changes",
+                {},
+            ),
+            user=ctx.request.user,
+        )
+
+        return ctx
     # =====================================================
     # SCHEMA
     # =====================================================

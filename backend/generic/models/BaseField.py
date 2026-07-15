@@ -9,6 +9,7 @@ FIELD_TYPES = [
     ("string", "String"),
     ("text", "Text"),
     ("richtext", "RichText"),
+    ("comments", "Comments"),
 
     # ==========================================
     # NUMBERS
