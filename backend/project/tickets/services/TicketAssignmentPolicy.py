@@ -7,7 +7,7 @@ from backend.project.users.models import (
 )
 
 
-class TicketAssignmentPolicy:
+class TicketAssignmentService:
 
     # =====================================================
     # QUERYSETS
@@ -17,7 +17,6 @@ class TicketAssignmentPolicy:
     def get_executor_queryset(
         cls,
     ):
-
         return (
             User.objects
             .filter(
@@ -35,9 +34,10 @@ class TicketAssignmentPolicy:
         cls,
         actor,
     ):
-
-        if not actor.is_authenticated:
-
+        if (
+            not actor
+            or not actor.is_authenticated
+        ):
             return User.objects.none()
 
         queryset = (
@@ -47,18 +47,39 @@ class TicketAssignmentPolicy:
         if actor.has_perm(
             "tickets.assign_any",
         ):
-
             return queryset
 
         if actor.has_perm(
             "tickets.assign_self",
         ):
-
             return queryset.filter(
                 pk=actor.pk,
             )
 
         return User.objects.none()
+
+    # =====================================================
+    # CHECKS
+    # =====================================================
+
+    @classmethod
+    def can_assign(
+        cls,
+        actor,
+        executor,
+    ):
+        if not executor:
+            return True
+
+        return (
+            cls.get_allowed_executors(
+                actor,
+            )
+            .filter(
+                pk=executor.pk,
+            )
+            .exists()
+        )
 
     # =====================================================
     # VALIDATION
@@ -70,24 +91,15 @@ class TicketAssignmentPolicy:
         actor,
         executor,
     ):
-
-        if not executor:
-            return
-
         if (
-            cls.get_allowed_executors(
+            not cls.can_assign(
                 actor,
+                executor,
             )
-            .filter(
-                pk=executor.pk,
-            )
-            .exists()
         ):
-            return
-
-        raise ValidationError(
-            "Недопустимый исполнитель."
-        )
+            raise ValidationError(
+                "Недопустимый исполнитель.",
+            )
 
     @classmethod
     def validate_executors(
@@ -95,7 +107,6 @@ class TicketAssignmentPolicy:
         actor,
         executors,
     ):
-
         if not executors:
             return
 
@@ -104,7 +115,6 @@ class TicketAssignmentPolicy:
             cls.get_allowed_executors(
                 actor,
             )
-
             .values_list(
                 "pk",
                 flat=True,
@@ -117,5 +127,5 @@ class TicketAssignmentPolicy:
             if executor.pk not in allowed:
 
                 raise ValidationError(
-                    "Недопустимый исполнитель."
+                    "Недопустимый исполнитель.",
                 )

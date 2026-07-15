@@ -11,6 +11,10 @@ from backend.project.tickets.models import (
 
 class TicketCommentService:
 
+    # =====================================================
+    # TEXT
+    # =====================================================
+
     @classmethod
     def normalize_text(
         cls,
@@ -36,6 +40,10 @@ class TicketCommentService:
 
         return text
 
+    # =====================================================
+    # PERMISSIONS
+    # =====================================================
+
     @classmethod
     def can_edit(
         cls,
@@ -49,6 +57,50 @@ class TicketCommentService:
             comment.author_id
             == user.pk
         )
+
+    @classmethod
+    def can_view(
+        cls,
+        user,
+        comment,
+    ):
+        if not comment.hide_from_client:
+            return True
+
+        if not user:
+            return False
+
+        if user.is_superuser:
+            return True
+
+        return user.has_perm(
+            "tickets.view_hidden_comments",
+        )
+
+    @classmethod
+    def filter_queryset(
+        cls,
+        queryset,
+        user,
+    ):
+        if (
+            user
+            and (
+                user.is_superuser
+                or user.has_perm(
+                    "tickets.view_hidden_comments",
+                )
+            )
+        ):
+            return queryset
+
+        return queryset.filter(
+            hide_from_client=False,
+        )
+
+    # =====================================================
+    # CRUD
+    # =====================================================
 
     @classmethod
     def create(

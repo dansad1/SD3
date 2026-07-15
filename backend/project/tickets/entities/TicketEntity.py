@@ -7,18 +7,17 @@ from backend.engine.entity.Base.BaseEntity import (
 )
 from backend.project.tickets.models import (
     Ticket,
-    TicketField,
-    TicketFieldAccess, TicketType, TicketFieldSet,
 )
-from backend.project.tickets.services.TicketAssignmentValidator import (
-    TicketAssignmentValidator,
+from backend.project.tickets.services.TicketAfterSaveService import (
+    TicketAfterSaveService,
 )
-from backend.project.tickets.services.TicketLifecycleService import (
-    TicketLifecycleService,
+from backend.project.tickets.services.TicketAssignmentPolicy import TicketAssignmentService
+
+from backend.project.tickets.services.TicketFieldAccessService import (
+    TicketFieldAccessService,
 )
-from backend.project.tickets.services.TicketNotificationService import TicketNotificationService
-from backend.project.tickets.services.TicketSLAService import (
-    TicketSLAService,
+from backend.project.tickets.services.TicketFieldService import (
+    TicketFieldService,
 )
 from backend.project.tickets.services.TicketTransitionService import (
     TicketTransitionService,
@@ -90,65 +89,13 @@ class TicketEntity(BaseEntity):
     # =====================================================
 
     def get_field_access_map(
-            self,
-            request,
-            obj=None,
+        self,
+        request,
+        obj=None,
     ):
-
-        if (
-                not request.user.is_authenticated
-                or request.user.is_superuser
-        ):
-            return {}
-
-        role = getattr(
-            request.user,
-            "role",
-            None,
+        return TicketFieldAccessService.get_access_map(
+            request=request,
         )
-
-        if role is None:
-            return {}
-
-        cache_name = "_user_field_access_map"
-
-        access_map = getattr(
-            request,
-            cache_name,
-            None,
-        )
-
-        if access_map is not None:
-            return access_map
-
-        access_map = {
-
-            access.field.name:
-                access.access_level
-
-            for access in (
-
-                TicketFieldAccess.objects
-
-                .select_related(
-                    "field",
-                )
-
-                .filter(
-                    role=role,
-                )
-
-            )
-
-        }
-
-        setattr(
-            request,
-            cache_name,
-            access_map,
-        )
-
-        return access_map
 
     # =====================================================
     # QUERYSET
@@ -157,15 +104,16 @@ class TicketEntity(BaseEntity):
     def get_select_related(
         self,
     ):
-
         return [
             "type",
+            "type__fieldset",
+            "status",
+            "assigned_to",
         ]
 
     def get_prefetch_related(
         self,
     ):
-
         return [
             "dynamic_values",
             "dynamic_values__field",
@@ -178,160 +126,15 @@ class TicketEntity(BaseEntity):
     # =====================================================
 
     def get_dynamic_fields(
-            self,
-            request,
-            obj=None,
+        self,
+        request,
+        obj=None,
     ):
-
-        # =====================================================
-        # EDIT
-        # =====================================================
-
-        if (
-                obj is not None
-                and obj.type_id
-        ):
-            return (
-
-                TicketField.objects
-
-                .filter(
-                    fieldset=obj.type.fieldset,
-                )
-
-                .order_by(
-                    "id",
-                )
-
-            )
-
-        # =====================================================
-        # CREATE
-        # =====================================================
-
-        payload = getattr(
-            request,
-            "_form_payload",
-            {},
-        ) if request else {}
-
-        type_id = None
-
-        if payload:
-
-            type_id = payload.get(
-                "type",
-            )
-
-            if hasattr(
-                    type_id,
-                    "pk",
-            ):
-
-                type_id = type_id.pk
-
-            elif isinstance(
-                    type_id,
-                    dict,
-            ):
-
-                type_id = type_id.get(
-                    "value",
-                )
-
-        if (
-                not type_id
-                and request
-        ):
-            type_id = request.GET.get(
-                "type",
-            )
-
-        # =====================================================
-        # DEFAULT FIELDSET
-        # =====================================================
-
-        if not type_id:
-
-            fieldset = (
-
-                TicketFieldSet.objects
-
-                .filter(
-                    code="default",
-                    is_active=True,
-                )
-
-                .first()
-
-            )
-
-            if not fieldset:
-                return []
-
-            return (
-
-                TicketField.objects
-
-                .filter(
-                    fieldset=fieldset,
-                )
-
-                .order_by(
-                    "id",
-                )
-
-            )
-
-        # =====================================================
-        # TYPE FIELDSET
-        # =====================================================
-
-        try:
-
-            type_id = int(
-                type_id,
-            )
-
-        except (
-                TypeError,
-                ValueError,
-        ):
-
-            return []
-
-        ticket_type = (
-
-            TicketType.objects
-
-            .select_related(
-                "fieldset",
-            )
-
-            .filter(
-                pk=type_id,
-            )
-
-            .first()
-
+        return TicketFieldService.get_fields(
+            request=request,
+            ticket=obj,
         )
 
-        if not ticket_type:
-            return []
-
-        return (
-
-            TicketField.objects
-
-            .filter(
-                fieldset=ticket_type.fieldset,
-            )
-
-            .order_by(
-                "id",
-            )
-
-        )
     # =====================================================
     # VALIDATION
     # =====================================================
@@ -342,138 +145,155 @@ class TicketEntity(BaseEntity):
         payload,
         instance=None,
     ):
+        payload = payload or {}
 
-        errors = {}
+        self.validate_type(
+            payload=payload,
+            instance=instance,
+        )
 
-        if not payload.get(
-            "type",
-        ):
+        self.validate_assignment(
+            request=request,
+            payload=payload,
+            instance=instance,
+        )
 
-            errors["type"] = [
-                "Тип заявки обязателен",
-            ]
-
-        if errors:
-
-            raise ValidationError(
-                errors,
-            )
-
-        if instance:
-
-            TicketAssignmentValidator.validate(
-                actor=request.user,
-                assignee=instance.assigned_to,
-            )
-
-            new_status = payload.get(
-                "status",
-            )
-
-            if new_status:
-
-                TicketTransitionService.validate_transition(
-                    ticket=instance,
-                    old_status=instance.status,
-                    new_status=new_status,
-                )
+        self.validate_status_transition(
+            request=request,
+            payload=payload,
+            instance=instance,
+        )
 
         return payload
+
+    def validate_type(
+        self,
+        payload,
+        instance=None,
+    ):
+        ticket_type = payload.get(
+            "type",
+        )
+
+        if (
+            ticket_type
+            or (
+                instance
+                and instance.type_id
+            )
+        ):
+            return
+
+        raise ValidationError(
+            {
+                "type": [
+                    "Тип заявки обязателен.",
+                ],
+            },
+        )
+
+    def validate_assignment(
+        self,
+        request,
+        payload,
+        instance=None,
+    ):
+        if "assigned_to" not in payload:
+            return
+
+        executor = payload.get(
+            "assigned_to",
+        )
+
+        TicketAssignmentService.validate_executor(
+            actor=request.user,
+            executor=executor,
+        )
+
+    def validate_status_transition(
+        self,
+        request,
+        payload,
+        instance=None,
+    ):
+        if instance is None:
+            return
+
+        if "status" not in payload:
+            return
+
+        new_status = payload.get(
+            "status",
+        )
+
+        if new_status is None:
+            return
+
+        role = getattr(
+            request.user,
+            "role",
+            None,
+        )
+
+        TicketTransitionService.validate_transition(
+            ticket=instance,
+            old_status=instance.status,
+            new_status=new_status,
+            role=role,
+        )
 
     # =====================================================
     # LIFECYCLE
     # =====================================================
 
     def after_save(
-            self,
-            ctx,
+        self,
+        ctx,
     ):
-
         ctx = super().after_save(
             ctx,
         )
 
-        ticket = ctx.instance
-
-        # =====================================================
-        # SLA
-        # =====================================================
-
-        TicketSLAService(
-            ticket,
-        ).recalculate()
-
-        # =====================================================
-        # BUSINESS LOGIC
-        # =====================================================
-
-        if getattr(
-                ctx,
-                "created",
-                False,
-        ):
-
-            TicketLifecycleService.on_create(
-                ticket,
-                ctx.request.user,
-            )
-
-        else:
-
-            TicketLifecycleService.on_update(
-                ticket,
-                ctx.request.user,
-                getattr(
-                    ctx,
-                    "changes",
-                    {},
-                ),
-            )
-
-        # =====================================================
-        # NOTIFICATIONS
-        # =====================================================
-
-        TicketNotificationService.process(
-            ticket=ticket,
-            created=getattr(
-                ctx,
-                "created",
-                False,
-            ),
-            changes=getattr(
-                ctx,
-                "changes",
-                {},
-            ),
-            user=ctx.request.user,
+        TicketAfterSaveService.process(
+            ctx=ctx,
         )
 
         return ctx
+
     # =====================================================
     # SCHEMA
     # =====================================================
 
     def customize_field_schema(
-            self,
-            request,
-            schema,
-            field=None,
+        self,
+        request,
+        schema,
+        field=None,
     ):
+        field_name = schema.get(
+            "name",
+        )
 
-        if schema["name"] in {
+        readonly_fields = {
             "id",
             "created_at",
             "updated_at",
             "due_date",
-        }:
+        }
+
+        if field_name in readonly_fields:
             schema["readonly"] = True
 
-        if schema["name"] == "lifecycle":
-            schema["widget"] = "timeline"
-            schema["label"] = "Жизненный цикл"
+        if field_name == "lifecycle":
+            schema.update(
+                {
+                    "widget": "timeline",
+                    "label": "Жизненный цикл",
+                },
+            )
 
         return schema
+
     # =====================================================
     # REPRESENTATION
     # =====================================================
@@ -482,7 +302,6 @@ class TicketEntity(BaseEntity):
         self,
         obj,
     ):
-
         return {
             "value": obj.pk,
             "label": str(obj),

@@ -1,5 +1,3 @@
-# backend/project/tickets/services/TicketTransitionService.py
-
 from django.core.exceptions import (
     ValidationError,
 )
@@ -12,7 +10,40 @@ from backend.project.tickets.models import (
 class TicketTransitionService:
 
     # =====================================================
-    # AVAILABLE STATUSES
+    # TRANSITIONS
+    # =====================================================
+
+    @classmethod
+    def get_transitions(
+        cls,
+        status,
+        role=None,
+    ):
+        if not status:
+            return (
+                TicketStatusTransition.objects.none()
+            )
+
+        queryset = (
+
+            TicketStatusTransition.objects
+
+            .filter(
+                source=status,
+            )
+
+        )
+
+        if role:
+
+            queryset = queryset.filter(
+                allowed_roles=role,
+            )
+
+        return queryset
+
+    # =====================================================
+    # AVAILABLE
     # =====================================================
 
     @classmethod
@@ -21,46 +52,34 @@ class TicketTransitionService:
         ticket,
         role=None,
     ):
-        if not ticket:
-            return []
+        if (
+            not ticket
+            or not ticket.status_id
+        ):
+            return set()
 
-        if not ticket.status_id:
-            return []
+        allowed = set(
 
-        transitions = (
-
-            TicketStatusTransition.objects
-
-            .filter(
-                source=ticket.status,
-            )
-        )
-
-        if role:
-
-            transitions = (
-
-                transitions.filter(
-                    allowed_roles=role,
-                )
+            cls.get_transitions(
+                ticket.status,
+                role,
             )
 
-        allowed_ids = set(
-
-            transitions.values_list(
+            .values_list(
                 "target_id",
                 flat=True,
             )
+
         )
 
-        allowed_ids.add(
-            ticket.status_id
+        allowed.add(
+            ticket.status_id,
         )
 
-        return allowed_ids
+        return allowed
 
     # =====================================================
-    # VALIDATE
+    # VALIDATION
     # =====================================================
 
     @classmethod
@@ -71,42 +90,28 @@ class TicketTransitionService:
         new_status,
         role=None,
     ):
-        if not old_status:
+        if (
+            not old_status
+            or not new_status
+            or old_status.pk == new_status.pk
+        ):
             return
 
-        if not new_status:
-            return
+        allowed = set(
 
-        if old_status.id == new_status.id:
-            return
-
-        transitions = (
-
-            TicketStatusTransition.objects
-
-            .filter(
-                source=old_status,
-            )
-        )
-
-        if role:
-
-            transitions = (
-
-                transitions.filter(
-                    allowed_roles=role,
-                )
+            cls.get_transitions(
+                old_status,
+                role,
             )
 
-        allowed_ids = set(
-
-            transitions.values_list(
+            .values_list(
                 "target_id",
                 flat=True,
             )
+
         )
 
-        if new_status.id not in allowed_ids:
+        if new_status.pk not in allowed:
 
             raise ValidationError(
 
@@ -114,10 +119,11 @@ class TicketTransitionService:
                 f"{old_status} → "
                 f"{new_status} "
                 f"запрещён."
+
             )
 
     # =====================================================
-    # COMMENT REQUIRED
+    # RULES
     # =====================================================
 
     @classmethod
@@ -125,34 +131,24 @@ class TicketTransitionService:
         cls,
         status,
     ):
-        if not status:
-            return False
-
         return bool(
-            status.comment_required
+            status
+            and status.comment_required
         )
-
-    # =====================================================
-    # BLOCK EDITING
-    # =====================================================
 
     @classmethod
     def blocks_editing(
         cls,
         ticket,
     ):
-        if not ticket:
-            return False
-
-        if not ticket.status_id:
-            return False
-
         return bool(
-            ticket.status.blocks_editing
+            ticket
+            and ticket.status_id
+            and ticket.status.blocks_editing
         )
 
     # =====================================================
-    # VALIDATE CHANGE
+    # CHANGE
     # =====================================================
 
     @classmethod
@@ -173,10 +169,10 @@ class TicketTransitionService:
 
         if (
             cls.requires_comment(
-                new_status
+                new_status,
             )
             and not comment
         ):
             raise ValidationError(
-                "Требуется комментарий."
+                "Требуется комментарий.",
             )
