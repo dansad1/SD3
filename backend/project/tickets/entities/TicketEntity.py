@@ -19,8 +19,8 @@ from backend.project.tickets.services.TicketFieldAccessService import (
 from backend.project.tickets.services.TicketFieldService import (
     TicketFieldService,
 )
-from backend.project.tickets.services.TicketTransitionService import (
-    TicketTransitionService,
+from backend.project.tickets.services.StatusTransitionService import (
+    StatusTransitionService,
 )
 
 
@@ -235,7 +235,7 @@ class TicketEntity(BaseEntity):
             None,
         )
 
-        TicketTransitionService.validate_transition(
+        StatusTransitionService.validate_transition(
             ticket=instance,
             old_status=instance.status,
             new_status=new_status,

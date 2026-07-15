@@ -1,20 +1,14 @@
-from django.contrib.auth.password_validation import (
-    validate_password,
-)
-from django.core.exceptions import (
-    ValidationError,
-)
-
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
-from backend.project.users.entities.sync import (
-    sync_user,
-)
+from backend.project.users.entities.services.UserAfterSaveService import UserAfterSaveService
+from backend.project.users.entities.services.UserDeleteService import UserDeleteService
+from backend.project.users.entities.services.UserFieldAccessService import UserFieldAccessService
+from backend.project.users.entities.services.UserFieldService import UserFieldService
+from backend.project.users.entities.services.UserPasswordService import UserPasswordService
+
 from backend.project.users.models import (
     User,
-    UserField,
-    UserFieldAccess,
 )
 
 
@@ -39,14 +33,14 @@ class UserEntity(BaseEntity):
         "telegram",
         "department",
         "company",
-        "full_name"
+        "full_name",
     ]
 
     search_fields = [
         "login",
         "telegram",
         "company",
-        "full_name"
+        "full_name",
     ]
 
     filter_fields = [
@@ -57,10 +51,6 @@ class UserEntity(BaseEntity):
     ordering = [
         "login",
     ]
-
-    # =====================================================
-    # FIELD POLICY
-    # =====================================================
 
     exclude_fields = {
         "groups",
@@ -90,7 +80,6 @@ class UserEntity(BaseEntity):
     def get_select_related(
         self,
     ):
-
         return [
             "role",
             "fieldset",
@@ -99,7 +88,6 @@ class UserEntity(BaseEntity):
     def get_prefetch_related(
         self,
     ):
-
         return [
             "dynamic_values",
             "dynamic_values__field",
@@ -109,70 +97,18 @@ class UserEntity(BaseEntity):
     # FIELD ACCESS
     # =====================================================
 
-    # =====================================================
-    # FIELD ACCESS
-    # =====================================================
-
     def get_field_access_map(
-            self,
-            request,
-            obj=None,
+        self,
+        request,
+        obj=None,
     ):
-
-        if (
-                not request.user.is_authenticated
-                or request.user.is_superuser
-        ):
-            return {}
-
-        role = getattr(
-            request.user,
-            "role",
-            None,
-        )
-
-        if role is None:
-            return {}
-
-        cache_name = "_user_field_access_map"
-
-        access_map = getattr(
-            request,
-            cache_name,
-            None,
-        )
-
-        if access_map is not None:
-            return access_map
-
-        access_map = {
-
-            access.field.name:
-                access.access_level
-
-            for access in (
-
-                UserFieldAccess.objects
-
-                .select_related(
-                    "field",
-                )
-
-                .filter(
-                    role=role,
-                )
-
+        return (
+            UserFieldAccessService
+            .get_access_map(
+                request,
             )
-
-        }
-
-        setattr(
-            request,
-            cache_name,
-            access_map,
         )
 
-        return access_map
     # =====================================================
     # DYNAMIC FIELDS
     # =====================================================
@@ -182,37 +118,10 @@ class UserEntity(BaseEntity):
         request,
         obj=None,
     ):
-
         return (
-
-            UserField.objects
-
-            .all()
-
-            .order_by(
-                "id",
-            )
-
+            UserFieldService
+            .get_fields()
         )
-
-    # =====================================================
-    # OPTIONS
-    # =====================================================
-
-    def represent_option(
-        self,
-        obj,
-    ):
-
-        return {
-            "value": obj.pk,
-            "label": (
-                obj.get_value(
-                    "full_name",
-                )
-                or obj.login
-            ),
-        }
 
     # =====================================================
     # VALIDATION
@@ -224,46 +133,10 @@ class UserEntity(BaseEntity):
         payload,
         instance=None,
     ):
-
-        errors = {}
-
-        password = payload.get(
-            "password",
+        UserPasswordService.validate(
+            payload=payload,
+            instance=instance,
         )
-
-        if (
-            instance is None
-            and not password
-        ):
-
-            errors["password"] = [
-                "Password required",
-            ]
-
-        if password not in (
-            None,
-            "",
-            "********",
-        ):
-
-            try:
-
-                validate_password(
-                    password,
-                    user=instance,
-                )
-
-            except ValidationError as exc:
-
-                errors["password"] = list(
-                    exc.messages,
-                )
-
-        if errors:
-
-            raise ValidationError(
-                errors,
-            )
 
         return payload
 
@@ -275,25 +148,14 @@ class UserEntity(BaseEntity):
         self,
         ctx,
     ):
-
         ctx = super().before_save(
             ctx,
         )
 
-        password = ctx.data.pop(
-            "password",
-            None,
+        UserPasswordService.apply(
+            instance=ctx.instance,
+            payload=ctx.data,
         )
-
-        if password not in (
-            None,
-            "",
-            "********",
-        ):
-
-            ctx.instance.set_password(
-                password,
-            )
 
         return ctx
 
@@ -305,13 +167,12 @@ class UserEntity(BaseEntity):
         self,
         ctx,
     ):
-
         ctx = super().after_save(
             ctx,
         )
 
-        sync_user(
-            ctx.instance,
+        UserAfterSaveService.process(
+            ctx,
         )
 
         return ctx
@@ -325,16 +186,10 @@ class UserEntity(BaseEntity):
         request,
         instance,
     ):
-
-        if request.user.pk == instance.pk:
-
-            raise ValidationError(
-                {
-                    "detail": [
-                        "You cannot delete yourself",
-                    ],
-                }
-            )
+        UserDeleteService.validate(
+            actor=request.user,
+            target=instance,
+        )
 
         super().before_delete(
             request,
@@ -351,7 +206,6 @@ class UserEntity(BaseEntity):
         schema,
         field=None,
     ):
-
         name = schema.get(
             "name",
         )
@@ -360,10 +214,12 @@ class UserEntity(BaseEntity):
 
             schema.update(
                 {
-                    "writeonly": True,
                     "widget": "password",
+                    "writeonly": True,
                 }
             )
+
+            return schema
 
         if (
             not request.user.is_superuser
@@ -384,3 +240,21 @@ class UserEntity(BaseEntity):
             schema["readonly"] = True
 
         return schema
+
+    # =====================================================
+    # REPRESENTATION
+    # =====================================================
+
+    def represent_option(
+        self,
+        obj,
+    ):
+        return {
+            "value": obj.pk,
+            "label": (
+                obj.get_value(
+                    "full_name",
+                )
+                or obj.login
+            ),
+        }

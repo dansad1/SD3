@@ -7,7 +7,7 @@ from backend.project.tickets.models import (
 )
 
 
-class TicketTransitionService:
+class StatusTransitionService:
 
     # =====================================================
     # TRANSITIONS
