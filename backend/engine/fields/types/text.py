@@ -18,9 +18,9 @@ class TextFieldType(
 
     widget = "textarea"
 
-    sortable = False
+    sortable = True
     searchable = True
-    filterable = False
+    filterable = True
 
     features = [
         "required",

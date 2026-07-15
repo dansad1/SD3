@@ -25,7 +25,7 @@ class PhoneFieldType(
     widget = "phone"
 
     searchable = True
-    sortable = False
+    sortable = True
     filterable = True
 
     features = [

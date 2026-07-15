@@ -23,7 +23,7 @@ class NumberFieldType(BaseFieldType):
     widget = "number"
 
     sortable = True
-    searchable = False
+    searchable = True
     filterable = True
 
     features = [

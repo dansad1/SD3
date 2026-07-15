@@ -1,18 +1,26 @@
-from django.contrib.contenttypes.models import (
-    ContentType,
-)
-from django.core.exceptions import (
-    FieldError,
-)
-from django.db.models import (
-    OuterRef,
-    Subquery,
-)
+from django.core.exceptions import FieldError
+from django.db.models import F, OuterRef, Subquery
+
+from backend.generic.models import DynamicField
 
 
-from backend.generic.models import (
-    DynamicValue, DynamicField,
-)
+def get_owner_field_name(qs, field):
+    value_model = field.value_model
+
+    for model_field in value_model._meta.fields:
+        remote_field = getattr(
+            model_field,
+            "remote_field",
+            None,
+        )
+
+        if (
+            remote_field
+            and remote_field.model is qs.model
+        ):
+            return model_field.name
+
+    return None
 
 
 def apply_dynamic_sort(
@@ -20,35 +28,60 @@ def apply_dynamic_sort(
     field,
     direction,
 ):
-    ct = ContentType.objects.get_for_model(
-        qs.model,
+    value_model = field.value_model
+
+    if value_model is None:
+        return qs
+
+    owner_field = get_owner_field_name(
+        qs,
+        field,
     )
 
-    values = DynamicValue.objects.filter(
-        content_type=ct,
-        object_id=OuterRef("pk"),
-        field_name=field.name,
+    if not owner_field:
+        return qs
+
+    values = (
+        value_model.objects
+        .filter(
+            **{
+                f"{owner_field}_id": OuterRef("pk"),
+                "field_id": field.source.pk,
+            }
+        )
+        .order_by("pk")
+        .values("value")[:1]
     )
 
     qs = qs.annotate(
-        __sort=Subquery(
-            values.values(
-                "value"
-            )[:1]
+        __sort_value=Subquery(
+            values,
         )
     )
 
-    order = "__sort"
-
     if direction == "desc":
-        order = "-__sort"
+        ordering = F(
+            "__sort_value",
+        ).desc(
+            nulls_last=True,
+        )
+    else:
+        ordering = F(
+            "__sort_value",
+        ).asc(
+            nulls_last=True,
+        )
 
-    return qs.order_by(order)
+    return qs.order_by(
+        ordering,
+        "pk",
+    )
 
 
 def apply_sort(ctx):
-
-    raw = ctx.request.GET.get("sort")
+    raw = ctx.request.GET.get(
+        "sort",
+    )
 
     if not raw:
         return
@@ -63,17 +96,15 @@ def apply_sort(ctx):
     field = (
         ctx.field_map
         or {}
-    ).get(key)
+    ).get(
+        key,
+    )
 
     if field is None:
         return
 
     if not field.field_type.sortable:
         return
-
-    #
-    # Динамическое поле
-    #
 
     if isinstance(
         field,
@@ -86,30 +117,25 @@ def apply_sort(ctx):
         )
         return
 
-    #
-    # Кастомная сортировка типа
-    #
-
-    custom = getattr(
+    custom_sort = getattr(
         field.field_type,
         "apply_sort",
         None,
     )
 
-    if callable(custom):
-        qs = custom(
-            ctx.qs,
-            field,
-            direction,
-        )
+    if callable(custom_sort):
+        try:
+            qs = custom_sort(
+                ctx.qs,
+                field,
+                direction,
+            )
+        except FieldError:
+            qs = None
 
         if qs is not None:
             ctx.qs = qs
             return
-
-    #
-    # Стандартная сортировка Django
-    #
 
     order = field.name
 
@@ -119,6 +145,11 @@ def apply_sort(ctx):
     try:
         ctx.qs = ctx.qs.order_by(
             order,
+            "pk",
         )
-    except FieldError:
-        pass
+    except FieldError as exc:
+        print(
+            "[SORT ERROR]",
+            field.name,
+            str(exc),
+        )

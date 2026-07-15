@@ -29,7 +29,7 @@ class RelationFieldType(BaseFieldType):
     widget = "select"
 
     sortable = False
-    searchable = False
+    searchable = True
     filterable = True
 
     features = [

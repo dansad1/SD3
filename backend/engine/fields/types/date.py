@@ -26,7 +26,7 @@ class DateFieldType(BaseFieldType):
     widget = "date"
 
     sortable = True
-    searchable = False
+    searchable = True
     filterable = True
 
     features = [

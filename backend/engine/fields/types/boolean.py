@@ -17,7 +17,7 @@ class BooleanFieldType(BaseFieldType):
     widget = "checkbox"
 
     sortable = True
-    searchable = False
+    searchable = True
     filterable = True
 
     features = [

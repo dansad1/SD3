@@ -208,6 +208,10 @@ class BaseFieldType:
         field,
         direction,
     ):
+        print("=" * 80)
+        print("BASE FIELD SORT")
+        print(field.name)
+        print(type(field).__name__)
 
         if not self.sortable:
             return queryset
