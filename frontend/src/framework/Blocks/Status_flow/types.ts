@@ -1,33 +1,33 @@
-import type { BaseBlock } from "../BlockType"
-// ======================================
-// DSL
-// ======================================
-
-export type StatusFlowBlock = BaseBlock & {
-  type: "status_flow"
-  source: string
-  params?: Record<string, unknown>
-  editable?: boolean
-
-}
+import type {
+  BaseBlock,
+} from "../BlockType"
 
 
-// ======================================
-// Resource
-// ======================================
+export type StatusFlowBlock =
+  BaseBlock & {
+    type: "status_flow"
+
+    source: string
+
+    editable?: boolean
+  }
+
 
 export type Role = {
   id: number
   name: string
-
 }
 
 
 export type Target = {
   id: number
   name: string
-  roles: string[]
 
+  transitionId:
+    | number
+    | null
+
+  roleIds: number[]
 }
 
 
@@ -35,25 +35,48 @@ export type Status = {
   id: number
   name: string
   color: string
-  targets: Target[]
 
+  targets: Target[]
 }
 
 
 export type StatusFlowData = {
   roles: Role[]
   statuses: Status[]
-
 }
 
 
-// ======================================
-// VM
-// ======================================
+export type StatusFlowChange = {
+  sourceId: number
+  targetId: number
+  roleId: number
+  enabled: boolean
+}
+
 
 export type StatusFlowVM = {
-  data: StatusFlowData | null
-  loading: boolean
-  error: string | null
+  data:
+    | StatusFlowData
+    | null
 
+  loading: boolean
+  saving: boolean
+
+  dirty: boolean
+  editable: boolean
+
+  error:
+    | string
+    | null
+
+  toggleRole: (
+    sourceStatusId: number,
+    targetStatusId: number,
+    role: Role,
+    enabled: boolean,
+  ) => void
+
+  submit: () => Promise<void>
+
+  reload: () => void
 }

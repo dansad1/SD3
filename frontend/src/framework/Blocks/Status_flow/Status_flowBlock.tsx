@@ -1,27 +1,32 @@
-import { StatusFlowView } from "./StatusFlowView"
-import type { StatusFlowBlock } from "./types"
+import {
+  StatusFlowView,
+} from "./StatusFlowView"
 
-import { useStatusFlowController } from "./useStatusFlowController"
+import {
+  useStatusFlowController,
+} from "./useStatusFlowController"
+
+import type {
+  StatusFlowBlock as StatusFlowBlockType,
+} from "./types"
 
 
 type Props = {
-  block: StatusFlowBlock
+  block: StatusFlowBlockType
 }
 
 
 export function StatusFlowBlock({
   block,
 }: Props) {
-
-  const vm =
+  const viewModel =
     useStatusFlowController(
       block,
     )
 
   return (
     <StatusFlowView
-      {...vm}
+      {...viewModel}
     />
   )
-
 }
