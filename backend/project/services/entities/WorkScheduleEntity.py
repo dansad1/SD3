@@ -1,17 +1,16 @@
-# =========================================================
-# backend/project/services/entities/WorkScheduleEntity.py
-# =========================================================
-
-from django.core.exceptions import (
-    ValidationError,
-)
-
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
 
 from backend.project.services.models import (
     WorkSchedule,
+)
+
+from backend.project.services.services.WorkScheduleSchemaService import (
+    WorkScheduleSchemaService,
+)
+from backend.project.services.services.WorkScheduleValidationService import (
+    WorkScheduleValidationService,
 )
 
 
@@ -30,38 +29,26 @@ class WorkScheduleEntity(BaseEntity):
     # =====================================================
 
     list_display = [
-
         "id",
-
         "name",
-
         "owner",
-
         "days",
-
         "start_time",
-
         "end_time",
-
         "created_at",
     ]
 
     search_fields = [
-
         "name",
     ]
 
     filter_fields = [
-
         "owner",
-
         "days",
-
         "archived",
     ]
 
     ordering = [
-
         "name",
     ]
 
@@ -70,38 +57,28 @@ class WorkScheduleEntity(BaseEntity):
     # =====================================================
 
     capabilities = {
-
-        "list":
-            "services.view",
-
-        "view":
-            "services.view",
-
-        "create":
-            "services.edit",
-
-        "edit":
-            "services.edit",
-
-        "delete":
-            "services.edit",
+        "list": "services.view",
+        "view": "services.view",
+        "create": "services.edit",
+        "edit": "services.edit",
+        "delete": "services.edit",
     }
 
     # =====================================================
     # QUERYSET
     # =====================================================
 
-    def get_select_related(self):
-
+    def get_select_related(
+        self,
+    ):
         return [
-
             "owner",
         ]
 
-    def get_prefetch_related(self):
-
+    def get_prefetch_related(
+        self,
+    ):
         return [
-
             "days",
         ]
 
@@ -113,14 +90,9 @@ class WorkScheduleEntity(BaseEntity):
         self,
         obj,
     ):
-
         return {
-
-            "value":
-                obj.pk,
-
-            "label":
-                obj.name,
+            "value": obj.pk,
+            "label": obj.name,
         }
 
     # =====================================================
@@ -133,58 +105,13 @@ class WorkScheduleEntity(BaseEntity):
         payload,
         instance=None,
     ):
-
-        errors = {}
-
-        # =================================================
-        # NAME
-        # =================================================
-
-        if not payload.get(
-            "name"
-        ):
-
-            errors["name"] = [
-                "Название обязательно"
-            ]
-
-        # =================================================
-        # TIME
-        # =================================================
-
-        start_time = payload.get(
-            "start_time"
-        )
-
-        end_time = payload.get(
-            "end_time"
-        )
-
-        if (
-
-            start_time
-            and end_time
-            and start_time >= end_time
-
-        ):
-
-            errors["end_time"] = [
-
-                "Время окончания должно быть больше времени начала"
-
-            ]
-
-        # =================================================
-        # RESULT
-        # =================================================
-
-        if errors:
-
-            raise ValidationError(
-                errors
+        return (
+            WorkScheduleValidationService
+            .validate(
+                payload=payload,
+                instance=instance,
             )
-
-        return payload
+        )
 
     # =====================================================
     # SCHEMA
@@ -196,48 +123,11 @@ class WorkScheduleEntity(BaseEntity):
         schema,
         field=None,
     ):
-
-        # =================================================
-        # READONLY
-        # =================================================
-
-        if schema["name"] in {
-
-            "id",
-
-            "created_at",
-
-            "updated_at",
-        }:
-
-            schema["readonly"] = True
-
-        # =================================================
-        # OWNER
-        # =================================================
-
-        if schema["name"] == "owner":
-
-            schema["widget"] = (
-                "entity_select"
+        return (
+            WorkScheduleSchemaService
+            .customize(
+                request=request,
+                schema=schema,
+                field=field,
             )
-
-            schema["entity"] = (
-                "user"
-            )
-
-        # =================================================
-        # DAYS
-        # =================================================
-
-        if schema["name"] == "days":
-
-            schema["widget"] = (
-                "entity_multiselect"
-            )
-
-            schema["entity"] = (
-                "day_of_week"
-            )
-
-        return schema
+        )

@@ -2,15 +2,17 @@ from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
 
-
-
 from backend.project.notifications.models import (
-    NotificationTemplate, CHANNEL_CHOICES,
+    NotificationTemplate,
+)
+
+from backend.project.notifications.services.NotificationTemplateSchemaService import (
+    NotificationTemplateSchemaService,
 )
 
 
 class NotificationTemplateEntity(
-    BaseEntity
+    BaseEntity,
 ):
 
     model = NotificationTemplate
@@ -23,7 +25,6 @@ class NotificationTemplateEntity(
         "channels",
         "is_special",
         "is_active",
-
     ]
 
     search_fields = [
@@ -37,7 +38,6 @@ class NotificationTemplateEntity(
         "channels",
         "is_special",
         "is_active",
-
     ]
 
     ordering = [
@@ -72,9 +72,7 @@ class NotificationTemplateEntity(
         self,
     ):
         return [
-
             "special_users",
-
         ]
 
     def customize_field_schema(
@@ -83,89 +81,25 @@ class NotificationTemplateEntity(
         schema,
         field=None,
     ):
-
-        # =================================================
-        # READONLY
-        # =================================================
-
-        if schema["name"] in {
-
-            "id",
-
-            "created_at",
-
-            "updated_at",
-
-        }:
-
-            schema["readonly"] = True
-
-        # =================================================
-        # CHANNELS
-        # =================================================
-
-        elif schema["name"] == "channels":
-
-            schema["widget"] = "multiselect"
-
-            schema["options"] = [
-
-                {
-                    "value": value,
-                    "label": label,
-                }
-
-                for value, label
-                in CHANNEL_CHOICES
-
-            ]
-
-        # =================================================
-        # BODY
-        # =================================================
-
-        elif schema["name"] == "body":
-
-            schema["widget"] = "richtext"
-
-        # =================================================
-        # SPECIAL USERS
-        # =================================================
-
-        elif schema["name"] == "special_users":
-
-            schema["widget"] = (
-                "entity_multiselect"
+        return (
+            NotificationTemplateSchemaService
+            .customize(
+                request=request,
+                schema=schema,
+                field=field,
             )
-
-            schema["entity"] = "user"
-
-        return schema
+        )
 
     def get_extra_fields(
         self,
         request,
     ):
-
         return [
-
             {
-
-                "name":
-                    "variables",
-
-                "label":
-                    "Переменные",
-
-                "widget":
-                    "InsertVariables",
-
-                "resource":
-                    "notification_template.variables",
-
-                "targetField":
-                    "body",
-
+                "name": "variables",
+                "label": "Переменные",
+                "widget": "InsertVariables",
+                "resource": "notification_template.variables",
+                "targetField": "body",
             },
-
         ]

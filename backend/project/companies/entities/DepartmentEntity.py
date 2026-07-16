@@ -1,7 +1,3 @@
-from django.core.exceptions import (
-    ValidationError,
-)
-
 from backend.engine.entity.Base.BaseEntity import (
     BaseEntity,
 )
@@ -9,6 +5,14 @@ from backend.engine.entity.Base.BaseEntity import (
 from backend.project.companies.models import (
     CompanyField,
     Department,
+)
+from backend.project.companies.services.DepartmentFieldService import DepartmentFieldService
+
+from backend.project.companies.services.DepartmentHierarchyService import (
+    DepartmentHierarchyService,
+)
+from backend.project.companies.services.DepartmentValidationService import (
+    DepartmentValidationService,
 )
 
 
@@ -68,14 +72,18 @@ class DepartmentEntity(BaseEntity):
     # QUERYSET
     # =====================================================
 
-    def get_select_related(self):
+    def get_select_related(
+        self,
+    ):
 
         return [
             "company",
             "parent",
         ]
 
-    def get_prefetch_related(self):
+    def get_prefetch_related(
+        self,
+    ):
 
         return [
             "children",
@@ -87,19 +95,13 @@ class DepartmentEntity(BaseEntity):
     # =====================================================
 
     def get_dynamic_fields(
-        self,
-        request,
-        obj=None,
+            self,
+            request,
+            obj=None,
     ):
-
-        return (
-            CompanyField.objects
-            .filter(
-                fieldset__is_active=True,
-            )
-            .order_by(
-                "id",
-            )
+        return DepartmentFieldService.get_fields(
+            request=request,
+            department=obj,
         )
 
     # =====================================================
@@ -127,32 +129,10 @@ class DepartmentEntity(BaseEntity):
         instance=None,
     ):
 
-        errors = {}
-
-        if not payload.get(
-            "name",
-        ):
-            errors["name"] = [
-                "Название обязательно",
-            ]
-
-        parent = payload.get(
-            "parent",
+        DepartmentValidationService.validate(
+            payload=payload,
+            instance=instance,
         )
-
-        if (
-            instance
-            and parent
-            and str(parent.pk) == str(instance.pk)
-        ):
-            errors["parent"] = [
-                "Отдел не может быть родителем самому себе",
-            ]
-
-        if errors:
-            raise ValidationError(
-                errors,
-            )
 
         return payload
 
@@ -165,41 +145,13 @@ class DepartmentEntity(BaseEntity):
         ctx,
     ):
 
-        instance = ctx.instance
-
-        parent = ctx.data.get(
-            "parent",
+        ctx = super().before_save(
+            ctx,
         )
 
-        company = ctx.data.get(
-            "company",
+        DepartmentHierarchyService.before_save(
+            ctx,
         )
-
-        if (
-            parent
-            and company
-            and parent.company_id != company.id
-        ):
-            raise ValidationError({
-                "parent": [
-                    "Родительский отдел должен принадлежать той же компании",
-                ],
-            })
-
-        if instance and parent:
-
-            current = parent
-
-            while current:
-
-                if current.pk == instance.pk:
-                    raise ValidationError({
-                        "parent": [
-                            "Нельзя создать циклическую иерархию",
-                        ],
-                    })
-
-                current = current.parent
 
         return ctx
 
@@ -212,26 +164,12 @@ class DepartmentEntity(BaseEntity):
         obj,
     ):
 
-        return {
-            "_depth": self.get_depth(obj),
-            "_parent": obj.parent_id,
-            "_has_children": obj.has_children,
-        }
-
-    def get_depth(
-        self,
-        obj,
-    ):
-
-        depth = 0
-
-        parent = obj.parent
-
-        while parent:
-            depth += 1
-            parent = parent.parent
-
-        return depth
+        return (
+            DepartmentHierarchyService
+            .serialize_meta(
+                obj,
+            )
+        )
 
     # =====================================================
     # DELETE
@@ -242,6 +180,11 @@ class DepartmentEntity(BaseEntity):
         request,
         instance,
     ):
+
+        super().before_delete(
+            request,
+            instance,
+        )
 
         instance.users.clear()
 
