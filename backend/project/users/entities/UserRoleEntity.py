@@ -12,6 +12,8 @@ from backend.project.users.models import (
     UserRole,
     Permission,
 )
+from backend.project.users.services.UserRoleSchemaService import UserRoleSchemaService
+from backend.project.users.services.UserRoleValidationService import UserRoleValidationService
 
 
 class UserRoleEntity(BaseEntity):
@@ -108,55 +110,18 @@ class UserRoleEntity(BaseEntity):
     # =====================================================
 
     def validate(
-        self,
-        request,
-        payload,
-        instance=None,
+            self,
+            request,
+            payload,
+            instance=None,
     ):
-
-        errors = {}
-
-        code = payload.get(
-            "code"
-        )
-
-        if code:
-
-            reserved = {
-                "root",
-                "system",
-                "superadmin",
-            }
-
-            if (
-                code.lower()
-                in reserved
-            ):
-
-                errors["code"] = [
-                    "Reserved role code"
-                ]
-
-        priority = payload.get(
-            "priority"
-        )
-
-        if priority is not None:
-
-            if priority < 0:
-
-                errors["priority"] = [
-                    "Priority must be >= 0"
-                ]
-
-        if errors:
-
-            raise ValidationError(
-                errors
+        return (
+            UserRoleValidationService
+            .validate(
+                payload=payload,
+                instance=instance,
             )
-
-        return payload
-
+        )
     # =====================================================
     # DELETE
     # =====================================================
@@ -181,76 +146,15 @@ class UserRoleEntity(BaseEntity):
 
     def customize_field_schema(
             self,
-            field,
+            request,
             schema,
-            request=None,
-            obj=None,
+            field=None,
     ):
-
-        if field.name != "permissions":
-            return schema
-
-        groups = OrderedDict()
-
-        permissions = (
-            Permission.objects
-            .all()
-            .order_by(
-                "category",
-                "code",
+        return (
+            UserRoleSchemaService
+            .customize(
+                request=request,
+                schema=schema,
+                field=field,
             )
         )
-
-        for permission in permissions:
-
-            category = (
-                    permission.category
-                    or "Общее"
-            )
-
-            if category not in groups:
-                groups[category] = {
-
-                    "name":
-                        category,
-
-                    "permissions":
-                        [],
-                }
-
-            groups[category][
-                "permissions"
-            ].append({
-
-                "id":
-                    permission.pk,
-
-                "value":
-                    permission.pk,
-
-                "code":
-                    permission.code,
-
-                "label":
-                    (
-                            permission.name
-                            or permission.code
-                    ),
-
-                "description":
-                    permission.description,
-            })
-
-        schema.update({
-
-            "widget":
-                "permission_editor",
-
-            "groups":
-                list(
-                    groups.values()
-                ),
-
-        })
-
-        return schema
