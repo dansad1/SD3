@@ -10,9 +10,8 @@ from backend.engine.fields.providers.BaseRelationProvider import (
 from backend.engine.fields.providers.registry import (
     register_relation_provider,
 )
-from backend.project.tickets.services.TicketAssignmentPolicy import (
-    TicketAssignmentPolicy,
-)
+from backend.project.tickets.services.TicketAssignmentPolicy import TicketAssignmentService
+
 from backend.project.users.models import (
     User,
 )
@@ -65,7 +64,7 @@ class UserProvider(
             )
 
             queryset = (
-                TicketAssignmentPolicy
+                TicketAssignmentService
                 .get_allowed_executors(
                     request.user,
                 )

@@ -1,4 +1,5 @@
 from backend.project.notifications.services.NotificationContextBuilder import NotificationContextBuilder
+from backend.project.notifications.services.NotificationDispatcher import NotificationDispatcher
 from backend.project.notifications.services.NotificationRecipientResolver import NotificationRecipientResolver
 from backend.project.notifications.services.NotificationRuleResolver import NotificationRuleResolver
 

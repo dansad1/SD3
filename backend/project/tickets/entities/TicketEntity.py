@@ -107,9 +107,7 @@ class TicketEntity(BaseEntity):
     ):
         return [
             "type",
-            "type__fieldset",
-            "status",
-            "assigned_to",
+
         ]
 
     def get_prefetch_related(

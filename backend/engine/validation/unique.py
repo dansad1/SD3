@@ -2,6 +2,8 @@ from django.core.exceptions import (
     FieldDoesNotExist
 )
 
+from backend.project.users.models import UserFieldValue
+
 
 def validate_unique(ctx):
 
@@ -58,9 +60,7 @@ def validate_unique(ctx):
     # DYNAMIC FIELD
     # -------------------------
 
-    from backend.project.users import (
-        UserFieldValue
-    )
+
 
     qs = UserFieldValue.objects.filter(
         field=field,

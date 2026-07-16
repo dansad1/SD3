@@ -1,4 +1,4 @@
-from backend.engine.Resource.ResourceList.field_policy import resolve_entity
+from backend.engine.Resource.ResourceList.field_policy import resolve_entity, allow_field
 
 
 def build_fields(ctx):

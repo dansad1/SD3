@@ -1,4 +1,6 @@
 # backend/project/notifications/services/NotificationDefaultRecipientResolver.py
+from backend.project.notifications.services import NotificationLogicalRecipientResolver
+
 
 class NotificationDefaultRecipientResolver:
 
