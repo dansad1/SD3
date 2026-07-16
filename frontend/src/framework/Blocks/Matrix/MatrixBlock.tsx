@@ -2,10 +2,18 @@
 // src/framework/Blocks/Matrix/MatrixBlock.tsx
 // ============================================================
 
-import { CapabilityBoundary } from "@/framework/security/CapabilityBoundary"
+import {
+  CapabilityBoundary,
+} from "@/framework/security/CapabilityBoundary"
 
-import { useMatrix } from "./runtime/useMatrix"
-import { MatrixGrid } from "./MatrixGrid"
+import {
+  MatrixGrid,
+} from "./MatrixGrid"
+
+import {
+  useMatrix,
+} from "./runtime/useMatrix"
+
 
 type MatrixBlockType = {
   code: string
@@ -13,15 +21,18 @@ type MatrixBlockType = {
   context?: Record<string, unknown>
 }
 
+
 type Props = {
   block: MatrixBlockType
 }
 
 
+const readonlyChangeHandler = () => undefined
+
+
 export const MatrixBlock = ({
   block,
 }: Props) => {
-
   const {
     data,
     loading,
@@ -32,16 +43,20 @@ export const MatrixBlock = ({
     submit,
   } = useMatrix(
     block.code,
-    block.params ?? block.context
+    block.params ?? block.context,
   )
 
   if (loading) {
-    return <div>Загрузка...</div>
+    return (
+      <div className="ui-matrix-loading">
+        Загрузка матрицы...
+      </div>
+    )
   }
 
   if (!data) {
     return (
-      <div>
+      <div className="ui-matrix-empty">
         Не удалось загрузить матрицу
       </div>
     )
@@ -50,67 +65,61 @@ export const MatrixBlock = ({
   const canEdit =
     data.capabilities?.edit === true
 
+  const handleChange = canEdit
+    ? updateCell
+    : readonlyChangeHandler
+
   return (
-
     <CapabilityBoundary
-      capabilities={
-        data.capabilities
-      }
+      capabilities={data.capabilities}
     >
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
+      <div className="matrix-block">
+        {error && (
+          <div
+            className="matrix-block__error"
+            role="alert"
+          >
+            {error}
+          </div>
+        )}
 
         <MatrixGrid
-          layout={
-            data.layout
-          }
-
-          cells={
-            data.cells
-          }
-
-          schema={
-            data.schema
-          }
-          onChange={
-            canEdit
-              ? updateCell
-              : (() => {})
-
-          }
-
+          layout={data.layout}
+          cells={data.cells}
+          schema={data.schema}
+          onChange={handleChange}
         />
 
         {canEdit && (
-          <div>
+          <footer className="matrix-block__actions">
+            <span className="matrix-block__state">
+              {saving
+                ? "Сохранение..."
+                : dirty
+                  ? "Есть несохранённые изменения"
+                  : "Изменения сохранены"}
+            </span>
+
             <button
               type="button"
+              className={
+                "ui-btn ui-btn-primary ui-btn-sm"
+                + (
+                  saving
+                    ? " is-loading"
+                    : ""
+                )
+              }
+              disabled={!dirty || saving}
               onClick={() => {
                 void submit()
               }}
-
-              disabled={
-                !dirty ||saving
-              }
             >
               {saving
                 ? "Сохранение..."
                 : "Сохранить"}
             </button>
-          </div>
-        )}
-
-        {error && (
-          <div>
-            {error}
-          </div>
-
+          </footer>
         )}
       </div>
     </CapabilityBoundary>
