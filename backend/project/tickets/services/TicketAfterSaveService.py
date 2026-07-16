@@ -16,37 +16,25 @@ class TicketAfterSaveService:
         *,
         ctx,
     ):
-
         ticket = ctx.instance
 
-        # SLA
-
-        TicketSLAService(
+        TicketSLAService.update_deadline(
             ticket,
-        ).recalculate()
-
-        # Notifications
+        )
 
         transaction.on_commit(
-
             lambda: TicketNotificationService.process(
-
                 ticket=ticket,
-
                 created=getattr(
                     ctx,
                     "created",
                     False,
                 ),
-
                 changes=getattr(
                     ctx,
                     "changes",
                     {},
                 ),
-
                 user=ctx.request.user,
-
             )
-
         )

@@ -107,7 +107,16 @@ def filter_editable_fields(
 # =========================================================
 # PERMISSION
 # =========================================================
+def validate_entity(
+    ctx: FormContext,
+):
+    ctx.data = ctx.entity.validate(
+        request=ctx.request,
+        payload=ctx.data,
+        instance=ctx.instance,
+    )
 
+    return ctx
 def check_permission(
         ctx: FormContext
 ):
@@ -223,7 +232,7 @@ SUBMIT_PIPELINE = [
     debug_data,
     filter_editable_fields,
     normalize,
-
+validate_entity,
     before_save,
     save_special_fields,
     save,

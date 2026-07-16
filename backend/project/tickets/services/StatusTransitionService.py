@@ -20,27 +20,21 @@ class StatusTransitionService:
         role=None,
     ):
         if not status:
-            return (
-                TicketStatusTransition.objects.none()
-            )
+            return TicketStatusTransition.objects.none()
 
         queryset = (
-
             TicketStatusTransition.objects
-
             .filter(
                 source=status,
             )
-
         )
 
         if role:
-
             queryset = queryset.filter(
                 allowed_roles=role,
             )
 
-        return queryset
+        return queryset.distinct()
 
     # =====================================================
     # AVAILABLE
@@ -49,31 +43,31 @@ class StatusTransitionService:
     @classmethod
     def get_available_statuses(
         cls,
-        ticket,
+        status,
         role=None,
     ):
-        if (
-            not ticket
-            or not ticket.status_id
-        ):
+        """
+        Возвращает идентификаторы статусов, доступных из status.
+
+        В результат также включается текущий статус, чтобы форму
+        можно было сохранить без обязательной смены статуса.
+        """
+
+        if not status:
             return set()
 
         allowed = set(
-
             cls.get_transitions(
-                ticket.status,
-                role,
-            )
-
-            .values_list(
+                status=status,
+                role=role,
+            ).values_list(
                 "target_id",
                 flat=True,
             )
-
         )
 
         allowed.add(
-            ticket.status_id,
+            status.pk,
         )
 
         return allowed
@@ -90,37 +84,32 @@ class StatusTransitionService:
         new_status,
         role=None,
     ):
-        if (
-            not old_status
-            or not new_status
-            or old_status.pk == new_status.pk
-        ):
+        if not old_status or not new_status:
+            return
+
+        if old_status.pk == new_status.pk:
             return
 
         allowed = set(
-
             cls.get_transitions(
-                old_status,
-                role,
-            )
-
-            .values_list(
+                status=old_status,
+                role=role,
+            ).values_list(
                 "target_id",
                 flat=True,
             )
-
         )
 
         if new_status.pk not in allowed:
-
-            raise ValidationError(
-
-                f"Переход "
-                f"{old_status} → "
-                f"{new_status} "
-                f"запрещён."
-
-            )
+            raise ValidationError({
+                "status": [
+                    (
+                        f"Переход "
+                        f"{old_status} → {new_status} "
+                        f"запрещён."
+                    ),
+                ],
+            })
 
     # =====================================================
     # RULES
@@ -133,7 +122,11 @@ class StatusTransitionService:
     ):
         return bool(
             status
-            and status.comment_required
+            and getattr(
+                status,
+                "comment_required",
+                False,
+            )
         )
 
     @classmethod
@@ -141,10 +134,20 @@ class StatusTransitionService:
         cls,
         ticket,
     ):
+        if not ticket:
+            return False
+
+        status = ticket.get_value(
+            "status",
+        )
+
         return bool(
-            ticket
-            and ticket.status_id
-            and ticket.status.blocks_editing
+            status
+            and getattr(
+                status,
+                "blocks_editing",
+                False,
+            )
         )
 
     # =====================================================
@@ -168,11 +171,22 @@ class StatusTransitionService:
         )
 
         if (
+            old_status
+            and new_status
+            and old_status.pk == new_status.pk
+        ):
+            return
+
+        if (
             cls.requires_comment(
                 new_status,
             )
-            and not comment
+            and not str(
+                comment or "",
+            ).strip()
         ):
-            raise ValidationError(
-                "Требуется комментарий.",
-            )
+            raise ValidationError({
+                "comment": [
+                    "Для перехода в этот статус требуется комментарий.",
+                ],
+            })

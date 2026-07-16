@@ -8,24 +8,29 @@ from backend.engine.entity.Base.BaseEntity import (
 from backend.project.tickets.models import (
     Ticket,
 )
+from backend.project.tickets.services.StatusTransitionService import (
+    StatusTransitionService,
+)
 from backend.project.tickets.services.TicketAfterSaveService import (
     TicketAfterSaveService,
 )
-from backend.project.tickets.services.TicketAssignmentPolicy import TicketAssignmentService
-
+from backend.project.tickets.services.TicketAssignmentPolicy import (
+    TicketAssignmentService,
+)
 from backend.project.tickets.services.TicketFieldAccessService import (
     TicketFieldAccessService,
 )
 from backend.project.tickets.services.TicketFieldService import (
     TicketFieldService,
 )
-from backend.project.tickets.services.StatusTransitionService import (
-    StatusTransitionService,
+from backend.project.tickets.services.TicketSchemaService import (
+    TicketSchemaService,
 )
-from backend.project.tickets.services.TicketSchemaService import TicketSchemaService
 
 
-class TicketEntity(BaseEntity):
+class TicketEntity(
+    BaseEntity,
+):
 
     # =====================================================
     # BASE
@@ -107,7 +112,6 @@ class TicketEntity(BaseEntity):
     ):
         return [
             "type",
-
         ]
 
     def get_prefetch_related(
@@ -174,22 +178,20 @@ class TicketEntity(BaseEntity):
             "type",
         )
 
+        if ticket_type:
+            return
+
         if (
-            ticket_type
-            or (
-                instance
-                and instance.type_id
-            )
+            instance
+            and instance.type_id
         ):
             return
 
-        raise ValidationError(
-            {
-                "type": [
-                    "Тип заявки обязателен.",
-                ],
-            },
-        )
+        raise ValidationError({
+            "type": [
+                "Тип заявки обязателен.",
+            ],
+        })
 
     def validate_assignment(
         self,
@@ -228,17 +230,24 @@ class TicketEntity(BaseEntity):
         if new_status is None:
             return
 
+        old_status = instance.get_value(
+            "status",
+        )
+
         role = getattr(
             request.user,
             "role",
             None,
         )
 
-        StatusTransitionService.validate_transition(
+        StatusTransitionService.validate_change(
             ticket=instance,
-            old_status=instance.status,
+            old_status=old_status,
             new_status=new_status,
             role=role,
+            comment=payload.get(
+                "comment",
+            ),
         )
 
     # =====================================================
@@ -264,15 +273,18 @@ class TicketEntity(BaseEntity):
     # =====================================================
 
     def customize_field_schema(
-            self,
-            request,
-            schema,
-            field=None,
+        self,
+        request,
+        schema,
+        field=None,
+        obj=None,
     ):
         return TicketSchemaService.customize(
             request=request,
             schema=schema,
+            ticket=obj,
         )
+
     # =====================================================
     # REPRESENTATION
     # =====================================================
