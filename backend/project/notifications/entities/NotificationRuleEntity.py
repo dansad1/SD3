@@ -12,43 +12,29 @@ from backend.project.notifications.models import (
 class NotificationRuleEntity(
     BaseEntity
 ):
-
     model = NotificationRule
-
     entity = "notification-rules"
 
     list_display = [
-
         "event",
-
         "ticket_status",
-
         "role",
-
         "logical_role",
-
         "template",
-
         "enabled",
     ]
 
     filter_fields = [
 
         "event",
-
         "ticket_status",
-
         "role",
-
         "logical_role",
-
         "enabled",
     ]
 
     ordering = [
-
         "event",
-
         "ticket_status",
     ]
 
@@ -74,12 +60,8 @@ class NotificationRuleEntity(
         self,
     ):
         return [
-
             "event",
-
             "ticket_status",
-
             "role",
-
             "template",
         ]

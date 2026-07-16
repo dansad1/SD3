@@ -18,45 +18,30 @@ class NotificationTemplateEntity(
     entity = "notification-templates"
 
     list_display = [
-
         "code",
-
         "name",
-
         "channels",
-
         "is_special",
-
         "is_active",
 
     ]
 
     search_fields = [
-
         "code",
-
         "name",
-
         "subject",
-
         "body",
-
     ]
 
     filter_fields = [
-
         "channels",
-
         "is_special",
-
         "is_active",
 
     ]
 
     ordering = [
-
         "code",
-
     ]
 
     capabilities = {
