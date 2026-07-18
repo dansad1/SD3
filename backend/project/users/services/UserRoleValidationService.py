@@ -24,10 +24,7 @@ class UserRoleValidationService:
             errors=errors,
         )
 
-        cls.validate_priority(
-            payload=payload,
-            errors=errors,
-        )
+
 
         if errors:
             raise ValidationError(
@@ -61,23 +58,4 @@ class UserRoleValidationService:
                 "Reserved role code",
             ]
 
-    # =====================================================
-    # PRIORITY
-    # =====================================================
 
-    @staticmethod
-    def validate_priority(
-        payload,
-        errors,
-    ):
-        priority = payload.get(
-            "priority",
-        )
-
-        if priority is None:
-            return
-
-        if priority < 0:
-            errors["priority"] = [
-                "Priority must be >= 0",
-            ]

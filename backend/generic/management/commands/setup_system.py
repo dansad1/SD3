@@ -114,7 +114,6 @@ class Command(BaseCommand):
                 code="admin",
                 defaults={
                     "name": "Administrator",
-                    "priority": 0,
                     "is_active": True,
                 },
             )

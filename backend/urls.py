@@ -12,6 +12,7 @@ from backend.engine.utils.options_api import entity_options_api
 from backend.engine.utils.upload_api import upload_api
 from backend.generic.api.entity_export_api import entity_export_api
 from backend.generic.api.entity_template_api import entity_template_api
+from backend.project.audit.backup.download_view import BackupDownloadView
 from backend.project.auth.me import me
 
 urlpatterns = [
@@ -111,5 +112,14 @@ path(
         entity_template_api,
         name="entity-template",
     ),
-
+    path(
+        (
+            "api/backup/"
+            "<str:backup_id>/"
+            "download/"
+            "<str:filename>"
+        ),
+        BackupDownloadView.as_view(),
+        name="backup-download",
+    ),
 ]

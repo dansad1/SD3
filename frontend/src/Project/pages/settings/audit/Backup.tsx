@@ -2,13 +2,13 @@
 
 import {
   page,
+  Action,
   Container,
+  Heading,
   Section,
   Stack,
-  Heading,
-  Text,
   Table,
-  Action,
+  Text,
   Upload,
 } from "@/framework"
 
@@ -26,9 +26,12 @@ const BackupPage = page(
           />
 
           <Text
-  value="Создание, загрузка, скачивание и восстановление резервных копий"
-  variant="muted"
-/>
+            value={
+              "Создание, загрузка, скачивание, "
+              + "восстановление и удаление резервных копий"
+            }
+            variant="muted"
+          />
         </Stack>
 
         <Stack gap="sm">
@@ -50,47 +53,61 @@ const BackupPage = page(
 
         <Table
           entity="backup"
-
           features={{
             toolbar: true,
-            search: true,
+            search: false,
             selection: false,
             rowClick: false,
             rowActions: true,
             visibleFields: true,
           }}
-
           rowActions={[
             {
               key: "download_db",
-              label: "DB",
+              label: "Скачать БД",
               variant: "secondary",
               action: "backup.download.db",
               ctx: {
                 id: "$row.id",
               },
             },
-
             {
               key: "download_media",
-              label: "Media",
+              label: "Скачать media",
               variant: "secondary",
               action: "backup.download.media",
               ctx: {
                 id: "$row.id",
               },
             },
-
+           {
+  key: "restore",
+  label: "Восстановить",
+  variant: "secondary",
+  action: "backup.restore",
+  ctx: {
+    id: "$row.id",
+  },
+  confirm: {
+    message: (
+      "Текущая база данных и media будут заменены "
+      + "содержимым этой резервной копии. Продолжить?"
+    ),
+  },
+},
             {
-              key: "restore",
-              label: "Восстановить",
+              key: "delete",
+              label: "Удалить",
               variant: "danger",
-              action: "backup.restore",
+              action: "backup.delete",
               ctx: {
                 id: "$row.id",
               },
               confirm: {
-                message: "Восстановить систему из этого бэкапа?",
+                message: (
+                  "Удалить резервную копию без "
+                  + "возможности восстановления?"
+                ),
               },
             },
           ]}

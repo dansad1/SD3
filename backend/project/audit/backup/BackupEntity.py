@@ -1,14 +1,15 @@
-import os
 from datetime import datetime
+from pathlib import Path
 
 from django.conf import settings
 from django.utils.timezone import make_aware
 
-
 from backend.engine.entity.Base.BaseEntity import BaseEntity
 from backend.project.audit.models.Backup import Backup
 
-BACKUP_DIR = os.path.join(settings.BASE_DIR, "backups")
+
+BACKUP_DIR = Path(settings.BASE_DIR) / "backups"
+BACKUP_DATE_FORMAT = "%Y-%m-%d_%H-%M-%S"
 
 
 class BackupEntity(BaseEntity):
@@ -17,7 +18,7 @@ class BackupEntity(BaseEntity):
 
     list_display = [
         "id",
-        "created",
+        "created_at",
         "name",
         "db_path",
         "media_path",
@@ -26,46 +27,65 @@ class BackupEntity(BaseEntity):
     def get_queryset(self, request):
         items = []
 
-        if not os.path.exists(BACKUP_DIR):
+        if not BACKUP_DIR.exists():
             return items
 
-        folders = sorted(os.listdir(BACKUP_DIR), reverse=True)
+        backup_root = BACKUP_DIR.resolve()
 
-        for folder in folders:
-            path = os.path.abspath(
-                os.path.join(BACKUP_DIR, folder)
+        for path in sorted(
+            BACKUP_DIR.iterdir(),
+            key=lambda item: item.name,
+            reverse=True,
+        ):
+            try:
+                resolved_path = path.resolve()
+                resolved_path.relative_to(backup_root)
+            except (OSError, ValueError):
+                continue
+
+            if not resolved_path.is_dir():
+                continue
+
+            created_at = self._parse_created(
+                resolved_path.name,
             )
 
-            backup_root = os.path.abspath(BACKUP_DIR)
-
-            if not path.startswith(backup_root):
+            if created_at is None:
                 continue
 
-            if not os.path.isdir(path):
-                continue
-
-            try:
-                created = datetime.strptime(
-                    folder.split("_")[0] + "_" + folder.split("_")[1],
-                    "%Y-%m-%d_%H-%M-%S",
-                )
-            except Exception:
-                continue
-
-            db_path = os.path.join(path, "db.sqlite3")
-            media_path = os.path.join(path, "media.zip")
+            db_path = resolved_path / "db.sqlite3"
+            media_path = resolved_path / "media.zip"
 
             obj = Backup(
-                id=folder,
-                name=folder,
-                created=make_aware(created),
-                db_path=f"{folder}/db.sqlite3",
-                media_path=f"{folder}/media.zip",
+                id=resolved_path.name,
+                name=resolved_path.name,
+                created_at=make_aware(created_at),
+                db_path=(
+                    f"{resolved_path.name}/db.sqlite3"
+                    if db_path.is_file()
+                    else ""
+                ),
+                media_path=(
+                    f"{resolved_path.name}/media.zip"
+                    if media_path.is_file()
+                    else ""
+                ),
             )
 
-            obj.has_db = os.path.exists(db_path)
-            obj.has_media = os.path.exists(media_path)
+            obj.has_db = db_path.is_file()
+            obj.has_media = media_path.is_file()
 
             items.append(obj)
 
         return items
+
+    def _parse_created(self, folder_name):
+        timestamp = folder_name[:19]
+
+        try:
+            return datetime.strptime(
+                timestamp,
+                BACKUP_DATE_FORMAT,
+            )
+        except ValueError:
+            return None
