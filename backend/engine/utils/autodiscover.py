@@ -1,34 +1,34 @@
-# backend/engine/utils/autodiscover.py
-
 import importlib
 import pkgutil
 
-import backend
+from django.core.exceptions import ImproperlyConfigured
 
 
-# =========================================================
-# SKIP
-# =========================================================
+DISCOVERY_ROOTS = [
+    "backend.project",
+    "backend.generic",
+]
 
 SKIP_PARTS = {
     "migrations",
     "__pycache__",
     "tests",
+    "management",
     "node_modules",
     "static",
     "media",
+    "templates",
+    "settings",
+    "urls",
     "asgi",
     "wsgi",
-    "settings",
 }
 
 
-# =========================================================
-# HELPERS
-# =========================================================
+_discovered = False
+
 
 def should_skip(module_name):
-
     parts = module_name.split(".")
 
     return any(
@@ -37,66 +37,87 @@ def should_skip(module_name):
     )
 
 
-# =========================================================
-# AUTODISCOVER
-# =========================================================
+def autodiscover_all(force=False):
+    global _discovered
 
-def autodiscover_all():
+    if _discovered and not force:
+        return {
+            "imported": 0,
+            "errors": [],
+            "skipped": True,
+        }
 
     print()
     print("📦 AUTODISCOVER START")
     print()
 
     imported = 0
-    errors = 0
+    errors = []
 
-    for _, module_name, _ in pkgutil.walk_packages(
-        backend.__path__,
-        backend.__name__ + ".",
-    ):
+    for root_name in DISCOVERY_ROOTS:
+        root_module = importlib.import_module(
+            root_name
+        )
 
-        # =========================================
-        # SKIP
-        # =========================================
+        module_path = getattr(
+            root_module,
+            "__path__",
+            None,
+        )
 
-        if should_skip(module_name):
+        if module_path is None:
             continue
 
-        # =========================================
-        # IMPORT
-        # =========================================
+        for _, module_name, _ in pkgutil.walk_packages(
+            module_path,
+            root_name + ".",
+        ):
+            if should_skip(module_name):
+                continue
 
-        try:
+            try:
+                importlib.import_module(
+                    module_name
+                )
+                imported += 1
 
-            importlib.import_module(module_name)
+            except Exception as exc:
+                errors.append(
+                    {
+                        "module": module_name,
+                        "error": repr(exc),
+                    }
+                )
 
-            imported += 1
-
-        except Exception as e:
-
-            errors += 1
-
-            print()
-            print("❌ IMPORT ERROR")
-            print("MODULE:", module_name)
-            print("ERROR :", str(e))
-            print()
-
-    # =========================================
-    # SUMMARY
-    # =========================================
+                print()
+                print("❌ IMPORT ERROR")
+                print("MODULE:", module_name)
+                print("ERROR :", repr(exc))
+                print()
 
     print()
     print("╔══════════════════════════════════════╗")
     print("║         AUTODISCOVER DONE           ║")
     print("╚══════════════════════════════════════╝")
-
-    print(
-        f"📦 IMPORTED: {imported}"
-    )
-
-    print(
-        f"❌ ERRORS:   {errors}"
-    )
-
+    print(f"📦 IMPORTED: {imported}")
+    print(f"❌ ERRORS:   {len(errors)}")
     print()
+
+    if errors:
+        failed_modules = ", ".join(
+            item["module"]
+            for item in errors
+        )
+
+        raise ImproperlyConfigured(
+            "Autodiscover завершён с ошибками: "
+            f"{failed_modules}"
+        )
+
+    _discovered = True
+
+    return {
+        "imported": imported,
+        "errors": [],
+        "skipped": False,
+    }
