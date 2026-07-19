@@ -1,11 +1,12 @@
-
-
 from backend.project.notifications.services.NotificationService import (
     NotificationService,
 )
 
 
 class TicketNotificationService:
+
+    EVENT_CREATED = "ticket.created"
+    EVENT_CHANGED = "ticket.changed"
 
     @classmethod
     def process(
@@ -16,11 +17,13 @@ class TicketNotificationService:
         changes=None,
         user=None,
     ):
-
-        changes = changes or {}
+        changes = cls.normalize_changes(
+            changes
+        )
 
         context = {
             "ticket": ticket,
+            "actor": user,
             "user": user,
             "changes": changes,
         }
@@ -30,9 +33,8 @@ class TicketNotificationService:
         # =====================================================
 
         if created:
-
             NotificationService.trigger(
-                "ticket.created",
+                cls.EVENT_CREATED,
                 **context,
             )
 
@@ -46,6 +48,34 @@ class TicketNotificationService:
             return
 
         NotificationService.trigger(
-            "ticket.changed",
+            cls.EVENT_CHANGED,
             **context,
         )
+
+    @classmethod
+    def normalize_changes(
+        cls,
+        changes,
+    ):
+        if not changes:
+            return []
+
+        if hasattr(
+            changes,
+            "to_list",
+        ):
+            return changes.to_list()
+
+        if isinstance(
+            changes,
+            list,
+        ):
+            return changes
+
+        if isinstance(
+            changes,
+            dict,
+        ):
+            return changes
+
+        return []

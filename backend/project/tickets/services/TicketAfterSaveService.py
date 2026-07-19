@@ -22,19 +22,33 @@ class TicketAfterSaveService:
             ticket,
         )
 
+        created = (
+            getattr(
+                ctx,
+                "mode",
+                None,
+            )
+            == "create"
+        )
+
+        changes = getattr(
+            ctx,
+            "changes",
+            None,
+        )
+
+        request = ctx.request
+        user = getattr(
+            request,
+            "user",
+            None,
+        )
+
         transaction.on_commit(
             lambda: TicketNotificationService.process(
                 ticket=ticket,
-                created=getattr(
-                    ctx,
-                    "created",
-                    False,
-                ),
-                changes=getattr(
-                    ctx,
-                    "changes",
-                    {},
-                ),
-                user=ctx.request.user,
+                created=created,
+                changes=changes,
+                user=user,
             )
         )
