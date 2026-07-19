@@ -1,38 +1,46 @@
+from django.core.exceptions import ValidationError
+from django.template import Context, Template
+from django.utils.html import strip_tags
+
 from backend.engine.action.Base.BaseAction import BaseAction
-from backend.engine.fields.types.email import EmailFieldType
-from backend.project.notifications.channels.SendEmailAction import SendEmailAction
+from backend.project.notifications.channels.EmailChannel import (
+    EmailChannel,
+)
 
 
-class SendTestEmailAction(BaseAction):
+class SendTemplateEmailAction(BaseAction):
+    code = "email.send_template"
+    permission = "notifications.email.send"
+    success_message = "Письма отправлены"
 
-    code = "email.send_test"
-
-    permission = (
-        "notifications.smtp.test"
-    )
-
-    success_message = (
-        "Тестовое письмо отправлено"
-    )
-
-    def get_fields(
+    def validate(
         self,
         request,
+        payload,
         ctx,
     ):
-        return [
+        payload = dict(payload or {})
 
-            EmailFieldType(
+        if not payload.get("template"):
+            raise ValidationError({
+                "template": "Шаблон не указан",
+            })
 
-                name="email",
+        if not payload.get("users"):
+            raise ValidationError({
+                "users": "Получатели не указаны",
+            })
 
-                label="Email",
+        context = payload.get("context", {})
 
-                required=True,
+        if not isinstance(context, dict):
+            raise ValidationError({
+                "context": "Ожидался объект",
+            })
 
-            ),
+        payload["context"] = context
 
-        ]
+        return payload
 
     def run(
         self,
@@ -40,37 +48,49 @@ class SendTestEmailAction(BaseAction):
         payload,
         ctx,
     ):
+        email_template = payload["template"]
+        context = payload["context"]
+        users = payload["users"]
 
-        SendEmailAction().submit(
+        recipients = [
+            user.email
+            for user in users
+            if getattr(user, "email", None)
+        ]
 
-            request=request,
-
-            payload={
-
-                "subject":
-                    "SMTP test",
-
-                "body":
-                    "SMTP configured successfully.",
-
-                "html": """
-                    <h2>
-                        SMTP configured successfully.
-                    </h2>
-
-                    <p>
-                        This is a test message.
-                    </p>
-                """,
-
-                "recipients": [
-
-                    payload["email"],
-
-                ],
-
-            },
-
-            ctx=ctx,
-
+        recipients = EmailChannel.normalize_recipients(
+            recipients
         )
+
+        template_context = Context(
+            context,
+            autoescape=True,
+        )
+
+        subject = Template(
+            email_template.subject
+        ).render(
+            template_context
+        ).strip()
+
+        body_html = Template(
+            email_template.body
+        ).render(
+            template_context
+        )
+
+        body_text = strip_tags(
+            body_html
+        ).strip()
+
+        sent_count = EmailChannel.send_message(
+            subject=subject,
+            body=body_text,
+            html=body_html,
+            recipients=recipients,
+        )
+
+        return {
+            "status": "ok",
+            "sent": sent_count,
+        }

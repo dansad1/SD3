@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError
+
 from backend.engine.action.Base.BaseAction import BaseAction
 from backend.project.notifications.channels.EmailChannel import (
     EmailChannel,
@@ -5,16 +7,48 @@ from backend.project.notifications.channels.EmailChannel import (
 
 
 class SendEmailAction(BaseAction):
-
     code = "email.send"
+    permission = "notifications.email.send"
+    success_message = "Письмо отправлено"
 
-    permission = (
-        "notifications.email.send"
-    )
+    def validate(
+        self,
+        request,
+        payload,
+        ctx,
+    ):
+        payload = dict(payload or {})
 
-    success_message = (
-        "Письмо отправлено"
-    )
+        required_fields = (
+            "subject",
+            "body",
+            "recipients",
+        )
+
+        for field_name in required_fields:
+            if not payload.get(field_name):
+                raise ValidationError({
+                    field_name: "Обязательное поле",
+                })
+
+        recipients = payload["recipients"]
+
+        if not isinstance(
+            recipients,
+            (list, tuple, set),
+        ):
+            raise ValidationError({
+                "recipients":
+                    "Ожидался список email-адресов",
+            })
+
+        payload["recipients"] = (
+            EmailChannel.normalize_recipients(
+                recipients
+            )
+        )
+
+        return payload
 
     def run(
         self,
@@ -22,22 +56,14 @@ class SendEmailAction(BaseAction):
         payload,
         ctx,
     ):
-        EmailChannel.send_message(
-
+        sent_count = EmailChannel.send_message(
             subject=payload["subject"],
-
             body=payload["body"],
-
-            html=payload.get(
-                "html",
-            ),
-
-            recipients=payload[
-                "recipients"
-            ],
-
-            from_email=payload.get(
-                "from_email",
-            ),
-
+            html=payload.get("html"),
+            recipients=payload["recipients"],
         )
+
+        return {
+            "status": "ok",
+            "sent": sent_count,
+        }

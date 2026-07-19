@@ -1,35 +1,52 @@
-import re
-from django.template import Context, Template
 from backend.engine.action.Base.BaseAction import BaseAction
-from backend.project.notifications.channels.EmailChannel import EmailChannel
+from backend.engine.fields.types.email import EmailFieldType
+from backend.project.notifications.channels.EmailChannel import (
+    EmailChannel,
+)
 
 
-class SendTemplateEmailAction(BaseAction):
-    code = "email.send_template"
-    permission = "notifications.email.send"
+class SendTestEmailAction(BaseAction):
+    code = "email.send_test"
+    permission = "notifications.smtp.test"
+    success_message = "Тестовое письмо отправлено"
 
-    def run(self, request, payload, ctx, ):
-        template = payload[
-            "template"
+    def get_fields(
+        self,
+        request,
+        ctx,
+    ):
+        return [
+            EmailFieldType(
+                name="email",
+                label="Email",
+                required=True,
+            ),
         ]
 
-        context = payload.get("context", {})
-        users = payload["users"]
-        recipients = [
-            user.email
-            for user in users
-            if user.email
-        ]
-        subject = (Template(template.subject).render(Context(context)))
-        body_html = (Template(template.body).render(
-            Context(context)))
-        body_text = re.sub(r"<[^>]+>", "", body_html, )
-        EmailChannel.send_message(
-            subject=subject,
-            body=body_text,
-            html=body_html,
-            recipients=recipients,
+    def run(
+        self,
+        request,
+        payload,
+        ctx,
+    ):
+        recipient = payload["email"]
 
+        sent_count = EmailChannel.send_message(
+            subject="Проверка SMTP",
+            body=(
+                "SMTP настроен успешно.\n\n"
+                "Это тестовое сообщение servicedesk."
+            ),
+            html=(
+                "<h2>SMTP настроен успешно</h2>"
+                "<p>"
+                "Это тестовое сообщение servicedesk."
+                "</p>"
+            ),
+            recipients=[recipient],
         )
 
-        return {"status": "ok",}
+        return {
+            "status": "ok",
+            "sent": sent_count,
+        }
