@@ -1,27 +1,18 @@
+from django.core.exceptions import ValidationError
+
 from backend.engine.action.Base.BaseAction import BaseAction
-from backend.engine.fields.types.email import EmailFieldType
 from backend.project.notifications.channels.EmailChannel import (
     EmailChannel,
 )
 
 
 class SendTestEmailAction(BaseAction):
-    code = "email.send_test"
-    permission = "notifications.smtp.test"
-    success_message = "Тестовое письмо отправлено"
 
-    def get_fields(
-        self,
-        request,
-        ctx,
-    ):
-        return [
-            EmailFieldType(
-                name="email",
-                label="Email",
-                required=True,
-            ),
-        ]
+    code = "email.send_test"
+
+    permission = "notifications.smtp.test"
+
+    success_message = "Тестовое письмо отправлено"
 
     def run(
         self,
@@ -29,7 +20,17 @@ class SendTestEmailAction(BaseAction):
         payload,
         ctx,
     ):
-        recipient = payload["email"]
+        settings = EmailChannel.get_settings()
+
+        recipient = settings.default_from
+
+        if not recipient:
+            raise ValidationError({
+                "__all__": (
+                    "В SMTP настройках не указан "
+                    "адрес отправителя"
+                ),
+            })
 
         sent_count = EmailChannel.send_message(
             subject="Проверка SMTP",
@@ -43,10 +44,13 @@ class SendTestEmailAction(BaseAction):
                 "Это тестовое сообщение servicedesk."
                 "</p>"
             ),
-            recipients=[recipient],
+            recipients=[
+                recipient,
+            ],
         )
 
         return {
             "status": "ok",
             "sent": sent_count,
+            "recipient": recipient,
         }

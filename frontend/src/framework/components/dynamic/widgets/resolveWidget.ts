@@ -4,14 +4,13 @@ import type {
   FieldSchema,
 } from "../types"
 
-import {
-  resolvePrimitiveWidget,
-  type WidgetKey,
-} from "../resolvePrimitiveWidget"
+
 
 import {
   resolveSemanticWidget,
 } from "../semanticResolver"
+import { resolvePrimitiveWidget } from "../resolvePrimitiveWidget"
+import type { WidgetKey } from "../registry"
 
 
 /* =========================================================

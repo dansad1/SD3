@@ -27,6 +27,7 @@ class RelationFieldType(BaseFieldType):
     code = "relation"
     label = "Relation"
     widget = "select"
+    multiple_widget = "multiselect"
 
     sortable = True
     searchable = True

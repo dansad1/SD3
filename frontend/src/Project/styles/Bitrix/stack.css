@@ -4,9 +4,9 @@
 
 .ui-stack {
     display: flex;
-
     flex-direction: column;
 
+    width: 100%;
     min-width: 0;
 
     box-sizing: border-box;
@@ -89,19 +89,41 @@
 }
 
 .ui-stack.width-sm {
-    width: 420px;
+    width: 100%;
+    max-width: 420px;
 }
 
 .ui-stack.width-md {
-    width: 640px;
+    width: 100%;
+    max-width: 640px;
 }
 
 .ui-stack.width-lg {
-    width: 900px;
+    width: 100%;
+    max-width: 900px;
 }
 
 .ui-stack.width-full {
     width: 100%;
+}
+
+/* ======================================================
+   SIZE
+   ====================================================== */
+
+.ui-stack.size-sm {
+    width: 100%;
+    max-width: 360px;
+}
+
+.ui-stack.size-md {
+    width: 100%;
+    max-width: 440px;
+}
+
+.ui-stack.size-lg {
+    width: 100%;
+    max-width: 640px;
 }
 
 /* ======================================================
@@ -126,4 +148,94 @@
 
 .ui-stack.padding-xl {
     padding: 32px;
+}
+
+/* ======================================================
+   VARIANTS
+   ====================================================== */
+
+.ui-stack.variant-default {
+    background: transparent;
+}
+
+.ui-stack.variant-card {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+
+    padding: 32px;
+
+    background: #ffffff;
+
+    border: 1px solid rgb(15 23 42 / 6%);
+    border-radius: 24px;
+
+    box-shadow:
+        0 24px 60px rgb(15 23 42 / 10%),
+        0 8px 20px rgb(15 23 42 / 5%);
+}
+
+/* ======================================================
+   DIRECT CHILDREN
+   Не даём детям растягивать карточку по ширине
+   ====================================================== */
+
+.ui-stack > * {
+    min-width: 0;
+}
+
+/* ======================================================
+   FORM INSIDE STACK
+   Форма занимает отдельную строку и полную ширину
+   ====================================================== */
+
+.ui-stack > .ui-form,
+.ui-stack > form {
+    width: 100%;
+    min-width: 0;
+}
+
+/* ======================================================
+   NESTED STACK
+   Вложенный Stack остаётся отдельным вертикальным блоком
+   ====================================================== */
+
+.ui-stack > .ui-stack {
+    width: 100%;
+}
+
+/* ======================================================
+   LINKS INSIDE STACK
+   ====================================================== */
+
+.ui-stack.align-center > a,
+.ui-stack.align-center > .ui-link {
+    align-self: center;
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 640px) {
+    .ui-stack.size-sm,
+    .ui-stack.size-md,
+    .ui-stack.size-lg,
+    .ui-stack.width-sm,
+    .ui-stack.width-md,
+    .ui-stack.width-lg {
+        max-width: 100%;
+    }
+
+    .ui-stack.variant-card {
+        padding: 24px;
+        border-radius: 18px;
+    }
+}
+
+@media (max-width: 420px) {
+    .ui-stack.variant-card {
+        padding: 20px;
+    }
 }

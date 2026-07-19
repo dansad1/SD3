@@ -21,33 +21,25 @@ import { PermissionEditorWidget } from "./widgets/PermissionEditor"
 import { MetaWidget } from "./widgets/meta"
 import { TimelineWidget } from "./widgets/TimelineWidget"
 import { CommentWidget } from "./widgets/CommentWidget"
+import { RadioWidget } from "./widgets/RadioWidget"
 
 /* =========================================================
    TYPES
 ========================================================= */
 
 export type WidgetLayout = {
-
     preferredSpan: number
-
     minSpan?: number
-
     maxSpan?: number
-
     grow?: boolean
-
     shrink?: boolean
 
 }
 
 export type WidgetDefinition = {
-
     component: WidgetRenderer
-
     aliases: string[]
-
     layout: WidgetLayout
-
 }
 
 /* =========================================================
@@ -57,7 +49,6 @@ export type WidgetDefinition = {
 export const widgetRegistry = {
 
     TextInput: {
-
         component: TextInputWidget,
 
         aliases: [
@@ -130,7 +121,23 @@ export const widgetRegistry = {
         },
 
     },
+Radio: {
+    component: RadioWidget,
 
+    aliases: [
+        "radio",
+        "Radio",
+        "radiogroup",
+        "RadioGroup",
+    ],
+
+    layout: {
+        preferredSpan: 6,
+        grow: true,
+        minSpan: 4,
+        maxSpan: 12,
+    },
+},
 
     Select: {
 

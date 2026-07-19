@@ -6,49 +6,13 @@ from backend.project.notifications.channels.EmailChannel import (
 )
 
 
-class SendEmailAction(BaseAction):
-    code = "email.send"
-    permission = "notifications.email.send"
-    success_message = "Письмо отправлено"
+class SendTestEmailAction(BaseAction):
 
-    def validate(
-        self,
-        request,
-        payload,
-        ctx,
-    ):
-        payload = dict(payload or {})
+    code = "email.send_test"
 
-        required_fields = (
-            "subject",
-            "body",
-            "recipients",
-        )
+    permission = "notifications.smtp.test"
 
-        for field_name in required_fields:
-            if not payload.get(field_name):
-                raise ValidationError({
-                    field_name: "Обязательное поле",
-                })
-
-        recipients = payload["recipients"]
-
-        if not isinstance(
-            recipients,
-            (list, tuple, set),
-        ):
-            raise ValidationError({
-                "recipients":
-                    "Ожидался список email-адресов",
-            })
-
-        payload["recipients"] = (
-            EmailChannel.normalize_recipients(
-                recipients
-            )
-        )
-
-        return payload
+    success_message = "Тестовое письмо отправлено"
 
     def run(
         self,
@@ -56,11 +20,25 @@ class SendEmailAction(BaseAction):
         payload,
         ctx,
     ):
+        settings = EmailChannel.get_settings()
+
+        if not settings.default_from:
+            raise ValidationError({
+                "__all__": (
+                    "Не указан адрес получателя"
+                ),
+            })
+
         sent_count = EmailChannel.send_message(
-            subject=payload["subject"],
-            body=payload["body"],
-            html=payload.get("html"),
-            recipients=payload["recipients"],
+            subject="Проверка SMTP",
+            body="SMTP настроен успешно.",
+            html=(
+                "<h2>SMTP настроен успешно</h2>"
+                "<p>Тестовое письмо доставлено.</p>"
+            ),
+            recipients=[
+                settings.default_from,
+            ],
         )
 
         return {

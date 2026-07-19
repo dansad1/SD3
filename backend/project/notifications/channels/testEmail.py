@@ -6,11 +6,18 @@ from backend.engine.action.Base.BaseAction import BaseAction
 from backend.project.notifications.channels.EmailChannel import (
     EmailChannel,
 )
+from backend.project.notifications.models import (
+    NotificationTemplate,
+)
+from backend.project.users.models import User
 
 
 class SendTemplateEmailAction(BaseAction):
+
     code = "email.send_template"
+
     permission = "notifications.email.send"
+
     success_message = "Письма отправлены"
 
     def validate(
@@ -19,25 +26,61 @@ class SendTemplateEmailAction(BaseAction):
         payload,
         ctx,
     ):
-        payload = dict(payload or {})
+        payload = dict(
+            payload
+            or {}
+        )
 
-        if not payload.get("template"):
+        template_id = payload.get(
+            "template"
+        )
+
+        if isinstance(
+            template_id,
+            dict,
+        ):
+            template_id = (
+                template_id.get("value")
+                or template_id.get("id")
+            )
+
+        if not template_id:
             raise ValidationError({
                 "template": "Шаблон не указан",
             })
 
-        if not payload.get("users"):
+        user_ids = payload.get(
+            "users"
+        )
+
+        if not user_ids:
             raise ValidationError({
                 "users": "Получатели не указаны",
             })
 
-        context = payload.get("context", {})
+        if not isinstance(
+            user_ids,
+            list,
+        ):
+            raise ValidationError({
+                "users": "Ожидался список",
+            })
 
-        if not isinstance(context, dict):
+        context = payload.get(
+            "context",
+            {},
+        )
+
+        if not isinstance(
+            context,
+            dict,
+        ):
             raise ValidationError({
                 "context": "Ожидался объект",
             })
 
+        payload["template"] = template_id
+        payload["users"] = user_ids
         payload["context"] = context
 
         return payload
@@ -48,22 +91,54 @@ class SendTemplateEmailAction(BaseAction):
         payload,
         ctx,
     ):
-        email_template = payload["template"]
-        context = payload["context"]
-        users = payload["users"]
+        template_id = payload[
+            "template"
+        ]
+
+        user_ids = self.extract_ids(
+            payload["users"]
+        )
+
+        try:
+            email_template = (
+                NotificationTemplate.objects
+                .get(
+                    pk=template_id,
+                )
+            )
+
+        except NotificationTemplate.DoesNotExist:
+            raise ValidationError({
+                "template":
+                    "Шаблон не найден",
+            })
+
+        users = (
+            User.objects
+            .filter(
+                pk__in=user_ids,
+                is_active=True,
+            )
+            .exclude(
+                email="",
+            )
+        )
 
         recipients = [
             user.email
             for user in users
-            if getattr(user, "email", None)
+            if user.email
         ]
 
-        recipients = EmailChannel.normalize_recipients(
-            recipients
+        recipients = (
+            EmailChannel
+            .normalize_recipients(
+                recipients
+            )
         )
 
         template_context = Context(
-            context,
+            payload["context"],
             autoescape=True,
         )
 
@@ -83,14 +158,58 @@ class SendTemplateEmailAction(BaseAction):
             body_html
         ).strip()
 
-        sent_count = EmailChannel.send_message(
-            subject=subject,
-            body=body_text,
-            html=body_html,
-            recipients=recipients,
+        sent_count = (
+            EmailChannel.send_message(
+                subject=subject,
+                body=body_text,
+                html=body_html,
+                recipients=recipients,
+            )
         )
 
         return {
             "status": "ok",
             "sent": sent_count,
+            "recipients": len(recipients),
         }
+
+    def extract_ids(
+        self,
+        values,
+    ):
+        result = []
+
+        for value in values:
+            if isinstance(
+                value,
+                dict,
+            ):
+                value = (
+                    value.get("value")
+                    or value.get("id")
+                )
+
+            try:
+                value = int(value)
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+                raise ValidationError({
+                    "users":
+                        "Некорректный получатель",
+                })
+
+            if value not in result:
+                result.append(
+                    value
+                )
+
+        if not result:
+            raise ValidationError({
+                "users":
+                    "Получатели не указаны",
+            })
+
+        return result

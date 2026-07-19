@@ -14,6 +14,7 @@ class BaseFieldType:
     label = "Base"
 
     widget = None
+    multiple_widget = None
 
     sortable = True
     searchable = False
@@ -113,6 +114,12 @@ class BaseFieldType:
         self,
         field,
     ):
+        if (
+            field.is_multiple
+            and self.multiple_widget
+        ):
+            return self.multiple_widget
+
         return (
             self.widget
             or self.code
@@ -208,10 +215,6 @@ class BaseFieldType:
         field,
         direction,
     ):
-        print("=" * 80)
-        print("BASE FIELD SORT")
-        print(field.name)
-        print(type(field).__name__)
 
         if not self.sortable:
             return queryset

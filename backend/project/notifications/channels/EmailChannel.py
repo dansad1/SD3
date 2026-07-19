@@ -9,37 +9,66 @@ from backend.project.notifications.models import EmailSettings
 
 
 class EmailChannel:
+
+    DEFAULT_TIMEOUT = 30
+    MAX_RECIPIENTS = 100
+
     @classmethod
-    def get_settings(cls) -> EmailSettings:
-        smtp_settings = (
+    def get_settings(
+        cls,
+    ) -> EmailSettings:
+        settings = (
             EmailSettings.objects
-            .filter(is_active=True)
-            .order_by("id")
+            .filter(
+                is_active=True,
+            )
+            .order_by(
+                "id",
+            )
             .first()
         )
 
-        if smtp_settings is None:
+        if settings is None:
             raise ImproperlyConfigured(
-                "Активные SMTP-настройки не найдены"
+                "Активные SMTP настройки не найдены"
             )
 
-        return smtp_settings
+        return settings
 
     @classmethod
     def get_connection(
         cls,
-        smtp_settings: EmailSettings | None = None,
+        settings=None,
     ) -> EmailBackend:
-        smtp_settings = smtp_settings or cls.get_settings()
+        settings = (
+            settings
+            or cls.get_settings()
+        )
+
+        use_tls = (
+            settings.encryption
+            == EmailSettings.Encryption.TLS
+        )
+
+        use_ssl = (
+            settings.encryption
+            == EmailSettings.Encryption.SSL
+        )
 
         return EmailBackend(
-            host=smtp_settings.host,
-            port=smtp_settings.port,
-            username=smtp_settings.username or None,
-            password=smtp_settings.password or None,
-            use_tls=smtp_settings.use_tls,
-            use_ssl=smtp_settings.use_ssl,
-            timeout=smtp_settings.timeout,
+            host=settings.host,
+            port=settings.port,
+            username=(
+                settings.host_user
+                or None
+            ),
+            password=(
+                settings.host_password
+                or None
+            ),
+            use_tls=use_tls,
+            use_ssl=use_ssl,
+            timeout=cls.DEFAULT_TIMEOUT,
             fail_silently=False,
         )
 
@@ -48,71 +77,101 @@ class EmailChannel:
         cls,
         recipients: Iterable[str],
     ) -> list[str]:
-        if isinstance(recipients, str):
-            recipients = [recipients]
+        if isinstance(
+            recipients,
+            str,
+        ):
+            recipients = [
+                recipients,
+            ]
 
         result = []
 
         for recipient in recipients:
-            recipient = str(recipient).strip().lower()
+            recipient = (
+                str(recipient)
+                .strip()
+                .lower()
+            )
 
             if not recipient:
                 continue
 
-            validate_email(recipient)
+            validate_email(
+                recipient
+            )
 
             if recipient not in result:
-                result.append(recipient)
+                result.append(
+                    recipient
+                )
 
         if not result:
             raise ValueError(
                 "Не указан ни один получатель"
             )
 
-        if len(result) > 100:
+        if len(result) > cls.MAX_RECIPIENTS:
             raise ValueError(
-                "Нельзя отправить письмо более чем "
-                "100 получателям одновременно"
+                "Слишком много получателей"
             )
 
         return result
 
     @classmethod
-    def send_message(
+    def validate_subject(
         cls,
-        subject: str,
-        body: str,
-        recipients: Iterable[str],
-        html: str | None = None,
-    ) -> int:
-        smtp_settings = cls.get_settings()
-        recipients = cls.normalize_recipients(
-            recipients
-        )
-
-        subject = str(subject).strip()
-        body = str(body or "")
+        subject,
+    ) -> str:
+        subject = str(
+            subject
+            or ""
+        ).strip()
 
         if not subject:
             raise ValueError(
                 "Тема письма не указана"
             )
 
-        if "\r" in subject or "\n" in subject:
+        if (
+            "\r" in subject
+            or "\n" in subject
+        ):
             raise ValueError(
-                "Тема письма содержит недопустимые символы"
+                "Некорректная тема письма"
             )
 
-        connection = cls.get_connection(
-            smtp_settings
+        return subject
+
+    @classmethod
+    def send_message(
+        cls,
+        subject,
+        body,
+        recipients,
+        html=None,
+    ) -> int:
+        settings = cls.get_settings()
+
+        recipients = cls.normalize_recipients(
+            recipients
+        )
+
+        subject = cls.validate_subject(
+            subject
         )
 
         message = EmailMultiAlternatives(
             subject=subject,
-            body=body,
-            from_email=smtp_settings.default_from,
+            body=str(
+                body
+                or ""
+            ),
+            from_email=settings.default_from,
             to=recipients,
-            connection=connection,
+            connection=cls.get_connection(
+                settings
+            ),
         )
 
         if html:
@@ -126,10 +185,13 @@ class EmailChannel:
         )
 
     @classmethod
-    def test_connection(cls) -> None:
+    def test_connection(
+        cls,
+    ) -> None:
         connection = cls.get_connection()
 
         try:
             connection.open()
+
         finally:
             connection.close()

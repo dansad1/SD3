@@ -12,16 +12,13 @@ import {
 } from "@/framework"
 
 const EmailSettingsFormPage = page(
-
   "email-settings:form",
 
   <Container
     maxWidth="xl"
     padding="lg"
   >
-
     <Section>
-
       <Stack gap="lg">
 
         {/* ===================================== */}
@@ -29,7 +26,6 @@ const EmailSettingsFormPage = page(
         {/* ===================================== */}
 
         <Stack gap="sm">
-
           <Heading
             level={1}
             text="📧 SMTP"
@@ -41,7 +37,6 @@ const EmailSettingsFormPage = page(
             size="md"
             weight="regular"
           />
-
         </Stack>
 
         {/* ===================================== */}
@@ -49,16 +44,9 @@ const EmailSettingsFormPage = page(
         {/* ===================================== */}
 
         <Stack gap="sm">
-
           <Action
             label="← Назад"
-            to="settings:list"
-            variant="secondary"
-          />
-
-          <Action
-            label="Проверить подключение"
-            action="email.test"
+            to="settings:home"
             variant="secondary"
           />
 
@@ -67,30 +55,26 @@ const EmailSettingsFormPage = page(
             action="email.send_test"
             variant="primary"
           />
-
         </Stack>
 
         {/* ===================================== */}
-        {/* FORM */}
+        {/* SINGLETON FORM */}
         {/* ===================================== */}
 
         <Form
           entity="email-settings"
-          objectId="$query.id"
           submit={{
             label: "Сохранить",
-            redirect: {
-              to: "email-settings:form",
-
-            },
           }}
-          
-
+          formLayout={{
+            preset: "two-columns",
+            density: "comfortable",
+          }}
         />
+
       </Stack>
     </Section>
   </Container>
-
 )
 
 export default EmailSettingsFormPage

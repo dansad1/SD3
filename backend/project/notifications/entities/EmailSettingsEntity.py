@@ -5,18 +5,17 @@ from backend.project.notifications.models import EmailSettings
 
 
 class EmailSettingsEntity(BaseEntity):
+
     model = EmailSettings
     entity = "email-settings"
 
     include_fields = [
         "host",
         "port",
-        "username",
-        "password",
+        "host_user",
+        "host_password",
+        "encryption",
         "default_from",
-        "timeout",
-        "use_tls",
-        "use_ssl",
         "is_active",
     ]
 
@@ -32,6 +31,33 @@ class EmailSettingsEntity(BaseEntity):
         "delete": "notifications.settings.edit",
     }
 
+    # =====================================================
+    # SINGLETON
+    # =====================================================
+
+    def resolve_pk(
+        self,
+        request,
+        mode,
+        pk,
+    ):
+        if pk:
+            return pk
+
+        return (
+            self.model.objects
+            .order_by("id")
+            .values_list(
+                "pk",
+                flat=True,
+            )
+            .first()
+        )
+
+    # =====================================================
+    # VALIDATION
+    # =====================================================
+
     def validate(
         self,
         request,
@@ -44,53 +70,51 @@ class EmailSettingsEntity(BaseEntity):
             instance,
         )
 
-        existing = self.model.objects.all()
-
-        if instance is not None:
-            existing = existing.exclude(
-                pk=instance.pk
-            )
-
-        if existing.exists():
-            raise ValidationError(
-                "SMTP настройки уже существуют"
-            )
-
-        use_tls = payload.get(
-            "use_tls",
-            getattr(instance, "use_tls", False),
-        )
-
-        use_ssl = payload.get(
-            "use_ssl",
-            getattr(instance, "use_ssl", False),
-        )
-
-        if use_tls and use_ssl:
-            raise ValidationError(
-                "Нельзя одновременно использовать "
-                "TLS и SSL"
-            )
-
         port = payload.get(
             "port",
-            getattr(instance, "port", None),
+            getattr(
+                instance,
+                "port",
+                None,
+            ),
         )
 
-        if port is None or not 1 <= int(port) <= 65535:
+        try:
+            port = int(port)
+
+        except (
+            TypeError,
+            ValueError,
+        ):
             raise ValidationError({
-                "port": "Порт должен быть от 1 до 65535",
+                "port": "Некорректный порт",
             })
 
-        timeout = payload.get(
-            "timeout",
-            getattr(instance, "timeout", None),
+        if not 1 <= port <= 65535:
+            raise ValidationError({
+                "port":
+                    "Порт должен быть от 1 до 65535",
+            })
+
+        encryption = payload.get(
+            "encryption",
+            getattr(
+                instance,
+                "encryption",
+                EmailSettings.Encryption.TLS,
+            ),
         )
 
-        if timeout is not None and not 1 <= int(timeout) <= 120:
+        allowed_encryption = {
+            EmailSettings.Encryption.NONE,
+            EmailSettings.Encryption.TLS,
+            EmailSettings.Encryption.SSL,
+        }
+
+        if encryption not in allowed_encryption:
             raise ValidationError({
-                "timeout":
-                    "Таймаут должен быть от 1 до 120 секунд",
+                "encryption":
+                    "Некорректный режим шифрования",
             })
 
         return payload

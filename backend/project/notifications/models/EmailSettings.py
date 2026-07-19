@@ -7,6 +7,11 @@ from backend.generic.models import TimeStampedModel
 
 class EmailSettings(TimeStampedModel):
 
+    class Encryption(models.TextChoices):
+        NONE = "none", "Без шифрования"
+        TLS = "tls", "STARTTLS"
+        SSL = "ssl", "SSL/TLS"
+
     host = models.CharField(
         max_length=255,
     )
@@ -27,12 +32,10 @@ class EmailSettings(TimeStampedModel):
         null=True,
     )
 
-    use_tls = models.BooleanField(
-        default=True,
-    )
-
-    use_ssl = models.BooleanField(
-        default=False,
+    encryption = models.CharField(
+        max_length=20,
+        choices=Encryption.choices,
+        default=Encryption.TLS,
     )
 
     default_from = models.EmailField()
@@ -47,3 +50,11 @@ class EmailSettings(TimeStampedModel):
 
     def __str__(self):
         return self.host
+
+    @property
+    def use_tls(self):
+        return self.encryption == self.Encryption.TLS
+
+    @property
+    def use_ssl(self):
+        return self.encryption == self.Encryption.SSL

@@ -1,11 +1,14 @@
 from django.db import models
 from django.db.models.fields.reverse_related import (
-    ForeignObjectRel,
+    ForeignObjectRel, ManyToOneRel, ManyToManyRel,
 )
 
 from backend.engine.fields.base import BaseField
 from backend.engine.fields.django_accessor import (
     DjangoFieldAccessor,
+)
+from backend.engine.fields.types.registry import (
+    resolve_django_field_type,
 )
 from backend.engine.fields.types.RelationAccessor import (
     RelationAccessor,
@@ -49,138 +52,13 @@ class DjangoField(BaseField):
     def name(self):
         return self.source.name
 
+
+
     @property
     def type(self):
-
-        field = self.source
-
-        # ==========================================
-        # SPECIAL
-        # ==========================================
-
-        if (
-                field.name == "password"
-                and isinstance(
-            field,
-            models.CharField,
+        return resolve_django_field_type(
+            self.source
         )
-        ):
-            return "password"
-
-        # ==========================================
-        # FILES
-        # ==========================================
-
-        if isinstance(
-                field,
-                (
-                        models.FileField,
-                        models.ImageField,
-                ),
-        ):
-            return "file"
-
-        # ==========================================
-        # RELATIONS
-        # ==========================================
-
-        if isinstance(
-                field,
-                (
-                        models.ForeignKey,
-                        models.OneToOneField,
-                        models.ManyToManyField,
-                        ForeignObjectRel,
-                ),
-        ):
-            return "relation"
-
-        # ==========================================
-        # TEXT
-        # ==========================================
-
-        if isinstance(
-                field,
-                (
-                        models.CharField,
-                        models.SlugField,
-                        models.URLField,
-                        models.UUIDField,
-                ),
-        ):
-            return "string"
-
-        if isinstance(
-                field,
-                models.TextField,
-        ):
-            return "text"
-
-        if isinstance(
-                field,
-                models.EmailField,
-        ):
-            return "email"
-
-        # ==========================================
-        # NUMBERS
-        # ==========================================
-
-        if isinstance(
-                field,
-                (
-                        models.SmallIntegerField,
-                        models.IntegerField,
-                        models.BigIntegerField,
-                        models.PositiveIntegerField,
-                        models.PositiveSmallIntegerField,
-                        models.FloatField,
-                        models.DecimalField,
-                ),
-        ):
-            return "number"
-
-        # ==========================================
-        # BOOLEAN
-        # ==========================================
-
-        if isinstance(
-                field,
-                models.BooleanField,
-        ):
-            return "boolean"
-
-        # ==========================================
-        # DATE
-        # ==========================================
-
-        if isinstance(
-                field,
-                models.DateTimeField,
-        ):
-            return "datetime"
-
-        if isinstance(
-                field,
-                models.DateField,
-        ):
-            return "date"
-
-        # ==========================================
-        # JSON
-        # ==========================================
-
-        if isinstance(
-                field,
-                models.JSONField,
-        ):
-            return "json"
-
-        # ==========================================
-        # FALLBACK
-        # ==========================================
-
-        return "string"
     # =====================================================
     # META
     # =====================================================
@@ -251,10 +129,12 @@ class DjangoField(BaseField):
 
     @property
     def is_multiple(self):
-
         if isinstance(
-            self.source,
-            ForeignObjectRel,
+                self.source,
+                (
+                        ManyToManyRel,
+                        ManyToOneRel,
+                ),
         ):
             return True
 
@@ -263,7 +143,6 @@ class DjangoField(BaseField):
             "many_to_many",
             False,
         )
-
     # =====================================================
     # CHOICES
     # =====================================================
