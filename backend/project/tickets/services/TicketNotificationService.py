@@ -5,9 +5,6 @@ from backend.project.notifications.services.NotificationService import (
 
 class TicketNotificationService:
 
-    EVENT_CREATED = "ticket.created"
-    EVENT_CHANGED = "ticket.changed"
-
     @classmethod
     def process(
         cls,
@@ -17,9 +14,20 @@ class TicketNotificationService:
         changes=None,
         user=None,
     ):
-        changes = cls.normalize_changes(
-            changes
-        )
+        if hasattr(
+            changes,
+            "to_list",
+        ):
+            changes = changes.to_list()
+
+        changes = changes or []
+
+        print("=" * 80)
+        print("TICKET NOTIFICATION PROCESS")
+        print("ticket:", ticket.pk)
+        print("created:", created)
+        print("changes:", changes)
+        print("=" * 80)
 
         context = {
             "ticket": ticket,
@@ -28,54 +36,21 @@ class TicketNotificationService:
             "changes": changes,
         }
 
-        # =====================================================
-        # CREATED
-        # =====================================================
-
         if created:
-            NotificationService.trigger(
-                cls.EVENT_CREATED,
+            print("TRIGGER: ticket.created")
+
+            return NotificationService.trigger(
+                "ticket.created",
                 **context,
             )
 
-            return
-
-        # =====================================================
-        # CHANGED
-        # =====================================================
-
         if not changes:
-            return
+            print("NOTIFICATION SKIPPED: no changes")
+            return None
 
-        NotificationService.trigger(
-            cls.EVENT_CHANGED,
+        print("TRIGGER: ticket.changed")
+
+        return NotificationService.trigger(
+            "ticket.changed",
             **context,
         )
-
-    @classmethod
-    def normalize_changes(
-        cls,
-        changes,
-    ):
-        if not changes:
-            return []
-
-        if hasattr(
-            changes,
-            "to_list",
-        ):
-            return changes.to_list()
-
-        if isinstance(
-            changes,
-            list,
-        ):
-            return changes
-
-        if isinstance(
-            changes,
-            dict,
-        ):
-            return changes
-
-        return []

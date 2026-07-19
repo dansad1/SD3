@@ -20,12 +20,28 @@ class NotificationService:
         event_code,
         **kwargs,
     ):
+        print("=" * 80)
+        print("NOTIFICATION TRIGGER")
+        print("event:", event_code)
+        print("context keys:", list(kwargs.keys()))
+        print("=" * 80)
+
         context = NotificationContextBuilder.build(
             **kwargs
         )
 
-        rules = NotificationRuleResolver.get_rules(
-            event_code
+        rules = list(
+            NotificationRuleResolver.get_rules(
+                event_code
+            )
+        )
+
+        print(
+            "NOTIFICATION RULES:",
+            [
+                rule.pk
+                for rule in rules
+            ],
         )
 
         results = []
@@ -39,13 +55,17 @@ class NotificationService:
                 )
             )
 
-            if not recipients:
-                results.append({
-                    "rule": rule.pk,
-                    "status": "skipped",
-                    "reason": "no_recipients",
-                })
+            print(
+                "RULE:",
+                rule.pk,
+                "RECIPIENTS:",
+                [
+                    user.pk
+                    for user in recipients
+                ],
+            )
 
+            if not recipients:
                 continue
 
             result = NotificationDispatcher.dispatch(
@@ -54,10 +74,8 @@ class NotificationService:
                 recipients=recipients,
             )
 
-            results.append({
-                "rule": rule.pk,
-                "status": "processed",
-                "result": result,
-            })
+            results.append(
+                result
+            )
 
         return results

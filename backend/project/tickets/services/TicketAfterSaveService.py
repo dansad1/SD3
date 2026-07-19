@@ -18,10 +18,6 @@ class TicketAfterSaveService:
     ):
         ticket = ctx.instance
 
-        TicketSLAService.update_deadline(
-            ticket,
-        )
-
         created = (
             getattr(
                 ctx,
@@ -37,18 +33,35 @@ class TicketAfterSaveService:
             None,
         )
 
-        request = ctx.request
-        user = getattr(
-            request,
-            "user",
-            None,
+        print("=" * 80)
+        print("TICKET AFTER SAVE")
+        print("ticket:", ticket.pk)
+        print("mode:", getattr(ctx, "mode", None))
+        print("created:", created)
+        print("changes:", changes)
+        print("=" * 80)
+
+        TicketSLAService.update_deadline(
+            ticket,
         )
 
-        transaction.on_commit(
-            lambda: TicketNotificationService.process(
+        def notify():
+            print("=" * 80)
+            print("TICKET NOTIFICATION ON COMMIT")
+            print("ticket:", ticket.pk)
+            print("=" * 80)
+
+            TicketNotificationService.process(
                 ticket=ticket,
                 created=created,
                 changes=changes,
-                user=user,
+                user=getattr(
+                    ctx.request,
+                    "user",
+                    None,
+                ),
             )
+
+        transaction.on_commit(
+            notify
         )

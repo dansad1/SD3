@@ -1,34 +1,28 @@
+from django.core.exceptions import ValidationError
+from django.db import transaction
+
 from backend.engine.matrix.Base.BaseMatrix import (
     BaseMatrix,
 )
-
-
-
 from backend.project.notifications.models import (
+    CHANNEL_CHOICES,
+    NotificationEvent,
     NotificationRule,
-    NotificationTemplate, CHANNEL_CHOICES,
+    NotificationTemplate,
 )
-
 from backend.project.tickets.models import (
     TicketStatus,
 )
 
 
-class NotificationStatusMatrix(
-    BaseMatrix
-):
+class NotificationStatusMatrix(BaseMatrix):
 
     class Meta:
-
         code = "notification-status"
 
         capabilities = {
-
-            "view":
-                "notifications.rules.view",
-
-            "edit":
-                "notifications.rules.edit",
+            "view": "notifications.rules.view",
+            "edit": "notifications.rules.edit",
         }
 
     # =====================================================
@@ -40,133 +34,72 @@ class NotificationStatusMatrix(
         request,
     ):
         templates = list(
-
             NotificationTemplate.objects
-
             .filter(
                 is_active=True,
             )
-
             .order_by(
                 "name",
             )
-
         )
 
         statuses = list(
-
             TicketStatus.objects
-
             .order_by(
                 "name",
             )
-
         )
 
         channel_options = {
-
             code: []
-
             for code, _ in CHANNEL_CHOICES
-
         }
 
         for template in templates:
-
-            for channel in (
+            template_channels = (
                 template.channels
                 or []
-            ):
+            )
 
-                channel_options.setdefault(
-                    channel,
-                    [],
-                ).append(
+            for channel in template_channels:
+                if channel not in channel_options:
+                    continue
 
-                    {
-                        "value":
-                            template.pk,
-
-                        "label":
-                            template.name,
-                    }
-
-                )
+                channel_options[channel].append({
+                    "value": template.pk,
+                    "label": template.name,
+                })
 
         return {
-
-            # =====================================
-            # LAYOUT
-            # =====================================
-
             "layoutRows": [
-
                 {
-
-                    "id":
-                        str(status.pk),
-
-                    "label":
-                        status.name,
-
+                    "id": str(status.pk),
+                    "label": status.name,
                 }
-
                 for status in statuses
-
             ],
-
             "layoutColumns": [
-
                 {
-
-                    "id":
-                        code,
-
-                    "label":
-                        label,
-
+                    "id": code,
+                    "label": label,
                 }
-
-                for code, label
-                in CHANNEL_CHOICES
-
+                for code, label in CHANNEL_CHOICES
             ],
-
-            # =====================================
-            # SCHEMA
-            # =====================================
-
             "defaultCell": {
-
-                "widget":
-                    "select",
-
+                "widget": "select",
             },
-
             "columnSchema": {
-
                 code: {
-
-                    "widget":
-                        "select",
-
-                    "options":
-                        channel_options.get(
-                            code,
-                            [],
-                        ),
-
+                    "widget": "select",
+                    "options": channel_options.get(
+                        code,
+                        [],
+                    ),
                 }
-
-                for code, _
-                in CHANNEL_CHOICES
-
+                for code, _ in CHANNEL_CHOICES
             },
-
             "rowSchema": {},
-
             "cells": {},
-
         }
 
     # =====================================================
@@ -177,170 +110,376 @@ class NotificationStatusMatrix(
         self,
         request,
     ):
+        event_code = self.get_param(
+            request,
+            "event",
+        )
+
         recipient = self.get_param(
             request,
             "recipient",
         )
 
-        if not recipient:
-
+        if not event_code or not recipient:
             return {
-
                 "items": [],
-
             }
 
-        qs = (
-
-            NotificationRule.objects
-
-            .filter(
-                ticket_status__isnull=False,
-            )
-
+        event = self.get_event(
+            event_code,
         )
 
-        if recipient.startswith(
-            "role:",
-        ):
+        recipient_type, recipient_value = (
+            self.parse_recipient(
+                recipient,
+            )
+        )
 
-            qs = qs.filter(
+        queryset = (
+            NotificationRule.objects
+            .filter(
+                enabled=True,
+                event=event,
+                ticket_status__isnull=False,
+            )
+            .select_related(
+                "event",
+                "ticket_status",
+                "template",
+                "role",
+            )
+        )
 
-                role_id=int(
-                    recipient.split(
-                        ":",
-                        1,
-                    )[1]
-                )
-
+        if recipient_type == "role":
+            queryset = queryset.filter(
+                role_id=recipient_value,
+                logical_role="",
             )
 
-        elif recipient.startswith(
-            "logical:",
-        ):
-
-            qs = qs.filter(
-
-                logical_role=recipient.split(
-                    ":",
-                    1,
-                )[1]
-
+        elif recipient_type == "logical":
+            queryset = queryset.filter(
+                logical_role=recipient_value,
+                role_id__isnull=True,
             )
 
         return {
-
             "items": [
-
                 {
-
-                    "row":
-                        str(rule.ticket_status_id),
-
-                    "column":
-                        rule.channel,
-
-                    "value":
-                        rule.template_id,
-
+                    "row": str(
+                        rule.ticket_status_id
+                    ),
+                    "column": rule.channel,
+                    "value": rule.template_id,
                 }
-
-                for rule in qs
-
+                for rule in queryset
             ],
-
         }
 
     # =====================================================
     # SAVE
     # =====================================================
 
+    @transaction.atomic
     def save_changes(
         self,
         request,
         changes,
     ):
+        event_code = self.get_param(
+            request,
+            "event",
+        )
+
         recipient = self.get_param(
             request,
             "recipient",
         )
 
-        if not recipient:
-
-            return {
-
-                "success":
-                    False,
-
-            }
-
-        for change in changes:
-
-            status_id = int(
-                change["row"],
+        if not event_code:
+            raise ValidationError(
+                "Событие не выбрано"
             )
 
-            channel = change[
-                "column"
-            ]
+        if not recipient:
+            raise ValidationError(
+                "Получатель не выбран"
+            )
 
-            template_id = change.get(
+        event = self.get_event(
+            event_code,
+        )
+
+        recipient_type, recipient_value = (
+            self.parse_recipient(
+                recipient,
+            )
+        )
+
+        allowed_channels = {
+            code
+            for code, _ in CHANNEL_CHOICES
+        }
+
+        for change in changes or []:
+            if not isinstance(
+                change,
+                dict,
+            ):
+                continue
+
+            row = (
+                change.get("row")
+                or change.get("y")
+            )
+
+            column = (
+                change.get("column")
+                or change.get("x")
+            )
+
+            value = change.get(
                 "value",
             )
 
-            defaults = {
+            if isinstance(
+                value,
+                dict,
+            ):
+                value = (
+                    value.get("value")
+                    or value.get("id")
+                )
 
-                "template_id":
-                    template_id,
+            status_id = self.parse_status_id(
+                row,
+            )
 
-                "enabled":
-                    True,
+            if not column:
+                raise ValidationError(
+                    "Не указана колонка матрицы"
+                )
 
+            if column not in allowed_channels:
+                raise ValidationError(
+                    f"Неизвестный канал: {column}"
+                )
+
+            lookup = {
+                "event": event,
+                "ticket_status_id": status_id,
+                "channel": column,
             }
 
-            if recipient.startswith(
-                "role:",
+            if recipient_type == "role":
+                lookup.update({
+                    "role_id": recipient_value,
+                    "logical_role": "",
+                })
+
+            elif recipient_type == "logical":
+                lookup.update({
+                    "role_id": None,
+                    "logical_role": recipient_value,
+                })
+
+            if value in (
+                None,
+                "",
+                0,
+                "0",
             ):
+                NotificationRule.objects.filter(
+                    **lookup,
+                ).delete()
 
-                NotificationRule.objects.update_or_create(
+                continue
 
-                    ticket_status_id=status_id,
+            template = self.get_template(
+                template_id=value,
+                channel=column,
+            )
 
-                    role_id=int(
-                        recipient.split(
-                            ":",
-                            1,
-                        )[1]
-                    ),
-
-                    channel=channel,
-
-                    defaults=defaults,
-
-                )
-
-            elif recipient.startswith(
-                "logical:",
-            ):
-
-                NotificationRule.objects.update_or_create(
-
-                    ticket_status_id=status_id,
-
-                    logical_role=recipient.split(
-                        ":",
-                        1,
-                    )[1],
-
-                    channel=channel,
-
-                    defaults=defaults,
-
-                )
+            NotificationRule.objects.update_or_create(
+                **lookup,
+                defaults={
+                    "template": template,
+                    "enabled": True,
+                },
+            )
 
         return {
-
-            "success":
-                True,
-
+            "success": True,
         }
+
+    # =====================================================
+    # HELPERS
+    # =====================================================
+
+    def get_event(
+        self,
+        event_code,
+    ):
+        event_code = str(
+            event_code
+        ).strip()
+
+        if not event_code:
+            raise ValidationError(
+                "Событие не выбрано"
+            )
+
+        event = (
+            NotificationEvent.objects
+            .filter(
+                code=event_code,
+            )
+            .first()
+        )
+
+        if event is None:
+            raise ValidationError(
+                f"Событие {event_code} не найдено"
+            )
+
+        return event
+
+    def get_template(
+        self,
+        *,
+        template_id,
+        channel,
+    ):
+        try:
+            template_id = int(
+                template_id
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+            raise ValidationError(
+                "Некорректный шаблон"
+            )
+
+        template = (
+            NotificationTemplate.objects
+            .filter(
+                pk=template_id,
+                is_active=True,
+            )
+            .first()
+        )
+
+        if template is None:
+            raise ValidationError(
+                "Шаблон не найден или отключён"
+            )
+
+        template_channels = (
+            template.channels
+            or []
+        )
+
+        if channel not in template_channels:
+            raise ValidationError(
+                "Шаблон не поддерживает выбранный канал"
+            )
+
+        return template
+
+    def parse_status_id(
+        self,
+        value,
+    ):
+        if value in (
+            None,
+            "",
+        ):
+            raise ValidationError(
+                "Не указана строка матрицы"
+            )
+
+        try:
+            status_id = int(
+                value
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+            raise ValidationError(
+                "Некорректный статус заявки"
+            )
+
+        status_exists = (
+            TicketStatus.objects
+            .filter(
+                pk=status_id,
+            )
+            .exists()
+        )
+
+        if not status_exists:
+            raise ValidationError(
+                "Статус заявки не найден"
+            )
+
+        return status_id
+
+    def parse_recipient(
+        self,
+        recipient,
+    ):
+        recipient = str(
+            recipient
+        ).strip()
+
+        if recipient.startswith(
+            "role:",
+        ):
+            raw_value = recipient.split(
+                ":",
+                1,
+            )[1]
+
+            try:
+                role_id = int(
+                    raw_value
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+                raise ValidationError(
+                    "Некорректная роль"
+                )
+
+            return (
+                "role",
+                role_id,
+            )
+
+        if recipient.startswith(
+            "logical:",
+        ):
+            logical_role = recipient.split(
+                ":",
+                1,
+            )[1].strip()
+
+            if not logical_role:
+                raise ValidationError(
+                    "Некорректный логический получатель"
+                )
+
+            return (
+                "logical",
+                logical_role,
+            )
+
+        raise ValidationError(
+            "Неизвестный тип получателя"
+        )
