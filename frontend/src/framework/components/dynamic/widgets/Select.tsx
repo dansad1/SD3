@@ -1,18 +1,14 @@
 import type { WidgetRenderer } from "../types"
 import { BaseWidget } from "./Base"
 
-export const SelectWidget: WidgetRenderer = (
-  props
-) => {
-
+export const SelectWidget: WidgetRenderer = (props) => {
   const {
     field,
     value,
     onChange,
   } = props
 
-  const options =
-    field.options ?? []
+  const options = field.options ?? []
 
   const normalizedValue =
     value &&
@@ -23,44 +19,29 @@ export const SelectWidget: WidgetRenderer = (
 
   return (
     <BaseWidget {...props}>
-
       {({ disabled }) => (
-
         <select
           className="ui-input ui-native-select"
-
           value={
             normalizedValue == null
               ? ""
               : String(normalizedValue)
           }
-
-          onChange={e => {
-            onChange(e.target.value)
+          onChange={(event) => {
+            onChange(event.target.value)
           }}
-
           disabled={disabled}
         >
-
-          <option value="">
-            — выбрать —
-          </option>
-
-          {options.map(option => (
-
+          {options.map((option) => (
             <option
               key={String(option.value)}
               value={String(option.value)}
             >
               {option.label}
             </option>
-
           ))}
-
         </select>
-
       )}
-
     </BaseWidget>
   )
 }

@@ -1,158 +1,269 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 
 interface Option {
-  value: string | number;
-  label: string;
+  value: string | number
+  label: string
 }
 
 interface Props {
-  value: string[];
-  options: Option[];
-  onChange: (v: string[]) => void;
-  disabled?: boolean;   // ✅ добавили
+  value: string[]
+  options: Option[]
+  onChange: (value: string[]) => void
+  disabled?: boolean
 }
 
-export default function PopupMultiSelect({ value, options, onChange }: Props) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
+export default function PopupMultiSelect({
+  value,
+  options,
+  onChange,
+  disabled = false,
+}: Props) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const ref = useRef<HTMLDivElement>(null)
 
-  // закрытие по клику вне
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
+    const handler = (event: MouseEvent) => {
+      if (
+        ref.current &&
+        !ref.current.contains(event.target as Node)
+      ) {
+        setOpen(false)
       }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  function toggle(val: string) {
-    if (value.includes(val)) {
-      onChange(value.filter((x) => x !== val));
-    } else {
-      onChange([...value, val]);
     }
+
+    document.addEventListener("mousedown", handler)
+
+    return () => {
+      document.removeEventListener("mousedown", handler)
+    }
+  }, [])
+
+  function toggle(optionValue: string) {
+    if (disabled) {
+      return
+    }
+
+    if (value.includes(optionValue)) {
+      onChange(
+        value.filter((item) => item !== optionValue)
+      )
+      return
+    }
+
+    onChange([...value, optionValue])
   }
 
-  // Фильтрация списка
   const filteredOptions = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return options;
+    const query = search.trim().toLowerCase()
 
-    return options.filter((o) => o.label.toLowerCase().includes(q));
-  }, [search, options]);
+    if (!query) {
+      return options
+    }
 
-  // Текст в поле
-  let displayText = "Выбрать…";
+    return options.filter((option) =>
+      option.label.toLowerCase().includes(query)
+    )
+  }, [search, options])
+
+  let displayText = "Выбрать…"
+
   if (value.length === 1) {
-    const one = options.find((o) => o.value == value[0]);
-    displayText = one ? one.label : "";
+    const selectedOption = options.find(
+      (option) => String(option.value) === value[0]
+    )
+
+    displayText = selectedOption?.label ?? ""
   } else if (value.length > 1 && value.length <= 3) {
     displayText = value
-      .map((v) => options.find((o) => o.value == v)?.label || "")
-      .join(", ");
+      .map((selectedValue) => {
+        return (
+          options.find(
+            (option) =>
+              String(option.value) === selectedValue
+          )?.label ?? ""
+        )
+      })
+      .filter(Boolean)
+      .join(", ")
   } else if (value.length > 3) {
-    displayText = `${value.length} выбрано`;
+    displayText = `${value.length} выбрано`
   }
 
   return (
-    <div ref={ref} style={{ position: "relative", width: "100%" }}>
-      {/* Поле */}
+    <div
+      ref={ref}
+      style={{
+        position: "relative",
+        width: "100%",
+      }}
+    >
       <div
         className="ui-input"
         style={{
-          cursor: "pointer",
+          cursor: disabled ? "not-allowed" : "pointer",
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+          opacity: disabled ? 0.6 : 1,
         }}
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          if (!disabled) {
+            setOpen((current) => !current)
+          }
+        }}
       >
         <span
           style={{
+            flex: 1,
+            minWidth: 0,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            flex: 1,
           }}
         >
           {displayText}
         </span>
-        <span style={{ opacity: 0.6 }}>▾</span>
+
+        <span
+          aria-hidden="true"
+          style={{
+            flexShrink: 0,
+            opacity: 0.6,
+          }}
+        >
+          ▾
+        </span>
       </div>
 
-      {/* Popover */}
-      {open && (
+      {open && !disabled && (
         <div
           style={{
             position: "absolute",
             top: "100%",
             right: 0,
             zIndex: 999,
+            width: 260,
+            maxHeight: 340,
+            marginTop: 4,
+            padding: 10,
+            overflowY: "auto",
             background: "white",
             border: "1px solid #ddd",
             borderRadius: 8,
-            marginTop: 4,
-            padding: 10,
-            width: 260,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            maxHeight: 340,
-            overflowY: "auto",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
           }}
         >
-          {/* Закрыть */}
           <div
             style={{
-              textAlign: "right",
-              fontSize: 20,
-              cursor: "pointer",
+              display: "flex",
+              justifyContent: "flex-end",
               marginBottom: 6,
             }}
-            onClick={() => setOpen(false)}
           >
-            ×
+            <button
+              type="button"
+              aria-label="Закрыть"
+              onClick={() => setOpen(false)}
+              style={{
+                width: 28,
+                height: 28,
+                padding: 0,
+                fontSize: 20,
+                lineHeight: 1,
+                cursor: "pointer",
+                background: "transparent",
+                border: 0,
+              }}
+            >
+              ×
+            </button>
           </div>
 
-          {/* Поиск */}
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value)
+            }}
             placeholder="Поиск…"
             className="ui-input"
-            style={{ marginBottom: 8 }}
+            style={{
+              width: "100%",
+              marginBottom: 8,
+              boxSizing: "border-box",
+            }}
           />
 
-          {/* Список */}
           {filteredOptions.length === 0 && (
-            <div style={{ padding: "6px 0", opacity: 0.6 }}>
+            <div
+              style={{
+                padding: "8px 0",
+                textAlign: "center",
+                opacity: 0.6,
+              }}
+            >
               Ничего не найдено
             </div>
           )}
 
-          {filteredOptions.map((opt) => (
-            <label
-              key={opt.value}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "4px 0",
-                cursor: "pointer",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={value.includes(String(opt.value))}
-                onChange={() => toggle(String(opt.value))}
-              />
-              {opt.label}
-            </label>
-          ))}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+            }}
+          >
+            {filteredOptions.map((option) => {
+              const optionValue = String(option.value)
+
+              return (
+                <label
+                  key={optionValue}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "20px minmax(0, 1fr)",
+                    alignItems: "center",
+                    columnGap: 8,
+                    minHeight: 32,
+                    padding: "4px 6px",
+                    cursor: "pointer",
+                    borderRadius: 4,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={value.includes(optionValue)}
+                    onChange={() => toggle(optionValue)}
+                    style={{
+                      width: 16,
+                      height: 16,
+                      margin: 0,
+                      justifySelf: "center",
+                    }}
+                  />
+
+                  <span
+                    style={{
+                      minWidth: 0,
+                      lineHeight: 1.35,
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {option.label}
+                  </span>
+                </label>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>
-  );
+  )
 }
