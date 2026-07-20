@@ -11,6 +11,7 @@ class TicketField(
 
     fieldset = models.ForeignKey(
         "tickets.TicketFieldSet",
+        verbose_name="Набор полей",
         on_delete=models.CASCADE,
         related_name="fields",
     )

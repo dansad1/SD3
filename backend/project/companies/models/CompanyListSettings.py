@@ -1,24 +1,23 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 class CompanyListSettings(models.Model):
 
     user = models.ForeignKey(
-
         settings.AUTH_USER_MODEL,
-
+        verbose_name="Пользователь",
         on_delete=models.CASCADE,
     )
 
     entity = models.CharField(
+        "Сущность",
         max_length=255,
     )
 
     visible_fields = models.JSONField(
-
+        "Видимые поля",
         default=list,
-
         blank=True,
     )
 
@@ -35,11 +34,11 @@ class CompanyListSettings(models.Model):
         ]
 
         verbose_name = (
-            "Company list settings"
+            "Настройки списка компаний"
         )
 
         verbose_name_plural = (
-            "Company list settings"
+            "Настройки списков компаний"
         )
 
     def __str__(self):

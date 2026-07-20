@@ -11,6 +11,7 @@ class UserFieldAccess(
 
     field = models.ForeignKey(
         "users.UserField",
+        verbose_name="Поле пользователя",
         on_delete=models.CASCADE,
         related_name="accesses",
     )
@@ -23,3 +24,6 @@ class UserFieldAccess(
             "field",
             "role",
         )
+
+        verbose_name = "Доступ к полю пользователя"
+        verbose_name_plural = "Доступы к полям пользователей"

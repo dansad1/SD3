@@ -23,10 +23,12 @@ class BaseFieldAccess(
 
     role = models.ForeignKey(
         UserRole,
+        verbose_name="Роль",
         on_delete=models.CASCADE,
     )
 
     access_level = models.CharField(
+        "Уровень доступа",
         max_length=16,
         choices=ACCESS_CHOICES,
         default=ACCESS_EDIT,

@@ -13,40 +13,48 @@ class EmailSettings(TimeStampedModel):
         SSL = "ssl", "SSL/TLS"
 
     host = models.CharField(
+        "SMTP-сервер",
         max_length=255,
     )
 
     port = models.PositiveIntegerField(
+        "Порт",
         default=587,
     )
 
     host_user = models.CharField(
+        "Имя пользователя",
         max_length=255,
         blank=True,
         null=True,
     )
 
     host_password = models.CharField(
+        "Пароль",
         max_length=255,
         blank=True,
         null=True,
     )
 
     encryption = models.CharField(
+        "Шифрование",
         max_length=20,
         choices=Encryption.choices,
         default=Encryption.TLS,
     )
 
-    default_from = models.EmailField()
+    default_from = models.EmailField(
+        "Email отправителя",
+    )
 
     is_active = models.BooleanField(
+        "Активно",
         default=True,
     )
 
     class Meta:
-        verbose_name = "Email settings"
-        verbose_name_plural = "Email settings"
+        verbose_name = "Настройки электронной почты"
+        verbose_name_plural = "Настройки электронной почты"
 
     def __str__(self):
         return self.host

@@ -11,12 +11,14 @@ class TicketAttachment(TimeStampedModel):
 
     ticket = models.ForeignKey(
         "tickets.Ticket",
+        verbose_name="Заявка",
         on_delete=models.CASCADE,
         related_name="attachments",
     )
 
     field = models.ForeignKey(
         "tickets.TicketField",
+        verbose_name="Поле заявки",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -25,6 +27,7 @@ class TicketAttachment(TimeStampedModel):
 
     stored_file = models.ForeignKey(
         "generic.StoredFile",
+        verbose_name="Файл",
         null=True,
         blank=True,
         on_delete=models.CASCADE,
@@ -33,6 +36,7 @@ class TicketAttachment(TimeStampedModel):
 
     uploaded_by = models.ForeignKey(
         "users.User",
+        verbose_name="Загрузил",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,

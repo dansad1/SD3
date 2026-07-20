@@ -1,11 +1,9 @@
 from django.db import models
 
-
-
 from backend.generic.models import (
-    TimeStampedModel, DynamicField,
+    DynamicField,
+    TimeStampedModel,
 )
-
 from backend.generic.models.DynamicModelMixin import (
     DynamicModelMixin,
 )
@@ -18,11 +16,13 @@ class Ticket(
 
     type = models.ForeignKey(
         "tickets.TicketType",
+        verbose_name="Тип заявки",
         on_delete=models.PROTECT,
         related_name="tickets",
     )
 
     archived = models.BooleanField(
+        "Архивирована",
         default=False,
     )
 
@@ -33,23 +33,19 @@ class Ticket(
         ]
 
         indexes = [
-
             models.Index(
                 fields=[
                     "type",
                 ],
             ),
-
             models.Index(
                 fields=[
                     "created_at",
                 ],
             ),
-
         ]
 
         verbose_name = "Заявка"
-
         verbose_name_plural = "Заявки"
 
     def __str__(
@@ -72,25 +68,21 @@ class Ticket(
         if not self.type_id:
 
             raise ValueError(
-                "Ticket type is not set."
+                "Тип заявки не указан."
             )
 
         source = (
-
             self.type.fieldset.fields
-
             .filter(
                 name=field_name,
             )
-
             .first()
-
         )
 
         if source is None:
 
             raise ValueError(
-                f"Unknown field: {field_name}"
+                f"Неизвестное поле: {field_name}"
             )
 
         DynamicField(

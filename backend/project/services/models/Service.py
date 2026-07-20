@@ -11,14 +11,11 @@ class Service(TimeStampedModel):
     # =====================================================
 
     parent = models.ForeignKey(
-
         "self",
-
+        verbose_name="Родительский сервис",
         null=True,
         blank=True,
-
         on_delete=models.SET_NULL,
-
         related_name="children",
     )
 
@@ -27,15 +24,18 @@ class Service(TimeStampedModel):
     # =====================================================
 
     name = models.CharField(
+        "Название",
         max_length=255,
     )
 
     code = models.CharField(
+        "Код",
         max_length=50,
         unique=True,
     )
 
     description = models.TextField(
+        "Описание",
         blank=True,
     )
 
@@ -44,14 +44,11 @@ class Service(TimeStampedModel):
     # =====================================================
 
     owner = models.ForeignKey(
-
         settings.AUTH_USER_MODEL,
-
+        verbose_name="Владелец",
         null=True,
         blank=True,
-
         on_delete=models.SET_NULL,
-
         related_name="owned_services",
     )
 
@@ -60,14 +57,11 @@ class Service(TimeStampedModel):
     # =====================================================
 
     schedule = models.ForeignKey(
-
         "services.WorkSchedule",
-
+        verbose_name="График работы",
         null=True,
         blank=True,
-
         on_delete=models.SET_NULL,
-
         related_name="services",
     )
 
@@ -76,29 +70,23 @@ class Service(TimeStampedModel):
     # =====================================================
 
     users = models.ManyToManyField(
-
         settings.AUTH_USER_MODEL,
-
+        verbose_name="Пользователи",
         blank=True,
-
         related_name="services",
     )
 
     companies = models.ManyToManyField(
-
         "companies.Company",
-
+        verbose_name="Компании",
         blank=True,
-
         related_name="services",
     )
 
     roles = models.ManyToManyField(
-
         "users.UserRole",
-
+        verbose_name="Роли",
         blank=True,
-
         related_name="services",
     )
 
@@ -107,20 +95,16 @@ class Service(TimeStampedModel):
     # =====================================================
 
     ticket_types = models.ManyToManyField(
-
         "tickets.TicketType",
-
+        verbose_name="Типы заявок",
         blank=True,
-
         related_name="services",
     )
 
     ticket_categories = models.ManyToManyField(
-
         "tickets.TicketCategory",
-
+        verbose_name="Категории заявок",
         blank=True,
-
         related_name="services",
     )
 
@@ -129,15 +113,18 @@ class Service(TimeStampedModel):
     # =====================================================
 
     archived = models.BooleanField(
+        "Архивирован",
         default=False,
     )
-
 
     class Meta:
 
         ordering = [
             "name",
         ]
+
+        verbose_name = "Сервис"
+        verbose_name_plural = "Сервисы"
 
     def __str__(self):
 

@@ -4,10 +4,12 @@ from backend.generic.models.BaseField import (
     BaseField,
 )
 
+
 class UserField(BaseField):
 
     fieldset = models.ForeignKey(
         "users.UserFieldSet",
+        verbose_name="Набор полей",
         on_delete=models.CASCADE,
         related_name="fields",
         blank=True,
@@ -23,12 +25,17 @@ class UserField(BaseField):
         return UserFieldValue
 
     class Meta:
+
         unique_together = (
             "fieldset",
             "name",
         )
 
+        verbose_name = "Поле пользователя"
+        verbose_name_plural = "Поля пользователей"
+
     def __str__(self):
+
         return (
             f"{self.fieldset}: "
             f"{self.label}"

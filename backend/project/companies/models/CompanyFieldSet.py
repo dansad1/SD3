@@ -4,15 +4,15 @@ from backend.generic.models import (
 
 
 class CompanyFieldSet(
-    BaseFieldSet
+    BaseFieldSet,
 ):
 
     class Meta:
 
         verbose_name = (
-            "Company fieldset"
+            "Набор полей компании"
         )
 
         verbose_name_plural = (
-            "Company fieldsets"
+            "Наборы полей компаний"
         )

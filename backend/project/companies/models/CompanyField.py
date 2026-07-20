@@ -11,6 +11,7 @@ class CompanyField(
 
     fieldset = models.ForeignKey(
         "companies.CompanyFieldSet",
+        verbose_name="Набор полей",
         on_delete=models.CASCADE,
         related_name="fields",
     )

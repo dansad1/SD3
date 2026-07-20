@@ -15,6 +15,7 @@ class Company(
 
     fieldset = models.ForeignKey(
         "companies.CompanyFieldSet",
+        verbose_name="Набор полей",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -22,6 +23,7 @@ class Company(
     )
 
     archived = models.BooleanField(
+        "В архиве",
         default=False,
     )
 
@@ -30,6 +32,9 @@ class Company(
         ordering = [
             "-id",
         ]
+
+        verbose_name = "Компания"
+        verbose_name_plural = "Компании"
 
     def __str__(
         self,
