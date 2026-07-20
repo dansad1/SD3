@@ -77,14 +77,7 @@ const ServiceAutoassignPage = page(
 
             }}
 
-            features={{
-
-              autosave: true,
-
-              bulk: true,
-
-            }}
-
+            
           />
 
         </If>

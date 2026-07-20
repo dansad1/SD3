@@ -167,8 +167,8 @@ Radio: {
         ],
 
         layout: {
-            preferredSpan: 12,
-            grow: false,
+            preferredSpan: 6,
+            grow: true,
         },
 
     },
