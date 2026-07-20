@@ -1,4 +1,7 @@
+from typing import Any
+
 from django.core.exceptions import ValidationError
+from django.db.models import QuerySet
 
 from backend.engine.fields.types.base import (
     BaseFieldType,
@@ -34,213 +37,247 @@ class FileFieldType(BaseFieldType):
     # =====================================================
 
     def validate(
-            self,
-            field,
-            value,
+        self,
+        field,
+        value,
     ):
-
         value = super().validate(
             field,
             value,
         )
 
         if value in (
-                None,
-                "",
-                [],
+            None,
+            "",
+            [],
         ):
-            return [] if field.is_multiple else None
+            return (
+                []
+                if field.is_multiple
+                else None
+            )
 
         if field.is_multiple:
-
-            if not isinstance(
-                    value,
-                    (
-                            list,
-                            tuple,
-                    ),
-            ):
-                value = [value]
+            values = self.ensure_list(
+                value,
+            )
 
             return [
                 self.validate_file(item)
-                for item in value
+                for item in values
             ]
 
-        return self.validate_file(value)
-
-    # =====================================================
-    # FILE
-    # =====================================================
+        return self.validate_file(
+            value,
+        )
 
     def validate_file(
-            self,
-            value,
+        self,
+        value,
     ):
+        file_id = self.extract_id(
+            value,
+        )
 
-        if isinstance(
-                value,
-                dict,
-        ):
-            value = (
-                    value.get("id")
-                    or value.get("value")
-            )
-
-        try:
-            value = int(value)
-
-        except (
-                TypeError,
-                ValueError,
-        ):
+        if file_id is None:
             raise ValidationError(
                 "Некорректный файл",
             )
 
         if not StoredFile.objects.filter(
-                pk=value,
+            pk=file_id,
         ).exists():
             raise ValidationError(
                 "Файл не найден",
             )
 
-        return value
+        return file_id
 
     # =====================================================
     # NORMALIZE
     # =====================================================
 
     def normalize(
-            self,
-            field,
-            value,
+        self,
+        field,
+        value,
     ):
-        return value
+        if value in (
+            None,
+            "",
+            [],
+        ):
+            return (
+                []
+                if field.is_multiple
+                else None
+            )
+
+        if field.is_multiple:
+            result = []
+
+            for item in self.ensure_list(
+                value,
+            ):
+                file_id = self.extract_id(
+                    item,
+                )
+
+                if file_id is None:
+                    continue
+
+                if file_id not in result:
+                    result.append(
+                        file_id,
+                    )
+
+            return result
+
+        return self.extract_id(
+            value,
+        )
 
     # =====================================================
     # SERIALIZE
     # =====================================================
 
     def serialize(
-            self,
-            field,
-            value,
+        self,
+        field,
+        value,
     ):
+        """
+        Сериализация из модели в initial формы.
+
+        Frontend должен получить не [5, 6, 7], а:
+
+        [
+            {
+                "id": 5,
+                "name": "document.docx",
+                "size": 123,
+                "mime_type": "...",
+                "url": "...",
+            },
+        ]
+        """
 
         if value in (
-                None,
-                "",
-                [],
+            None,
+            "",
+            [],
         ):
-            return [] if field.is_multiple else None
+            return (
+                []
+                if field.is_multiple
+                else None
+            )
 
         if field.is_multiple:
-
-            if not isinstance(
-                    value,
-                    (
-                            list,
-                            tuple,
-                    ),
-            ):
-                value = [value]
-
-            result = []
-
-            for item in value:
-
-                if isinstance(
-                        item,
-                        dict,
-                ):
-                    item = (
-                            item.get("id")
-                            or item.get("value")
-                    )
-
-                result.append(
-                    int(item)
-                )
-
-            return result
-
-        if isinstance(
+            return self.serialize_multiple(
                 value,
-                dict,
-        ):
-            value = (
-                    value.get("id")
-                    or value.get("value")
             )
 
-        return int(value)
-
-    # =====================================================
-    # DESERIALIZE
-    # =====================================================
-
-    def deserialize(
-            self,
-            field,
+        return self.serialize_single(
             value,
+        )
+
+    def serialize_multiple(
+        self,
+        value,
     ):
+        values = self.ensure_list(
+            value,
+        )
 
-        if value in (
-                None,
-                "",
-                [],
-        ):
-            return [] if field.is_multiple else None
+        file_ids = []
+        objects = {}
 
-        if field.is_multiple:
-
-            if not isinstance(
-                    value,
-                    (
-                            list,
-                            tuple,
-                    ),
+        for item in values:
+            if isinstance(
+                item,
+                StoredFile,
             ):
-                value = [value]
+                objects[item.pk] = item
+                file_ids.append(
+                    item.pk,
+                )
+                continue
 
-            ids = []
-
-            for item in value:
-                try:
-                    ids.append(
-                        int(item)
-                    )
-                except (
-                        TypeError,
-                        ValueError,
-                ):
-                    continue
-
-            files = StoredFile.objects.in_bulk(
-                ids,
+            file_id = self.extract_id(
+                item,
             )
 
-            return [
+            if file_id is None:
+                continue
+
+            file_ids.append(
+                file_id,
+            )
+
+        missing_ids = [
+            file_id
+            for file_id in file_ids
+            if file_id not in objects
+        ]
+
+        if missing_ids:
+            objects.update(
+                StoredFile.objects.in_bulk(
+                    missing_ids,
+                ),
+            )
+
+        result = []
+        seen = set()
+
+        for file_id in file_ids:
+            if file_id in seen:
+                continue
+
+            file = objects.get(
+                file_id,
+            )
+
+            if file is None:
+                continue
+
+            seen.add(
+                file_id,
+            )
+
+            result.append(
                 self.serialize_object(
-                    files[file_id],
-                )
-                for file_id in ids
-                if file_id in files
-            ]
+                    file,
+                ),
+            )
+
+        return result
+
+    def serialize_single(
+        self,
+        value,
+    ):
+        if isinstance(
+            value,
+            StoredFile,
+        ):
+            return self.serialize_object(
+                value,
+            )
+
+        file_id = self.extract_id(
+            value,
+        )
+
+        if file_id is None:
+            return None
 
         try:
-
             file = StoredFile.objects.get(
-                pk=int(value),
+                pk=file_id,
             )
-
-        except (
-                StoredFile.DoesNotExist,
-                TypeError,
-                ValueError,
-        ):
-
+        except StoredFile.DoesNotExist:
             return None
 
         return self.serialize_object(
@@ -248,18 +285,157 @@ class FileFieldType(BaseFieldType):
         )
 
     # =====================================================
+    # DESERIALIZE
+    # =====================================================
+
+    def deserialize(
+        self,
+        field,
+        value,
+    ):
+        """
+        Преобразование входного значения формы в ID.
+
+        Этот метод оставлен совместимым с normalize().
+        """
+
+        if value in (
+            None,
+            "",
+            [],
+        ):
+            return (
+                []
+                if field.is_multiple
+                else None
+            )
+
+        if field.is_multiple:
+            result = []
+
+            for item in self.ensure_list(
+                value,
+            ):
+                file_id = self.extract_id(
+                    item,
+                )
+
+                if file_id is None:
+                    continue
+
+                if file_id not in result:
+                    result.append(
+                        file_id,
+                    )
+
+            return result
+
+        return self.extract_id(
+            value,
+        )
+
+    # =====================================================
     # DTO
     # =====================================================
 
     def serialize_object(
-            self,
-            file,
+        self,
+        file,
     ):
-
         return {
             "id": file.pk,
             "name": file.original_name,
             "size": file.size,
             "mime_type": file.mime_type,
-            "url": file.file.url,
+            "url": self.get_file_url(
+                file,
+            ),
         }
+
+    def get_file_url(
+        self,
+        file,
+    ):
+        stored_file = getattr(
+            file,
+            "file",
+            None,
+        )
+
+        if not stored_file:
+            return None
+
+        try:
+            return stored_file.url
+        except (
+            ValueError,
+            AttributeError,
+        ):
+            return None
+
+    # =====================================================
+    # HELPERS
+    # =====================================================
+
+    def ensure_list(
+        self,
+        value,
+    ):
+        if isinstance(
+            value,
+            QuerySet,
+        ):
+            return list(
+                value,
+            )
+
+        if isinstance(
+            value,
+            (
+                list,
+                tuple,
+                set,
+            ),
+        ):
+            return list(
+                value,
+            )
+
+        return [
+            value,
+        ]
+
+    def extract_id(
+        self,
+        value: Any,
+    ):
+        if isinstance(
+            value,
+            StoredFile,
+        ):
+            return value.pk
+
+        if isinstance(
+            value,
+            dict,
+        ):
+            value = (
+                value.get("id")
+                or value.get("value")
+                or value.get("pk")
+            )
+
+        try:
+            file_id = int(
+                value,
+            )
+        except (
+            TypeError,
+            ValueError,
+        ):
+            return None
+
+        if file_id <= 0:
+            return None
+
+        return file_id
