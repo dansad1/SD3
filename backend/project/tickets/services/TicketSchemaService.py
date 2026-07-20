@@ -61,9 +61,9 @@ class TicketSchemaService:
         schema,
         ticket=None,
     ):
-        if not ticket:
-            cls.disable_status_field(
-                schema,
+        if ticket is None:
+            cls.customize_create_status(
+                schema=schema,
             )
             return
 
@@ -71,9 +71,9 @@ class TicketSchemaService:
             "status",
         )
 
-        if not current_status:
+        if current_status is None:
             cls.disable_status_field(
-                schema,
+                schema=schema,
             )
             return
 
@@ -103,13 +103,54 @@ class TicketSchemaService:
         )
 
         schema["options"] = [
-            {
-                "value": status.pk,
-                "label": str(status),
-                "color": status.color,
-            }
+            cls.serialize_status_option(
+                status,
+            )
             for status in statuses
         ]
+
+        schema["readonly"] = False
+
+    @classmethod
+    def customize_create_status(
+        cls,
+        schema,
+    ):
+        statuses = (
+            TicketStatus.objects
+            .all()
+            .order_by(
+                "name",
+                "pk",
+            )
+        )
+
+        schema["options"] = [
+            cls.serialize_status_option(
+                status,
+            )
+            for status in statuses
+        ]
+
+        schema.pop(
+            "readonly",
+            None,
+        )
+
+    @classmethod
+    def serialize_status_option(
+        cls,
+        status,
+    ):
+        return {
+            "value": status.pk,
+            "label": str(status),
+            "color": getattr(
+                status,
+                "color",
+                None,
+            ),
+        }
 
     @classmethod
     def disable_status_field(
