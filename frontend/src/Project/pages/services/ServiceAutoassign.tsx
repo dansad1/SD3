@@ -17,7 +17,6 @@ const ServiceAutoassignPage = page(
   "service:autoassign",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

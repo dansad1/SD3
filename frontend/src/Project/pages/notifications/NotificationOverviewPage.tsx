@@ -16,7 +16,6 @@ const NotificationOverviewPage = page(
   "notification:overview",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

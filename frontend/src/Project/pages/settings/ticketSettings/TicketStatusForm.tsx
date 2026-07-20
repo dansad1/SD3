@@ -19,7 +19,6 @@ const TicketStatusFormPage = page(
   "ticket_status:form",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

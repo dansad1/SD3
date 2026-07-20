@@ -16,7 +16,6 @@ const ErrorAuditPage = page(
   "audit:error",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

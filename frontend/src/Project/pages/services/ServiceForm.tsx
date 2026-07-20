@@ -17,7 +17,6 @@ import {
 const ServiceFormPage = page(
   "service:form",
   <Container
-    maxWidth="xl"
     padding="lg"
   >
     <Section>

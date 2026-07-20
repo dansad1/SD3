@@ -13,7 +13,6 @@ import {
 const ServiceListPage = page(
   "service:list",
   <Container
-    maxWidth="xl"
     padding="lg"
   >
     <Section>

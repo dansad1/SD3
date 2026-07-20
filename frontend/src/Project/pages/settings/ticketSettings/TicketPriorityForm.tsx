@@ -19,7 +19,6 @@ const TicketPriorityFormPage = page(
   "ticket_priority:form",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

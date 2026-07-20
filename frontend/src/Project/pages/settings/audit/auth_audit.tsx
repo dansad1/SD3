@@ -15,7 +15,6 @@ const AuthAuditPage = page(
   "audit:auth",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

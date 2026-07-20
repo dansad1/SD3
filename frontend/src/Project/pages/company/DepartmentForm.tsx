@@ -19,7 +19,6 @@ const DepartmentFormPage = page(
   "department:form",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

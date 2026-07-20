@@ -15,7 +15,6 @@ const EmailSettingsFormPage = page(
   "email-settings:form",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
     <Section>

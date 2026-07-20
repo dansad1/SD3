@@ -16,7 +16,6 @@ const TicketTypeSelectPage = page(
   "ticket:type_select",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

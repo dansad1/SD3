@@ -20,7 +20,6 @@ const CompanyFormPage = page(
   "company:form",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

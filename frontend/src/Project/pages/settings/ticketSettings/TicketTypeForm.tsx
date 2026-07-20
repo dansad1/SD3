@@ -17,7 +17,6 @@ import {
 const TicketTypeFormPage = page(
   "ticket_type:form",
   <Container
-    maxWidth="xl"
     padding="lg"
   >
     <Section>

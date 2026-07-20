@@ -16,7 +16,6 @@ const ScheduleListPage = page(
   "schedule:list",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

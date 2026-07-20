@@ -17,7 +17,6 @@ const NotificationTemplateFormPage = page(
   "notification_template:form",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

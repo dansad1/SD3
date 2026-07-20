@@ -20,7 +20,6 @@ const TicketFieldFormPage = page(
   "ticket_field:form",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

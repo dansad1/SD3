@@ -20,7 +20,6 @@ const UserFieldFormPage = page(
   "userfield:form",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

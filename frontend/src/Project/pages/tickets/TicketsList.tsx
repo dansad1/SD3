@@ -16,7 +16,6 @@ const TicketsListPage = page(
   "ticket:list",
 
   <Container
-    maxWidth="xl"
     padding="lg"
   >
 

@@ -16,7 +16,6 @@ const ArticleFormPage = page(
 
   <Container
     padding="lg"
-    maxWidth="xl"
   >
 
     <Section>
