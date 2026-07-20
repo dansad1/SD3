@@ -14,8 +14,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding: 10px 12px;
+  gap: 4px;
+  padding: 6px 8px;
   border: 0;
   border-bottom: 1px solid #e5e7eb;
   background: #f8fafc;
@@ -24,13 +24,13 @@
 .ui-richtext-widget .ck.ck-toolbar .ck-toolbar__items {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
 }
 
 .ui-richtext-widget .ck.ck-button {
-  min-width: 34px;
-  height: 34px;
+  min-width: 30px;
+  height: 30px;
   border-radius: 8px;
 }
 
@@ -39,7 +39,7 @@
 }
 
 .ui-richtext-widget .ck.ck-dropdown {
-  min-width: 180px;
+  min-width: 150px;
 }
 
 .ui-richtext-widget .ck.ck-dropdown .ck-button {
@@ -52,14 +52,14 @@
 }
 
 .ui-richtext-widget .ck-editor__editable_inline {
-  min-height: 320px;
-  max-height: 70vh;
-  padding: 18px 20px;
+  min-height: 160px;
+  max-height: 45vh;
+  padding: 12px 14px;
   border: 0 !important;
   box-shadow: none !important;
   overflow-y: auto;
   font-size: 15px;
-  line-height: 1.65;
+  line-height: 1.55;
   color: #111827;
 }
 
@@ -68,36 +68,36 @@
 }
 
 .ui-richtext-widget .ck-content h1 {
-  font-size: 30px;
+  margin: 16px 0 10px;
+  font-size: 28px;
   font-weight: 700;
-  margin: 20px 0 12px;
 }
 
 .ui-richtext-widget .ck-content h2 {
-  font-size: 24px;
+  margin: 14px 0 8px;
+  font-size: 22px;
   font-weight: 700;
-  margin: 18px 0 10px;
 }
 
 .ui-richtext-widget .ck-content h3 {
-  font-size: 20px;
+  margin: 12px 0 6px;
+  font-size: 18px;
   font-weight: 600;
-  margin: 16px 0 8px;
 }
 
 .ui-richtext-widget .ck-content p {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
 }
 
 .ui-richtext-widget .ck-content ul,
 .ui-richtext-widget .ck-content ol {
-  padding-left: 24px;
+  padding-left: 22px;
 }
 
 .ui-richtext-widget .ck-content blockquote {
+  margin: 12px 0;
+  padding: 8px 14px;
   border-left: 4px solid #3b82f6;
-  margin: 16px 0;
-  padding: 10px 16px;
   background: #eff6ff;
   color: #1e3a8a;
 }
@@ -109,14 +109,33 @@
 
 .ui-richtext-widget .ck-content table td,
 .ui-richtext-widget .ck-content table th {
+  padding: 7px 9px;
   border: 1px solid #d1d5db;
-  padding: 8px 10px;
+}
+
+.ui-richtext-widget .ck-source-editing-area {
+  min-height: 160px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.ui-richtext-widget .ck-source-editing-area textarea {
+  width: 100% !important;
+  min-height: 160px !important;
+  padding: 12px 14px;
+  border: 0;
+  outline: 0;
+  resize: vertical;
+  font-family: Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #e2e8f0;
 }
 
 @media (max-width: 768px) {
   .ui-richtext-widget .ck.ck-toolbar {
-    overflow-x: auto;
     flex-wrap: nowrap;
+    overflow-x: auto;
   }
 
   .ui-richtext-widget .ck.ck-toolbar .ck-toolbar__items {
@@ -125,27 +144,20 @@
   }
 
   .ui-richtext-widget .ck-editor__editable_inline {
-    min-height: 220px;
-    padding: 14px;
+    min-height: 140px;
+    padding: 10px 12px;
+  }
+
+  .ui-richtext-widget .ck-source-editing-area {
+    min-height: 140px;
+  }
+
+  .ui-richtext-widget .ck-source-editing-area textarea {
+    min-height: 140px !important;
+    padding: 10px 12px;
   }
 
   .ui-richtext-widget .ck.ck-dropdown {
-    min-width: 140px;
+    min-width: 130px;
   }
-}
-.ui-richtext-widget .ck-source-editing-area {
-  min-height: 420px;
-}
-
-.ui-richtext-widget .ck-source-editing-area textarea {
-  width: 100% !important;
-  min-height: 120px !important;
-  padding: 16px;
-  border: 0;
-  outline: 0;
-  resize: vertical;
-  font-family: Consolas, monospace;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #e2e8f0;
 }

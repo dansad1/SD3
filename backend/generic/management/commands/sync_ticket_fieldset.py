@@ -35,7 +35,7 @@ class Command(BaseCommand):
         fields = [
 
             # =====================================================
-            # ОСНОВНОЕ
+            # ОБРАЩЕНИЕ
             # =====================================================
 
             {
@@ -52,21 +52,36 @@ class Command(BaseCommand):
             },
 
             {
-                "name": "due_date",
-                "label": "Срок",
-                "field_type": "datetime",
+                "name": "attachments",
+                "label": "Вложения",
+                "field_type": "file",
+                "is_multiple": True,
+            },
+
+            # =====================================================
+            # ЗАЯВИТЕЛЬ
+            # =====================================================
+
+            {
+                "name": "requester",
+                "label": "Заявитель",
+                "field_type": "user",
+            },
+
+            {
+                "name": "company",
+                "label": "Компания",
+                "field_type": "company",
             },
 
             # =====================================================
             # КЛАССИФИКАЦИЯ
             # =====================================================
 
-
-
             {
-                "name": "status",
-                "label": "Статус",
-                "field_type": "status",
+                "name": "category",
+                "label": "Категория",
+                "field_type": "relation",
             },
 
             {
@@ -76,21 +91,19 @@ class Command(BaseCommand):
             },
 
             {
-                "name": "category",
-                "label": "Категория",
-                "field_type": "relation",
+                "name": "status",
+                "label": "Статус",
+                "field_type": "status",
             },
 
-
-
             # =====================================================
-            # УЧАСТНИКИ
+            # НАЗНАЧЕНИЕ
             # =====================================================
 
             {
-                "name": "requester",
-                "label": "Заявитель",
-                "field_type": "user",
+                "name": "executor_group",
+                "label": "Группа исполнителей",
+                "field_type": "relation",
             },
 
             {
@@ -101,46 +114,38 @@ class Command(BaseCommand):
             },
 
             {
-                "name": "executor_group",
-                "label": "Группа исполнителей",
-                "field_type": "relation",
-            },
-
-            {
                 "name": "watchers",
                 "label": "Наблюдатели",
                 "field_type": "user",
                 "is_multiple": True,
             },
 
-            {
-                "name": "company",
-                "label": "Компания",
-                "field_type": "company",
-            },
-
             # =====================================================
-            # SLA
+            # СРОКИ И ПРОЦЕСС
             # =====================================================
 
             {
-                "name": "attachments",
-                "label": "Вложения",
-                "field_type": "file",
-                "is_multiple": True,
+                "name": "due_date",
+                "label": "Срок",
+                "field_type": "datetime",
             },
-            {
-                "name": "comment",
-                "label": "Комментарий",
-                "field_type": "comments",
-            },
+
             {
                 "name": "lifecycle",
                 "label": "Жизненный цикл",
                 "field_type": "relation",
             },
-        ]
 
+            # =====================================================
+            # КОММУНИКАЦИЯ
+            # =====================================================
+
+            {
+                "name": "comment",
+                "label": "Комментарий",
+                "field_type": "comments",
+            },
+        ]
         synced_names = []
 
         for data in fields:
