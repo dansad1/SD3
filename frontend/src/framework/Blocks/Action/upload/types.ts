@@ -21,8 +21,16 @@ export type UploadTempItem = {
 }
 
 
-export type UploadResponse = {
-  files: UploadTempItem[]
+export type UploadActionErrorMap = Record<
+  string,
+  string[] | string
+>
+
+
+export type UploadActionResult = {
+  status?: "ok" | "error"
+  errors?: UploadActionErrorMap
+  [key: string]: unknown
 }
 
 
@@ -38,27 +46,39 @@ export type UploadRuntimeItem = {
   status: UploadRuntimeStatus
   error?: string
 }
+
+
 export type StoredFile = {
-
   id: number
-
   name: string
-
   size: number
-
   mime_type: string
-
   url: string
-
 }
+
 
 export type UploadBlock = {
   type: "upload"
+  id?: string
 
+  name?: string
   label?: string
 
   upload_action: string
-  commit_action: string
+  commit_action?: string
+  discard_action?: string
+
+  /*
+   * Если задано, контроллер возьмёт массив файлов
+   * из result[result_key].
+   *
+   * Для files.upload:
+   * result_key="files"
+   *
+   * Для произвольного multipart action
+   * можно не задавать.
+   */
+  result_key?: string
 
   auto_commit?: boolean
   multiple?: boolean
@@ -68,4 +88,5 @@ export type UploadBlock = {
   files?: UploadTempItem[]
 
   ctx?: Record<string, unknown>
+  refresh?: unknown[]
 }

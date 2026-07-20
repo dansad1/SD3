@@ -1,6 +1,8 @@
 from django.core.exceptions import ValidationError
 
-from backend.engine.import_export.excel.BaseExcelAction import BaseExcelAction
+from backend.engine.import_export.excel.BaseExcelAction import (
+    BaseExcelAction,
+)
 from backend.project.users.entities.UserEntity import (
     UserEntity,
 )
@@ -11,7 +13,6 @@ class ImportUsersExcelPreviewAction(
 ):
 
     code = "users.import.preview"
-
     permission = "users.create"
 
     entity_class = UserEntity
@@ -22,18 +23,23 @@ class ImportUsersExcelPreviewAction(
         payload,
         ctx,
     ):
-        file = request.FILES.get(
-            "file",
+        uploaded_file = request.FILES.get(
+            "files",
         )
 
-        if file is None:
+        if uploaded_file is None:
+            uploaded_file = request.FILES.get(
+                "file",
+            )
+
+        if uploaded_file is None:
             raise ValidationError({
                 "file": [
                     "Файл обязателен",
                 ],
             })
 
-        if not file.name.lower().endswith(
+        if not uploaded_file.name.lower().endswith(
             ".xlsx",
         ):
             raise ValidationError({
@@ -45,5 +51,5 @@ class ImportUsersExcelPreviewAction(
         return self.get_service(
             request,
         ).preview(
-            file,
+            uploaded_file,
         )

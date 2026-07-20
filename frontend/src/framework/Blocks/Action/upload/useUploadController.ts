@@ -20,6 +20,7 @@ import {
 } from "./uploadCtx"
 
 import type {
+  UploadActionResult,
   UploadBlock,
   UploadRuntimeItem,
   UploadTempItem,
@@ -36,7 +37,58 @@ function getErrorMessage(
     return error.message
   }
 
-  return "Не удалось загрузить файл"
+  return "Не удалось выполнить загрузку"
+}
+
+
+function isRecord(
+  value: unknown,
+): value is Record<string, unknown> {
+  return (
+    typeof value === "object"
+    && value !== null
+    && !Array.isArray(value)
+  )
+}
+
+
+function isUploadTempItem(
+  value: unknown,
+): value is UploadTempItem {
+  if (!isRecord(value)) {
+    return false
+  }
+
+  return (
+    typeof value.id === "number"
+    && typeof value.name === "string"
+  )
+}
+
+
+function extractFiles(
+  result: UploadActionResult,
+  resultKey?: string,
+): UploadTempItem[] {
+  if (!resultKey) {
+    return []
+  }
+
+  const value = result[resultKey]
+
+  if (!Array.isArray(value)) {
+    throw new Error(
+      `Action не вернул массив "${resultKey}"`,
+    )
+  }
+
+  if (!value.every(isUploadTempItem)) {
+    throw new Error(
+      `Некорректный формат файлов в "${resultKey}"`,
+    )
+  }
+
+  return value
 }
 
 
@@ -44,10 +96,11 @@ export function useUploadController(
   block: UploadBlock,
 ) {
   const runtimeContext =
-  usePageRuntimeContext() as Record<
-    string,
-    unknown
-  >
+    usePageRuntimeContext() as Record<
+      string,
+      unknown
+    >
+
   const [
     runtime,
     setRuntime,
@@ -58,6 +111,19 @@ export function useUploadController(
     setTempFiles,
   ] = useState<UploadTempItem[]>(
     block.files ?? [],
+  )
+
+  /*
+   * Универсальный результат последнего multipart action.
+   *
+   * Контроллер ничего не знает о rows, preview,
+   * пользователях или импорте.
+   */
+  const [
+    result,
+    setResult,
+  ] = useState<UploadActionResult | null>(
+    null,
   )
 
   const [
@@ -123,8 +189,9 @@ export function useUploadController(
           ? {
               ...item,
               status: "error",
-              error:
-                getErrorMessage(error),
+              error: getErrorMessage(
+                error,
+              ),
             }
           : item,
       ),
@@ -145,7 +212,7 @@ export function useUploadController(
   function appendFiles(
     files: UploadTempItem[],
   ): void {
-    if (!files.length) {
+    if (files.length === 0) {
       return
     }
 
@@ -156,17 +223,18 @@ export function useUploadController(
         ]
       }
 
-      const existingIds =
-        new Set(
-          previous.map(
-            item => item.id,
-          ),
-        )
+      const existingIds = new Set(
+        previous.map(
+          item => item.id,
+        ),
+      )
 
       const uniqueFiles =
         files.filter(
           item =>
-            !existingIds.has(item.id),
+            !existingIds.has(
+              item.id,
+            ),
         )
 
       return [
@@ -197,7 +265,7 @@ export function useUploadController(
     ])
 
     try {
-      const uploaded =
+      const actionResult =
         await uploadFile(
           block.upload_action,
           file,
@@ -209,23 +277,53 @@ export function useUploadController(
             ),
         )
 
-      removeRuntime(localId)
+      /*
+       * Сохраняем весь ответ.
+       * Никаких знаний о структуре конкретного action.
+       */
+      setResult(
+        actionResult,
+      )
 
-      if (!uploaded.length) {
-        return
-      }
+      const uploadedFiles =
+        extractFiles(
+          actionResult,
+          block.result_key,
+        )
 
-      if (block.auto_commit) {
+      /*
+       * Commit имеет смысл только для файлового ответа.
+       */
+      if (
+        block.auto_commit
+        && uploadedFiles.length > 0
+      ) {
+        if (!block.commit_action) {
+          throw new Error(
+            "Для auto_commit не задан commit_action",
+          )
+        }
+
         await commitFiles(
           block.commit_action,
-          uploaded.map(
+          uploadedFiles.map(
             item => item.id,
           ),
           resolvedCtx,
         )
       }
 
-      appendFiles(uploaded)
+      appendFiles(
+        uploadedFiles,
+      )
+
+      /*
+       * Удаляем строку прогресса только после
+       * полного успешного выполнения.
+       */
+      removeRuntime(
+        localId,
+      )
     } catch (error) {
       console.error(
         "Upload failed",
@@ -244,7 +342,7 @@ export function useUploadController(
   ): Promise<void> {
     if (
       block.disabled
-      || !files.length
+      || files.length === 0
     ) {
       return
     }
@@ -252,11 +350,17 @@ export function useUploadController(
     const selectedFiles =
       block.multiple
         ? files
-        : files.slice(0, 1)
+        : files.slice(
+            0,
+            1,
+          )
 
     await Promise.all(
       selectedFiles.map(
-        file => uploadOne(file),
+        file =>
+          uploadOne(
+            file,
+          ),
       ),
     )
   }
@@ -271,24 +375,41 @@ export function useUploadController(
       return
     }
 
-    setDiscardingIds(previous => {
-      const next = new Set(previous)
+    const discardAction =
+      block.discard_action
+      ?? block.commit_action
 
-      next.add(id)
+    if (!discardAction) {
+      console.error(
+        "Discard action is not configured",
+      )
+
+      return
+    }
+
+    setDiscardingIds(previous => {
+      const next = new Set(
+        previous,
+      )
+
+      next.add(
+        id,
+      )
 
       return next
     })
 
     try {
       await discardFiles(
-        block.commit_action,
+        discardAction,
         [id],
         resolvedCtx,
       )
 
       setTempFiles(previous =>
         previous.filter(
-          item => item.id !== id,
+          item =>
+            item.id !== id,
         ),
       )
     } catch (error) {
@@ -298,9 +419,13 @@ export function useUploadController(
       )
     } finally {
       setDiscardingIds(previous => {
-        const next = new Set(previous)
+        const next = new Set(
+          previous,
+        )
 
-        next.delete(id)
+        next.delete(
+          id,
+        )
 
         return next
       })
@@ -316,15 +441,25 @@ export function useUploadController(
       return
     }
 
+    if (!block.commit_action) {
+      console.error(
+        "Commit action is not configured",
+      )
+
+      return
+    }
+
     const ids = tempFiles.map(
       item => item.id,
     )
 
-    if (!ids.length) {
+    if (ids.length === 0) {
       return
     }
 
-    setCommitting(true)
+    setCommitting(
+      true,
+    )
 
     try {
       await commitFiles(
@@ -340,13 +475,17 @@ export function useUploadController(
         error,
       )
     } finally {
-      setCommitting(false)
+      setCommitting(
+        false,
+      )
     }
   }
 
   return {
     runtime,
     tempFiles,
+    result,
+
     uploading,
     committing,
     discardingIds,
@@ -357,6 +496,7 @@ export function useUploadController(
     removeRuntime,
 
     disabled:
-      block.disabled ?? false,
+      block.disabled
+      ?? false,
   }
 }

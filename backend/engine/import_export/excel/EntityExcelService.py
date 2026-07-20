@@ -81,8 +81,9 @@ class EntityExcelService(
         )
 
         return self.importer.preview(
-            data["headers"],
-            data["rows"],
+            headers=data["headers"],
+            rows=data["rows"],
+            start_row=data["start_row"],
         )
 
     parse = preview

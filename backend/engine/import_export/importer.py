@@ -24,6 +24,7 @@ class EntityImporter:
         self,
         headers,
         rows,
+        start_row=2,
     ):
         fields = (
             self.service.get_import_fields()
@@ -34,9 +35,8 @@ class EntityImporter:
 
         for row_number, row in enumerate(
             rows,
-            start=3,
+            start=start_row,
         ):
-
             source = {}
 
             for index, header in enumerate(
@@ -59,20 +59,31 @@ class EntityImporter:
             )
 
             if row_errors:
-                errors[row_number] = (
-                    row_errors
-                )
+                errors[
+                    str(row_number)
+                ] = row_errors
 
-            result.append(
-                {
-                    "row": row_number,
-                    "data": data,
-                }
-            )
+            result.append({
+                "row": row_number,
+                "data": data,
+            })
 
         return {
+            "status": "ok",
             "rows": result,
             "errors": errors,
+            "meta": {
+                "total": len(
+                    result,
+                ),
+                "valid": (
+                    len(result)
+                    - len(errors)
+                ),
+                "invalid": len(
+                    errors,
+                ),
+            },
         }
 
     @transaction.atomic
@@ -90,7 +101,6 @@ class EntityImporter:
         )
 
         for row in rows:
-
             data = row.get(
                 "data",
                 {},
@@ -104,7 +114,7 @@ class EntityImporter:
                 raise ValidationError({
                     self.service.lookup_field: (
                         "Нет ключевого поля"
-                    )
+                    ),
                 })
 
             instance, is_created = (
@@ -116,7 +126,6 @@ class EntityImporter:
             )
 
             for name, value in data.items():
-
                 field = field_map.get(
                     name,
                 )
@@ -140,5 +149,7 @@ class EntityImporter:
         return {
             "created": created,
             "updated": updated,
-            "total": len(rows),
+            "total": len(
+                rows,
+            ),
         }

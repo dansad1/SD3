@@ -1,3 +1,6 @@
+from django.core.exceptions import ValidationError
+
+
 class EntityImportExportSerializer:
 
     def __init__(
@@ -38,8 +41,10 @@ class EntityImportExportSerializer:
         data = {}
         errors = {}
 
-        field_map = self.service.get_field_map(
-            fields,
+        field_map = (
+            self.service.get_field_map(
+                fields,
+            )
         )
 
         for name, raw_value in row.items():
@@ -47,7 +52,7 @@ class EntityImportExportSerializer:
                 name,
             )
 
-            if not field:
+            if field is None:
                 continue
 
             try:
@@ -63,11 +68,39 @@ class EntityImportExportSerializer:
                     value,
                 )
 
-                data[name] = value
+                data[
+                    name
+                ] = value
 
-            except Exception as exc:
-                errors[name] = str(
+            except ValidationError as exc:
+                errors[
+                    name
+                ] = self.get_error_messages(
                     exc,
                 )
 
+            except Exception:
+                errors[
+                    name
+                ] = [
+                    "Некорректное значение",
+                ]
+
         return data, errors
+
+    @staticmethod
+    def get_error_messages(
+        exc,
+    ):
+        if hasattr(
+            exc,
+            "messages",
+        ):
+            return [
+                str(message)
+                for message in exc.messages
+            ]
+
+        return [
+            str(exc),
+        ]

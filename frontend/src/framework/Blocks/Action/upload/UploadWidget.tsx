@@ -1,18 +1,10 @@
-// src/framework/Blocks/Action/upload/UploadWidget.tsx
-
-import { UploadDropzone } from "./UploadDropzone"
-
 import {
-  UploadDoneList,
-  UploadFooter,
-  UploadRuntimeList,
-} from "./UploadLists"
-
+  ActionResultView,
+} from "./ActionResultView"
+import type { UploadBlock } from "./types"
+import { UploadDropzone } from "./UploadDropzone"
+import { UploadDoneList, UploadFooter, UploadRuntimeList } from "./UploadLists"
 import { useUploadController } from "./useUploadController"
-
-import type {
-  UploadBlock,
-} from "./types"
 
 
 export function UploadWidget({
@@ -21,7 +13,20 @@ export function UploadWidget({
   block: UploadBlock
 }) {
   const controller =
-    useUploadController(block)
+    useUploadController(
+      block,
+    )
+
+  const supportsStoredFiles =
+    Boolean(
+      block.result_key,
+    )
+
+  const supportsCommit =
+    supportsStoredFiles
+    && Boolean(
+      block.commit_action,
+    )
 
   return (
     <div className="upload">
@@ -36,37 +41,62 @@ export function UploadWidget({
           controller.disabled
           || controller.uploading
         }
-        multiple={block.multiple}
-        accept={block.accept}
-        onFiles={controller.uploadMany}
+        multiple={
+          block.multiple
+        }
+        accept={
+          block.accept
+        }
+        onFiles={
+          controller.uploadMany
+        }
       />
 
       <UploadRuntimeList
-        items={controller.runtime}
+        items={
+          controller.runtime
+        }
         onRemoveError={
           controller.removeRuntime
         }
       />
 
-      <UploadDoneList
-        items={controller.tempFiles}
-        autoCommit={block.auto_commit}
-        discardingIds={
-          controller.discardingIds
+      {supportsStoredFiles && (
+        <UploadDoneList
+          items={
+            controller.tempFiles
+          }
+          autoCommit={
+            block.auto_commit
+          }
+          discardingIds={
+            controller.discardingIds
+          }
+          onDiscard={
+            controller.discardOne
+          }
+        />
+      )}
+
+      <ActionResultView
+        result={
+          controller.result
         }
-        onDiscard={controller.discardOne}
       />
 
       <UploadFooter
         visible={
-          !block.auto_commit
+          supportsCommit
+          && !block.auto_commit
           && controller.tempFiles.length > 0
         }
         disabled={
           controller.committing
           || controller.uploading
         }
-        onCommit={controller.commitAll}
+        onCommit={
+          controller.commitAll
+        }
       />
     </div>
   )
