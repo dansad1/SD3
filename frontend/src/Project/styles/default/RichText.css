@@ -52,16 +52,17 @@
 }
 
 .ui-richtext-widget .ck-editor__editable_inline {
-  min-height: 160px;
+  min-height: 100px;
   max-height: 45vh;
-  padding: 12px 14px;
   border: 0 !important;
   box-shadow: none !important;
   overflow-y: auto;
   font-size: 15px;
   line-height: 1.55;
   color: #111827;
-}
+  padding: 10px 12px;
+  }
+
 
 .ui-richtext-widget .ck-editor__editable_inline:focus {
   outline: none;
@@ -143,10 +144,7 @@
     width: max-content;
   }
 
-  .ui-richtext-widget .ck-editor__editable_inline {
-    min-height: 140px;
-    padding: 10px 12px;
-  }
+  
 
   .ui-richtext-widget .ck-source-editing-area {
     min-height: 140px;

@@ -541,194 +541,160 @@ export const FileInputWidget: WidgetRenderer = (
   }
 
   return (
-    <BaseWidget {...props}>
-      {({
-        disabled,
-      }) => (
-        <>
-          <input
-            ref={inputRef}
-            hidden
-            type="file"
-            accept={accept}
-            multiple={
-              Boolean(
-                field.multiple,
+  <BaseWidget {...props}>
+    {({
+      disabled,
+    }) => (
+      <>
+        <input
+          ref={inputRef}
+          hidden
+          type="file"
+          accept={accept}
+          multiple={Boolean(
+            field.multiple,
+          )}
+          disabled={
+            disabled
+            || uploading
+          }
+          onChange={(event) => {
+            const selectedFiles =
+              Array.from(
+                event.target.files
+                ?? [],
+              )
+
+            event.target.value = ""
+
+            if (
+              selectedFiles.length > 0
+            ) {
+              void uploadSelected(
+                selectedFiles,
               )
             }
+          }}
+        />
+
+        <div className="ui-file-upload-toolbar">
+          <button
+            type="button"
+            className={[
+              "ui-btn",
+              "ui-btn-secondary",
+              "ui-btn-sm",
+              uploading
+                ? "is-loading"
+                : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             disabled={
               disabled
               || uploading
             }
-            onChange={event => {
-              const selectedFiles =
-                Array.from(
-                  event.target.files
-                  ?? [],
-                )
-
-              event.target.value = ""
-
-              if (
-                selectedFiles.length > 0
-              ) {
-                void uploadSelected(
-                  selectedFiles,
-                )
-              }
+            onClick={() => {
+              inputRef.current?.click()
             }}
-          />
-
-          <div className="ui-list-toolbar">
-            <div className="ui-list-toolbar__left">
-              <button
-                type="button"
-                className={[
-                  "ui-btn",
-                  "ui-btn-secondary",
-                  "ui-btn-sm",
-                  uploading
-                    ? "is-loading"
-                    : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                disabled={
-                  disabled
-                  || uploading
-                }
-                onClick={() => {
-                  inputRef.current?.click()
-                }}
-              >
-                <span className="ui-btn-label">
-                  {uploading
-                    ? `Загрузка ${progress}%`
-                    : "Выбрать файл"}
-                </span>
-              </button>
-            </div>
-
-            <div className="ui-list-toolbar__right">
-              {files.length > 0 && (
-                <span>
-                  Файлов: {files.length}
-                </span>
-              )}
-            </div>
-          </div>
+          >
+            <span className="ui-btn-label">
+              {uploading
+                ? `Загрузка ${progress}%`
+                : "Выбрать файл"}
+            </span>
+          </button>
 
           {files.length > 0 && (
-            <div className="ui-table-wrapper">
-              <table className="ui-table">
-                <thead>
-                  <tr>
-                    <th>
-                      Файл
-                    </th>
+            <span className="ui-file-upload-count">
+              Файлов: {files.length}
+            </span>
+          )}
+        </div>
 
-                    <th>
-                      Тип
-                    </th>
+        {files.length > 0 && (
+          <div className="ui-file-list">
+            {files.map((file) => (
+              <div
+                key={file.id}
+                className="ui-file-list__item"
+              >
+                <div className="ui-file-list__main">
+                  {file.url ? (
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ui-file-list__name"
+                    >
+                      <span className="ui-file-list__name-text">
+                        {file.name}
+                      </span>
 
-                    <th>
-                      Размер
-                    </th>
+                      <span
+                        className="ui-file-list__external"
+                        aria-hidden="true"
+                      >
+                        ↗
+                      </span>
+                    </a>
+                  ) : (
+                    <span className="ui-file-list__name">
+                      <span className="ui-file-list__name-text">
+                        {file.name}
+                      </span>
+                    </span>
+                  )}
 
-                    {!disabled && (
-                      <th>
-                        Действия
-                      </th>
-                    )}
-                  </tr>
-                </thead>
+                  <div className="ui-file-list__meta">
+                    <span>
+                      {file.mime_type
+                        ?? "Неизвестный тип"}
+                    </span>
 
-                <tbody>
-                  {files.map(file => (
-                    <tr key={file.id}>
-                      <td>
-                        {file.url ? (
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={[
-                              "ui-link",
-                              "variant-default",
-                              "underline-hover",
-                              "size-md",
-                              "external",
-                            ].join(" ")}
-                          >
-                            <span className="ui-link-label">
-                              {file.name}
-                            </span>
+                    <span aria-hidden="true">
+                      ·
+                    </span>
 
-                            <span
-                              className="ui-link-external"
-                              aria-hidden="true"
-                            >
-                              ↗
-                            </span>
-                          </a>
-                        ) : (
-                          <span>
-                            {file.name}
-                          </span>
-                        )}
-                      </td>
-
-                      <td>
-                        {file.mime_type ?? "—"}
-                      </td>
-
-                      <td>
-                        {formatFileSize(
-                          file.size,
-                        )}
-                      </td>
-
-                      {!disabled && (
-                        <td>
-                          <button
-                            type="button"
-                            className={[
-                              "ui-btn",
-                              "ui-btn-danger",
-                              "ui-btn-sm",
-                            ].join(" ")}
-                            disabled={uploading}
-                            onClick={() => {
-                              removeFile(
-                                file.id,
-                              )
-                            }}
-                          >
-                            <span className="ui-btn-label">
-                              Удалить
-                            </span>
-                          </button>
-                        </td>
+                    <span>
+                      {formatFileSize(
+                        file.size,
                       )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                    </span>
+                  </div>
+                </div>
 
-          {error && (
-            <div
-              className="table-selection-panel"
-              role="alert"
-            >
-              <span className="text-danger">
-                {error}
-              </span>
-            </div>
-          )}
-        </>
-      )}
-    </BaseWidget>
-  )
+                {!disabled && (
+                  <button
+                    type="button"
+                    className="ui-file-list__remove"
+                    disabled={uploading}
+                    onClick={() => {
+                      removeFile(
+                        file.id,
+                      )
+                    }}
+                  >
+                    Удалить
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <div
+            className="ui-file-upload-error"
+            role="alert"
+          >
+            <span className="text-danger">
+              {error}
+            </span>
+          </div>
+        )}
+      </>
+    )}
+  </BaseWidget>
+)
 }

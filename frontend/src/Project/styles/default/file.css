@@ -1,0 +1,256 @@
+/* =========================================================
+   FILE UPLOAD
+   ========================================================= */
+
+.ui-file-upload-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  width: 100%;
+
+  margin-bottom: 8px;
+}
+
+.ui-file-upload-count {
+  flex: 0 0 auto;
+
+  color: var(--text-soft);
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   FILE LIST
+   ========================================================= */
+
+.ui-file-list {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  min-width: 0;
+
+  overflow: hidden;
+
+  border:
+    1px solid var(--border-subtle);
+
+  border-radius: var(--radius-md);
+
+  background: var(--bg-elevated);
+}
+
+.ui-file-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  width: 100%;
+  min-width: 0;
+
+  box-sizing: border-box;
+
+  padding: 8px 10px;
+
+  border-bottom:
+    1px solid var(--border-subtle);
+
+  transition:
+    background-color 120ms ease;
+}
+
+.ui-file-list__item:last-child {
+  border-bottom: 0;
+}
+
+.ui-file-list__item:hover {
+  background: var(--bg-muted);
+}
+
+/* =========================================================
+   FILE CONTENT
+   ========================================================= */
+
+.ui-file-list__main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+
+  gap: 2px;
+
+  min-width: 0;
+}
+
+.ui-file-list__name {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  min-width: 0;
+  max-width: 100%;
+
+  color: var(--text-main);
+
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.35;
+
+  text-decoration: none;
+}
+
+a.ui-file-list__name:hover {
+  color: var(--accent-main);
+}
+
+.ui-file-list__name-text {
+  display: block;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.ui-file-list__external {
+  flex: 0 0 auto;
+
+  color: var(--text-soft);
+
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* =========================================================
+   FILE META
+   ========================================================= */
+
+.ui-file-list__meta {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  min-width: 0;
+
+  color: var(--text-soft);
+
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.ui-file-list__meta span {
+  min-width: 0;
+}
+
+.ui-file-list__meta span:first-child {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   REMOVE BUTTON
+   ========================================================= */
+
+.ui-file-list__remove {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 26px;
+
+  padding: 4px 8px;
+
+  border: 0;
+
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: var(--color-danger);
+
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background-color 120ms ease,
+    opacity 120ms ease;
+}
+
+.ui-file-list__remove:hover:not(:disabled) {
+  background:
+    color-mix(
+      in srgb,
+      var(--color-danger) 10%,
+      transparent
+    );
+}
+
+.ui-file-list__remove:focus-visible {
+  outline:
+    2px solid var(--color-danger);
+
+  outline-offset: 2px;
+}
+
+.ui-file-list__remove:disabled {
+  opacity: 0.5;
+
+  cursor: default;
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.ui-file-upload-error {
+  margin-top: 8px;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .ui-file-upload-toolbar {
+    align-items: flex-start;
+  }
+
+  .ui-file-list__item {
+    align-items: flex-start;
+
+    gap: 8px;
+
+    padding: 8px;
+  }
+
+  .ui-file-list__meta {
+    flex-wrap: wrap;
+  }
+
+  .ui-file-list__remove {
+    min-height: 24px;
+
+    padding: 3px 6px;
+  }
+}
