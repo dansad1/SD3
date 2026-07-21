@@ -7,11 +7,8 @@ from backend.engine.action.ActionRegistry import actions
 from backend.engine.entity.EntityRegistry import entity_registry
 from backend.engine.matrix.MatrixRegistry import matrix_registry
 from backend.project.permissions.collect import collect_permissions
-from backend.project.users.models import (
-    Permission,
-    User,
-    UserRole,
-)
+from backend.project.users.models import Permission
+
 
 
 class Command(BaseCommand):
@@ -101,95 +98,6 @@ class Command(BaseCommand):
             "sync_roles",
             verbosity=1,
         )
-
-        self.stdout.write("")
-
-        # =====================================================
-        # ROOT USER
-        # =====================================================
-
-        self.stdout.write(
-            "👤 SYNC ROOT USER"
-        )
-
-        try:
-            admin_role = UserRole.objects.get(
-                code="admin",
-            )
-        except UserRole.DoesNotExist as exc:
-            raise RuntimeError(
-                "Системная роль admin не создана"
-            ) from exc
-
-        user, created = (
-            User.objects.update_or_create(
-                login="root",
-                defaults={
-                    "is_active": True,
-                    "is_staff": True,
-                    "is_superuser": True,
-                    "role": admin_role,
-                },
-            )
-        )
-
-        update_fields = []
-
-        if user.role_id != admin_role.pk:
-            user.role = admin_role
-            update_fields.append(
-                "role"
-            )
-
-        if not user.is_active:
-            user.is_active = True
-            update_fields.append(
-                "is_active"
-            )
-
-        if not user.is_staff:
-            user.is_staff = True
-            update_fields.append(
-                "is_staff"
-            )
-
-        if not user.is_superuser:
-            user.is_superuser = True
-            update_fields.append(
-                "is_superuser"
-            )
-
-        if created:
-            user.set_password(
-                "root"
-            )
-            update_fields.append(
-                "password"
-            )
-
-        if update_fields:
-            user.save(
-                update_fields=sorted(
-                    set(update_fields)
-                ),
-            )
-
-        self.stdout.write(
-            f"   {'🟢' if created else '✔'} root"
-        )
-
-        self.stdout.write(
-            "   ✔ login: root"
-        )
-
-        if created:
-            self.stdout.write(
-                "   ✔ initial password: root"
-            )
-        else:
-            self.stdout.write(
-                "   ✔ password unchanged"
-            )
 
         self.stdout.write("")
 
