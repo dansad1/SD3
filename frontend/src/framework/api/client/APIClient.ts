@@ -1,60 +1,123 @@
 // src/framework/api/client/APIClient.ts
+
 import { FrameworkConfig } from "@/framework/config"
 import { traceRuntime } from "@/framework/trace/runtime"
 import { traceSessionStore } from "@/framework/trace/TraceSessionStore"
-import { buildHeaders } from "./headers"
-import {
-  getErrorMessage,
-  createApiError,
-} from "./errorUtils"
 import type { ApiError } from "@/framework/types/ApiError"
+
+import {
+  createApiError,
+  getErrorMessage,
+} from "./errorUtils"
+import { buildHeaders } from "./headers"
+import { ensureCSRFCookie } from "@/framework/utils/ensureCSRFCookie"
+
+
+const UNSAFE_METHODS = new Set([
+  "POST",
+  "PUT",
+  "PATCH",
+  "DELETE",
+])
+
 
 export class APIClient {
   private getBase(): string {
-    return FrameworkConfig.apiBase.replace(/\/$/, "")
+    return FrameworkConfig.apiBase.replace(
+      /\/$/,
+      "",
+    )
   }
 
-  public buildUrl(path: string): string {
-    const cleanPath = path.startsWith("/") ? path : `/${path}`
+  public buildUrl(
+    path: string,
+  ): string {
+    const cleanPath = path.startsWith("/")
+      ? path
+      : `/${path}`
+
     return this.getBase() + cleanPath
   }
 
   private async request<T>(
     url: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
-    const cleanPath = url.startsWith("/") ? url : `/${url}`
-    const finalUrl = this.buildUrl(cleanPath)
-    const method = (options.method || "GET").toUpperCase()
+    const cleanPath = url.startsWith("/")
+      ? url
+      : `/${url}`
+
+    const finalUrl = this.buildUrl(
+      cleanPath,
+    )
+
+    const method = (
+      options.method
+      || "GET"
+    ).toUpperCase()
 
     const trace = traceRuntime.current()
 
     const doFetch = async (): Promise<T> => {
-      const res = await fetch(finalUrl, {
-        credentials: "include",
-        cache: "no-store",
-        ...options,
-        headers: buildHeaders(options.headers),
-      })
-
-      const contentType =
-        res.headers.get("content-type") || ""
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "")
-        throw createApiError(res.status, contentType, text)
+      /*
+       * Django требует CSRF-cookie и заголовок
+       * X-CSRFToken для изменяющих запросов.
+       *
+       * Сначала получаем cookie, затем buildHeaders()
+       * читает её и добавляет заголовок.
+       */
+      if (UNSAFE_METHODS.has(method)) {
+        await ensureCSRFCookie()
       }
 
-      if (!contentType.includes("application/json")) {
+      const response = await fetch(
+        finalUrl,
+        {
+          credentials: "include",
+          cache: "no-store",
+          ...options,
+          headers: buildHeaders(
+            options.headers,
+          ),
+        },
+      )
+
+      const contentType = (
+        response.headers.get(
+          "content-type",
+        )
+        || ""
+      )
+
+      if (!response.ok) {
+        const text = await response
+          .text()
+          .catch(() => "")
+
+        throw createApiError(
+          response.status,
+          contentType,
+          text,
+        )
+      }
+
+      if (
+        !contentType.includes(
+          "application/json",
+        )
+      ) {
         const error: ApiError = {
           code: "invalid_response",
-          message: `Expected JSON, got "${contentType}"`,
-          status: res.status,
+          message: (
+            `Expected JSON, got "${contentType}"`
+          ),
+          status: response.status,
         }
+
         throw error
       }
 
-      return (await res.json()) as T
+      return await response.json() as T
     }
 
     if (!trace) {
@@ -86,8 +149,10 @@ export class APIClient {
         })
 
         return result
-      } catch (e) {
-        const message = getErrorMessage(e)
+      } catch (error) {
+        const message = getErrorMessage(
+          error,
+        )
 
         traceSessionStore.push({
           id: crypto.randomUUID(),
@@ -112,7 +177,7 @@ export class APIClient {
           },
         })
 
-        throw e
+        throw error
       }
     }
 
@@ -122,76 +187,137 @@ export class APIClient {
       {
         api: cleanPath,
         method,
-      }
+      },
     )
   }
 
-  /* =========================
-     HTTP METHODS
-  ========================= */
+  // =====================================================
+  // HTTP METHODS
+  // =====================================================
 
-  get<T>(url: string): Promise<T> {
-    return this.request<T>(url)
+  get<T>(
+    url: string,
+  ): Promise<T> {
+    return this.request<T>(
+      url,
+    )
   }
 
-  post<T = void, B = unknown>(
+  post<
+    T = void,
+    B = unknown,
+  >(
     url: string,
-    data?: B
+    data?: B,
   ): Promise<T> {
-    let body: BodyInit | undefined
-    let headers: HeadersInit | undefined
+    const request = this.buildBody(
+      data,
+    )
+
+    return this.request<T>(
+      url,
+      {
+        method: "POST",
+        body: request.body,
+        headers: request.headers,
+      },
+    )
+  }
+
+  put<
+    T = void,
+    B = unknown,
+  >(
+    url: string,
+    data: B,
+  ): Promise<T> {
+    const request = this.buildBody(
+      data,
+    )
+
+    return this.request<T>(
+      url,
+      {
+        method: "PUT",
+        body: request.body,
+        headers: request.headers,
+      },
+    )
+  }
+
+  patch<
+    T = void,
+    B = unknown,
+  >(
+    url: string,
+    data: B,
+  ): Promise<T> {
+    const request = this.buildBody(
+      data,
+    )
+
+    return this.request<T>(
+      url,
+      {
+        method: "PATCH",
+        body: request.body,
+        headers: request.headers,
+      },
+    )
+  }
+
+  delete<
+    T = void,
+    B = unknown,
+  >(
+    url: string,
+    data?: B,
+  ): Promise<T> {
+    const request = this.buildBody(
+      data,
+    )
+
+    return this.request<T>(
+      url,
+      {
+        method: "DELETE",
+        body: request.body,
+        headers: request.headers,
+      },
+    )
+  }
+
+  // =====================================================
+  // BODY
+  // =====================================================
+
+  private buildBody<B>(
+    data?: B,
+  ): {
+    body: BodyInit | undefined
+    headers: HeadersInit | undefined
+  } {
+    if (data === undefined) {
+      return {
+        body: undefined,
+        headers: undefined,
+      }
+    }
 
     if (data instanceof FormData) {
-      body = data
-    } else if (data !== undefined) {
-      headers = { "Content-Type": "application/json" }
-      body = JSON.stringify(data)
+      return {
+        body: data,
+        headers: undefined,
+      }
     }
 
-    return this.request<T>(url, {
-      method: "POST",
-      body,
-      headers,
-    })
-  }
-
-  put<T = void, B = unknown>(
-    url: string,
-    data: B
-  ): Promise<T> {
-    let body: BodyInit
-    let headers: HeadersInit | undefined
-
-    if (data instanceof FormData) {
-      body = data
-    } else {
-      headers = { "Content-Type": "application/json" }
-      body = JSON.stringify(data)
+    return {
+      body: JSON.stringify(
+        data,
+      ),
+      headers: {
+        "Content-Type": "application/json",
+      },
     }
-
-    return this.request<T>(url, {
-      method: "PUT",
-      body,
-      headers,
-    })
-  }
-
-  delete<T = void, B = unknown>(
-    url: string,
-    data?: B
-  ): Promise<T> {
-    let body: BodyInit | undefined
-    let headers: HeadersInit | undefined
-
-    if (data !== undefined) {
-      headers = { "Content-Type": "application/json" }
-      body = JSON.stringify(data)
-    }
-
-    return this.request<T>(url, {
-      method: "DELETE",
-      body,
-      headers,
-    })
   }
 }

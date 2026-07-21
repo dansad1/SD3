@@ -1,24 +1,64 @@
-
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import path, re_path
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from backend.engine.Resource.ResourceApi import resource_api
-from backend.engine.action.ActionApi import action_submit_api, action_form_api
-from backend.engine.form.FormApi import entity_form_submit_api, entity_form_api
-from backend.engine.list.ListApi import entity_list_api, entity_list_settings_api, entity_list_meta_api, \
-    entity_filter_meta_api
-from backend.engine.matrix.MatrixApi import matrix_submit_api, matrix_api
+from backend.engine.action.ActionApi import (
+    action_form_api,
+    action_submit_api,
+)
+from backend.engine.form.FormApi import (
+    entity_form_api,
+    entity_form_submit_api,
+)
+from backend.engine.list.ListApi import (
+    entity_filter_meta_api,
+    entity_list_api,
+    entity_list_meta_api,
+    entity_list_settings_api,
+)
+from backend.engine.matrix.MatrixApi import (
+    matrix_api,
+    matrix_submit_api,
+)
 from backend.engine.utils.options_api import entity_options_api
 from backend.engine.utils.upload_api import upload_api
 from backend.generic.api.entity_export_api import entity_export_api
 from backend.generic.api.entity_template_api import entity_template_api
-from backend.project.audit.backup.download_view import BackupDownloadView
+from backend.project.audit.backup.download_view import (
+    BackupDownloadView,
+)
 from backend.project.auth.me import me
 
+
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse(
+        {
+            "status": "ok",
+        }
+    )
+
+
 urlpatterns = [
-    path("api/me/", me),
+    path(
+        "admin/",
+        admin.site.urls,
+    ),
+    path(
+        "api/csrf/",
+        csrf,
+        name="csrf",
+    ),
+    path(
+        "api/me/",
+        me,
+        name="me",
+    ),
+
     # =========================================================
-    # ⚡ ACTIONS (DSL, supports dots)
+    # ACTIONS
     # =========================================================
 
     re_path(
@@ -33,7 +73,7 @@ urlpatterns = [
     ),
 
     # =========================================================
-    # 📊 ENTITY LIST
+    # ENTITY LIST
     # =========================================================
 
     path(
@@ -56,9 +96,24 @@ urlpatterns = [
         entity_options_api,
         name="entity-options",
     ),
+    path(
+        "api/entity/<str:entity>/filter/meta/",
+        entity_filter_meta_api,
+        name="entity-filter-meta",
+    ),
+    path(
+        "api/entity/<str:entity>/export/",
+        entity_export_api,
+        name="entity-export",
+    ),
+    path(
+        "api/entity/<str:entity>/template/",
+        entity_template_api,
+        name="entity-template",
+    ),
 
     # =========================================================
-    # 📝 ENTITY FORM (CRUD)
+    # ENTITY FORM
     # =========================================================
 
     path(
@@ -73,7 +128,7 @@ urlpatterns = [
     ),
 
     # =========================================================
-    # 📎 FILES
+    # FILES
     # =========================================================
 
     path(
@@ -83,12 +138,22 @@ urlpatterns = [
     ),
 
     # =========================================================
-    # 🧮 MATRIX (supports dots)
+    # MATRIX
     # =========================================================
-path("api/matrix/<str:code>/", matrix_api),
-path("api/matrix/<str:code>/submit/", matrix_submit_api),
+
+    path(
+        "api/matrix/<str:code>/",
+        matrix_api,
+        name="matrix",
+    ),
+    path(
+        "api/matrix/<str:code>/submit/",
+        matrix_submit_api,
+        name="matrix-submit",
+    ),
+
     # =========================================================
-    # 🌐 RESOURCE (supports dots + :)
+    # RESOURCE
     # =========================================================
 
     re_path(
@@ -96,22 +161,11 @@ path("api/matrix/<str:code>/submit/", matrix_submit_api),
         resource_api,
         name="resource",
     ),
-path(
-    "api/entity/<str:entity>/filter/meta/",
-    entity_filter_meta_api,
-    name="entity-filter-meta",
-),
-    path(
-        "api/entity/<str:entity>/export/",
-        entity_export_api,
-        name="entity-export",
-    ),
 
-    path(
-        "api/entity/<str:entity>/template/",
-        entity_template_api,
-        name="entity-template",
-    ),
+    # =========================================================
+    # BACKUP
+    # =========================================================
+
     path(
         (
             "api/backup/"
