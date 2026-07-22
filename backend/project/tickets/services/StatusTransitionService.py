@@ -19,7 +19,7 @@ class StatusTransitionService:
         status,
         role=None,
     ):
-        if not status:
+        if status is None:
             return TicketStatusTransition.objects.none()
 
         queryset = (
@@ -29,7 +29,7 @@ class StatusTransitionService:
             )
         )
 
-        if role:
+        if role is not None:
             queryset = queryset.filter(
                 allowed_roles=role,
             )
@@ -46,14 +46,7 @@ class StatusTransitionService:
         status,
         role=None,
     ):
-        """
-        Возвращает идентификаторы статусов, доступных из status.
-
-        В результат также включается текущий статус, чтобы форму
-        можно было сохранить без обязательной смены статуса.
-        """
-
-        if not status:
+        if status is None:
             return set()
 
         allowed = set(
@@ -84,7 +77,14 @@ class StatusTransitionService:
         new_status,
         role=None,
     ):
-        if not old_status or not new_status:
+        if new_status is None:
+            raise ValidationError({
+                "status": [
+                    "Статус заявки обязателен.",
+                ],
+            })
+
+        if old_status is None:
             return
 
         if old_status.pk == new_status.pk:
@@ -134,7 +134,7 @@ class StatusTransitionService:
         cls,
         ticket,
     ):
-        if not ticket:
+        if ticket is None:
             return False
 
         status = ticket.get_value(
@@ -171,8 +171,7 @@ class StatusTransitionService:
         )
 
         if (
-            old_status
-            and new_status
+            old_status is not None
             and old_status.pk == new_status.pk
         ):
             return
@@ -187,6 +186,9 @@ class StatusTransitionService:
         ):
             raise ValidationError({
                 "comment": [
-                    "Для перехода в этот статус требуется комментарий.",
+                    (
+                        "Для перехода в этот статус "
+                        "требуется комментарий."
+                    ),
                 ],
             })

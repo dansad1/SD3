@@ -45,6 +45,39 @@ function isPermissionValue(
 
 }
 
+function getPermissionGroupName(
+  code: string,
+): string {
+
+  const normalizedCode =
+    String(
+      code ?? ""
+    ).trim()
+
+  if (
+    !normalizedCode
+  ) {
+    return "Общее"
+  }
+
+  const separatorIndex =
+    normalizedCode.indexOf(
+      "."
+    )
+
+  if (
+    separatorIndex <= 0
+  ) {
+    return "Общее"
+  }
+
+  return normalizedCode.slice(
+    0,
+    separatorIndex
+  )
+
+}
+
 export function PermissionEditorWidget(
   props: WidgetProps,
 ) {
@@ -56,10 +89,89 @@ export function PermissionEditorWidget(
     loading,
   } = props
 
-  const groups =
-    (
-      field as PermissionFieldSchema
-    ).groups ?? []
+  const groups = useMemo(
+    () => {
+
+      const sourceGroups =
+        (
+          field as PermissionFieldSchema
+        ).groups ?? []
+
+      const permissions =
+        sourceGroups.flatMap(
+          group =>
+            group.permissions
+        )
+
+      const grouped =
+        new Map<
+          string,
+          PermissionOption[]
+        >()
+
+      for (
+        const permission
+        of permissions
+      ) {
+
+        const groupName =
+          getPermissionGroupName(
+            permission.code
+          )
+
+        const groupPermissions =
+          grouped.get(
+            groupName
+          ) ?? []
+
+        groupPermissions.push(
+          permission
+        )
+
+        grouped.set(
+          groupName,
+          groupPermissions
+        )
+
+      }
+
+      return Array
+        .from(
+          grouped.entries()
+        )
+        .map(
+          (
+            [
+              name,
+              groupPermissions,
+            ]
+          ) => ({
+            name,
+            permissions:
+              groupPermissions.sort(
+                (
+                  first,
+                  second,
+                ) =>
+                  first.code.localeCompare(
+                    second.code
+                  )
+              ),
+          })
+        )
+        .sort(
+          (
+            first,
+            second,
+          ) =>
+            first.name.localeCompare(
+              second.name
+            )
+        )
+
+    },
+    [field]
+  )
 
   const [activeTab, setActiveTab] =
     useState<string | null>(

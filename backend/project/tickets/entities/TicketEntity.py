@@ -26,11 +26,15 @@ from backend.project.tickets.services.TicketFieldService import (
 from backend.project.tickets.services.TicketSchemaService import (
     TicketSchemaService,
 )
+from backend.project.tickets.services.TicketScopeService import (
+    TicketScopeService,
+)
 
 
 class TicketEntity(
     BaseEntity,
 ):
+    scoped_permissions = True
 
     # =====================================================
     # BASE
@@ -124,6 +128,24 @@ class TicketEntity(
             "attachments",
         ]
 
+    def apply_user_scope(
+        self,
+        request,
+        qs,
+    ):
+        """
+        Scope списка и открытия заявки.
+
+        Для списка используется тот же уровень, что для view.
+        """
+
+        return TicketScopeService.apply_queryset_scope(
+            entity=self,
+            queryset=qs,
+            user=request.user,
+            action="view",
+        )
+
     # =====================================================
     # DYNAMIC FIELDS
     # =====================================================
@@ -150,6 +172,12 @@ class TicketEntity(
     ):
         payload = payload or {}
 
+        self.validate_scope(
+            request=request,
+            payload=payload,
+            instance=instance,
+        )
+
         self.validate_type(
             payload=payload,
             instance=instance,
@@ -168,6 +196,35 @@ class TicketEntity(
         )
 
         return payload
+
+    # =====================================================
+    # VALIDATION: SCOPE
+    # =====================================================
+
+    def validate_scope(
+        self,
+        request,
+        payload,
+        instance=None,
+    ):
+        if instance is None:
+            TicketScopeService.validate_create(
+                entity=self,
+                user=request.user,
+                payload=payload,
+            )
+            return
+
+        TicketScopeService.check_object_access(
+            entity=self,
+            user=request.user,
+            ticket=instance,
+            action="edit",
+        )
+
+    # =====================================================
+    # VALIDATION: TYPE
+    # =====================================================
 
     def validate_type(
         self,
@@ -193,6 +250,10 @@ class TicketEntity(
             ],
         })
 
+    # =====================================================
+    # VALIDATION: ASSIGNMENT
+    # =====================================================
+
     def validate_assignment(
         self,
         request,
@@ -211,27 +272,40 @@ class TicketEntity(
             executor=executor,
         )
 
+    # =====================================================
+    # VALIDATION: STATUS
+    # =====================================================
+
     def validate_status_transition(
         self,
         request,
         payload,
         instance=None,
     ):
-        if instance is None:
-            return
-
-        if "status" not in payload:
-            return
-
-        new_status = payload.get(
-            "status",
-        )
+        if "status" in payload:
+            new_status = payload.get(
+                "status",
+            )
+        elif instance is not None:
+            new_status = instance.get_value(
+                "status",
+            )
+        else:
+            new_status = None
 
         if new_status is None:
-            return
+            raise ValidationError({
+                "status": [
+                    "Статус заявки обязателен.",
+                ],
+            })
 
-        old_status = instance.get_value(
-            "status",
+        old_status = (
+            instance.get_value(
+                "status",
+            )
+            if instance is not None
+            else None
         )
 
         role = getattr(
@@ -248,6 +322,27 @@ class TicketEntity(
             comment=payload.get(
                 "comment",
             ),
+        )
+
+    # =====================================================
+    # DELETE
+    # =====================================================
+
+    def before_delete(
+        self,
+        request,
+        instance,
+    ):
+        TicketScopeService.check_object_access(
+            entity=self,
+            user=request.user,
+            ticket=instance,
+            action="delete",
+        )
+
+        return super().before_delete(
+            request=request,
+            instance=instance,
         )
 
     # =====================================================

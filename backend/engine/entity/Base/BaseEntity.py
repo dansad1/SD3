@@ -51,6 +51,7 @@ class BaseEntity:
     # =====================================================
     # FORM
     # =====================================================
+    scoped_permissions = False
 
     form_sections = None
 
