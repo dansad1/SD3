@@ -1,3 +1,7 @@
+# backend/project/notifications/services/
+# NotificationDispatcher.py
+
+from django.core.exceptions import ValidationError
 from django.template import Context, Template
 from django.utils.html import strip_tags
 
@@ -27,28 +31,69 @@ class NotificationDispatcher:
                 "reason": "template_not_configured",
             }
 
-        channels = cls.get_channels(
-            template
+        if not getattr(
+            template,
+            "is_active",
+            False,
+        ):
+            return {
+                "status": "skipped",
+                "reason": "template_inactive",
+            }
+
+        channel_code = str(
+            rule.channel
+            or ""
+        ).strip()
+
+        if not channel_code:
+            return {
+                "status": "skipped",
+                "reason": "channel_not_configured",
+            }
+
+        if channel_code not in cls.CHANNELS:
+            return {
+                "status": "skipped",
+                "reason": "channel_not_supported",
+                "channel": channel_code,
+            }
+
+        template_channels = cls.get_channels(
+            template,
         )
 
-        results = []
+        if channel_code not in template_channels:
+            return {
+                "status": "skipped",
+                "reason": "template_channel_not_supported",
+                "channel": channel_code,
+            }
 
-        for channel_code in channels:
-            if channel_code == "email":
-                result = cls.dispatch_email(
-                    template=template,
-                    context=context,
-                    recipients=recipients,
-                )
+        if not recipients:
+            return {
+                "status": "skipped",
+                "reason": "recipients_not_found",
+                "channel": channel_code,
+            }
 
-                results.append({
-                    "channel": "email",
-                    "result": result,
-                })
+        if channel_code == "email":
+            result = cls.dispatch_email(
+                template=template,
+                context=context,
+                recipients=recipients,
+            )
+
+            return {
+                "status": "ok",
+                "channel": channel_code,
+                "result": result,
+            }
 
         return {
-            "status": "ok",
-            "results": results,
+            "status": "skipped",
+            "reason": "channel_not_implemented",
+            "channel": channel_code,
         }
 
     @classmethod
@@ -62,18 +107,20 @@ class NotificationDispatcher:
             None,
         )
 
-        if channels:
-            if isinstance(
+        if isinstance(
+            channels,
+            str,
+        ):
+            channels = [
                 channels,
-                str,
-            ):
-                return [
-                    channels,
-                ]
+            ]
 
-            return list(
-                channels
-            )
+        if channels:
+            return [
+                str(channel).strip()
+                for channel in channels
+                if str(channel).strip()
+            ]
 
         channel = getattr(
             template,
@@ -83,65 +130,132 @@ class NotificationDispatcher:
 
         if channel:
             return [
-                channel,
+                str(channel).strip(),
             ]
 
         return []
 
     @classmethod
     def dispatch_email(
-        cls,
-        template,
-        context,
-        recipients,
+            cls,
+            template,
+            context,
+            recipients,
     ):
-        email_addresses = [
-            user.email
-            for user in recipients
-            if getattr(
-                user,
-                "email",
-                None,
-            )
-        ]
-
-        email_addresses = (
-            EmailChannel.normalize_recipients(
-                email_addresses
-            )
-        )
-
         template_context = Context(
             context,
             autoescape=True,
         )
 
         subject = Template(
-            template.subject
+            str(
+                template.subject
+                or ""
+            )
         ).render(
-            template_context
+            template_context,
         ).strip()
 
         body_html = Template(
-            template.body
+            str(
+                template.body
+                or ""
+            )
         ).render(
-            template_context
+            template_context,
         )
 
         body_text = strip_tags(
-            body_html
+            body_html,
         ).strip()
 
-        sent_count = EmailChannel.send_message(
-            subject=subject,
-            body=body_text,
-            html=body_html,
-            recipients=email_addresses,
+        if not subject:
+            raise ValidationError(
+                "После обработки шаблона тема письма пустая"
+            )
+
+        email_addresses = []
+
+        for user in recipients:
+            email = cls.get_user_email(
+                user,
+            )
+
+            if email:
+                email_addresses.append(
+                    email,
+                )
+
+        email_addresses = list(
+            dict.fromkeys(
+                email_addresses,
+            )
         )
+
+        if not email_addresses:
+            return {
+                "sent": 0,
+                "recipients": 0,
+                "failed": 0,
+            }
+
+        sent_count = 0
+        failed = []
+
+        for email in email_addresses:
+            try:
+                sent_count += (
+                    EmailChannel.send_message(
+                        subject=subject,
+                        body=body_text,
+                        html=body_html,
+                        recipients=[
+                            email,
+                        ],
+                    )
+                )
+
+            except Exception as exc:
+                failed.append({
+                    "email": email,
+                    "error": str(
+                        exc
+                    ),
+                })
 
         return {
             "sent": sent_count,
             "recipients": len(
-                email_addresses
+                email_addresses,
             ),
+            "failed": len(
+                failed,
+            ),
+            "failures": failed,
         }
+    @classmethod
+    def get_user_email(
+        cls,
+        user,
+    ):
+        value = ""
+
+        if hasattr(
+            user,
+            "get_value",
+        ):
+            value = user.get_value(
+                "email",
+            )
+
+        if not value:
+            value = getattr(
+                user,
+                "email",
+                "",
+            )
+
+        return str(
+            value
+            or ""
+        ).strip()

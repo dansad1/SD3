@@ -23,6 +23,8 @@ LOGICAL_ROLE_LABELS = {
     "member": "Член группы исполнителей",
     "watcher": "Наблюдатель",
     "approver": "Согласующий",
+    "target_user": "Пользователь события",
+
 }
 
 

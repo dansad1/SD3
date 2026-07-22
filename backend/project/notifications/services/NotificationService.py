@@ -32,7 +32,7 @@ class NotificationService:
 
         rules = list(
             NotificationRuleResolver.get_rules(
-                event_code
+                event_code,
             )
         )
 
