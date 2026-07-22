@@ -146,20 +146,42 @@ class UserEntity(BaseEntity):
     # =====================================================
 
     def before_save(
-        self,
-        ctx,
+            self,
+            ctx,
     ):
         ctx = super().before_save(
             ctx,
         )
 
-        UserPasswordService.apply(
-            instance=ctx.instance,
-            payload=ctx.data,
+        password = ctx.data.get(
+            "password",
         )
 
-        return ctx
+        ctx.password_changed = (
+                password
+                not in (
+                    None,
+                    "",
+                    UserPasswordService.MASK,
+                )
+        )
 
+        # При редактировании пользователь уже существует,
+        # поэтому пароль можно применить здесь.
+        #
+        # При создании ctx.instance ещё равен None.
+        # Пароль оставляем в ctx.data — его обработает
+        # PasswordFieldType во время основного save().
+        if (
+                ctx.instance is not None
+                and ctx.password_changed
+        ):
+            UserPasswordService.apply(
+                instance=ctx.instance,
+                payload=ctx.data,
+            )
+
+        return ctx
     # =====================================================
     # AFTER SAVE
     # =====================================================
