@@ -1,7 +1,3 @@
-# backend/project/notifications/services/
-# NotificationLogicalRecipientResolver.py
-
-
 class NotificationLogicalRecipientResolver:
 
     @classmethod
@@ -36,23 +32,52 @@ class NotificationLogicalRecipientResolver:
             return []
 
         if logical_role == "requester":
-            if getattr(
-                ticket,
-                "created_by_id",
-                None,
-            ):
-                return [
-                    ticket.created_by,
-                ]
+            requester = ticket.get_value(
+                "requester",
+            )
 
-        elif logical_role == "assignee":
-            if getattr(
-                ticket,
-                "assigned_to_id",
-                None,
-            ):
-                return [
-                    ticket.assigned_to,
-                ]
+            return [
+                requester,
+            ] if requester else []
+
+        if logical_role == "assignee":
+            executors = ticket.get_value(
+                "executors",
+            )
+
+            return cls.normalize_users(
+                executors,
+            )
+
+        if logical_role == "watcher":
+            watchers = ticket.get_value(
+                "watchers",
+            )
+
+            return cls.normalize_users(
+                watchers,
+            )
 
         return []
+
+    @classmethod
+    def normalize_users(
+        cls,
+        value,
+    ):
+        if not value:
+            return []
+
+        if isinstance(
+            value,
+            (list, tuple, set),
+        ):
+            return [
+                user
+                for user in value
+                if user
+            ]
+
+        return [
+            value,
+        ]

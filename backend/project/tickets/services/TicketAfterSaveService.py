@@ -1,10 +1,19 @@
+import logging
+
 from django.db import transaction
 
+from backend.project.tickets.models import (
+    Ticket,
+)
 from backend.project.tickets.services.TicketNotificationService import (
     TicketNotificationService,
 )
 from backend.project.tickets.services.TicketSLAService import (
     TicketSLAService,
+)
+
+logger = logging.getLogger(
+    __name__,
 )
 
 
@@ -17,6 +26,7 @@ class TicketAfterSaveService:
         ctx,
     ):
         ticket = ctx.instance
+        ticket_id = ticket.pk
 
         created = (
             getattr(
@@ -33,35 +43,61 @@ class TicketAfterSaveService:
             None,
         )
 
-        print("=" * 80)
-        print("TICKET AFTER SAVE")
-        print("ticket:", ticket.pk)
-        print("mode:", getattr(ctx, "mode", None))
-        print("created:", created)
-        print("changes:", changes)
-        print("=" * 80)
+        if hasattr(
+            changes,
+            "to_list",
+        ):
+            changes = changes.to_list()
+
+        changes = changes or []
+
+        actor = getattr(
+            ctx.request,
+            "user",
+            None,
+        )
 
         TicketSLAService.update_deadline(
             ticket,
         )
 
         def notify():
-            print("=" * 80)
-            print("TICKET NOTIFICATION ON COMMIT")
-            print("ticket:", ticket.pk)
-            print("=" * 80)
+            try:
+                fresh_ticket = (
+                    Ticket.objects
+                    .select_related(
+                        "type",
+                    )
+                    .prefetch_related(
+                        "dynamic_values",
+                        "dynamic_values__field",
+                    )
+                    .get(
+                        pk=ticket_id,
+                    )
+                )
 
-            TicketNotificationService.process(
-                ticket=ticket,
-                created=created,
-                changes=changes,
-                user=getattr(
-                    ctx.request,
-                    "user",
-                    None,
-                ),
-            )
+                TicketNotificationService.process(
+                    ticket=fresh_ticket,
+                    created=created,
+                    changes=changes,
+                    actor=actor,
+                )
+            except Ticket.DoesNotExist:
+                logger.warning(
+                    "Ticket notification skipped: "
+                    "ticket=%s not found",
+                    ticket_id,
+                )
+            except Exception:
+                logger.exception(
+                    "Ticket notification failed: "
+                    "ticket=%s",
+                    ticket_id,
+                )
 
         transaction.on_commit(
-            notify
+            notify,
         )
+
+        return ctx

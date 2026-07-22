@@ -64,23 +64,39 @@ TICKET_DETAILS = """
     background:#f9fafb;
     border-radius:10px;
 ">
-  <p>
+  <p style="margin:0 0 12px;">
     <b>Заявка:</b>
-    #{{ ticket.id }} — {{ ticket.title }}
+    #{{ ticket.id }}
+    {% if ticket_name %}
+      — {{ ticket_name }}
+    {% endif %}
   </p>
 
-  <p>
+  <p style="margin:0 0 12px;">
     <b>Статус:</b>
-    {{ ticket.status }}
+    {% if ticket_status %}
+      {{ ticket_status }}
+    {% else %}
+      Не указан
+    {% endif %}
   </p>
 
-  <p>
+  <p style="margin:0 0 8px;">
     <b>Изменения:</b>
   </p>
 
-  {{ changes_html|safe }}
+  {% if changes_html %}
+    {{ changes_html|safe }}
+  {% else %}
+    <p style="
+        margin:0;
+        color:#6b7280;
+    ">
+      Нет данных об изменениях.
+    </p>
+  {% endif %}
 
-  <p style="margin-top:16px;">
+  <p style="margin:16px 0 0;">
     <a
       href="{{ site_url }}/tickets/{{ ticket.id }}"
       style="
@@ -97,7 +113,6 @@ TICKET_DETAILS = """
   </p>
 </div>
 """
-
 
 USER_DETAILS = """
 <div style="

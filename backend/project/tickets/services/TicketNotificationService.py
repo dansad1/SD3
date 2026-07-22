@@ -12,7 +12,7 @@ class TicketNotificationService:
         ticket,
         created=False,
         changes=None,
-        user=None,
+        actor=None,
     ):
         if hasattr(
             changes,
@@ -22,33 +22,29 @@ class TicketNotificationService:
 
         changes = changes or []
 
-        print("=" * 80)
-        print("TICKET NOTIFICATION PROCESS")
-        print("ticket:", ticket.pk)
-        print("created:", created)
-        print("changes:", changes)
-        print("=" * 80)
-
         context = {
             "ticket": ticket,
-            "actor": user,
-            "user": user,
+            "actor": actor,
             "changes": changes,
+            "ticket_name": ticket.get_value(
+                "name",
+            ),
+            "ticket_status": ticket.get_value(
+                "status",
+            ),
+            "ticket_requester": ticket.get_value(
+                "requester",
+            ),
         }
 
         if created:
-            print("TRIGGER: ticket.created")
-
             return NotificationService.trigger(
                 "ticket.created",
                 **context,
             )
 
         if not changes:
-            print("NOTIFICATION SKIPPED: no changes")
             return None
-
-        print("TRIGGER: ticket.changed")
 
         return NotificationService.trigger(
             "ticket.changed",
