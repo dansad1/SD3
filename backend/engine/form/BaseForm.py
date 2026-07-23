@@ -1,54 +1,48 @@
 import logging
-import traceback
 
-from django.db import transaction
 from django.core.exceptions import (
     PermissionDenied,
-    ValidationError,
+    ValidationError as DjangoValidationError,
+)
+from django.db import transaction
+from rest_framework.exceptions import (
+    ValidationError as DRFValidationError,
 )
 
 from backend.engine.entity.Base.lifecycle import (
-    before_save,
     after_save,
+    before_save,
 )
-
 from backend.engine.entity.EntityRegistry import (
     entity_registry,
 )
-
-from backend.engine.form.Base.FormContext import (
-    FormContext,
-)
-
 from backend.engine.form.Base.errors import (
     validation_error_to_dict,
 )
-
+from backend.engine.form.Base.FormContext import (
+    FormContext,
+)
 from backend.engine.form.Base.initial import (
     apply_query_initial,
 )
-
 from backend.engine.form.Base.instance import (
     load_instance,
 )
-
 from backend.engine.form.Base.normalize import (
     normalize,
 )
-
 from backend.engine.form.Base.save import (
     save,
 )
-
-from backend.engine.form.Base.serialize import (
-    serialize,
-)
-
 from backend.engine.form.Base.schema import (
     build_schema,
 )
-from backend.engine.form.Base.special_save import save_special_fields
-
+from backend.engine.form.Base.serialize import (
+    serialize,
+)
+from backend.engine.form.Base.special_save import (
+    save_special_fields,
+)
 from backend.engine.utils.permissions import (
     has_permission,
 )
@@ -57,7 +51,10 @@ logger = logging.getLogger(__name__)
 
 
 def apply_payload(ctx: FormContext):
-    ctx.data = (ctx.payload or {}).copy()
+    ctx.data = (
+        ctx.payload
+        or {}
+    ).copy()
 
     setattr(
         ctx.request,
@@ -71,18 +68,16 @@ def apply_payload(ctx: FormContext):
 # =========================================================
 # SECURITY
 # =========================================================
+
 def filter_editable_fields(
-        ctx: FormContext
+        ctx: FormContext,
 ):
     editable = {
-
         field.name
-
         for field in (
-                ctx.runtime_fields
-                or []
+            ctx.runtime_fields
+            or []
         )
-
         if getattr(
             field,
             "access_level",
@@ -91,14 +86,12 @@ def filter_editable_fields(
     }
 
     ctx.data = {
-
-        k: v
-
-        for k, v in (
-                ctx.data or {}
+        key: value
+        for key, value in (
+            ctx.data
+            or {}
         ).items()
-
-        if k in editable
+        if key in editable
     }
 
     return ctx
@@ -107,6 +100,7 @@ def filter_editable_fields(
 # =========================================================
 # PERMISSION
 # =========================================================
+
 def validate_entity(
         ctx: FormContext,
 ):
@@ -120,18 +114,14 @@ def validate_entity(
 
 
 def check_permission(
-        ctx: FormContext
+        ctx: FormContext,
 ):
     entity = ctx.entity
-
     request = ctx.request
 
     action_map = {
-
         "view": "view",
-
         "create": "create",
-
         "edit": "edit",
     }
 
@@ -165,48 +155,31 @@ def check_permission(
 def load_runtime_fields(
         ctx: FormContext,
 ):
-    runtime_fields = (
-        ctx.entity.get_fields(
-            request=ctx.request,
-            obj=ctx.instance,
-        )
+    runtime_fields = ctx.entity.get_fields(
+        request=ctx.request,
+        obj=ctx.instance,
     )
 
     ctx.runtime_fields = (
-            runtime_fields
-            or []
+        runtime_fields
+        or []
     )
 
-    print("\n" + "=" * 100)
-    print("RUNTIME FIELDS")
-
-    for field in ctx.runtime_fields:
-        print(
-            f"{field.__class__.__name__:20} "
-            f"name={field.name:20} "
-            f"type={field.type}"
-        )
-
-    print("=" * 100)
-
     ctx.field_map = {
-
         field.name: field
-
-        for field in (
-            ctx.runtime_fields
-        )
+        for field in ctx.runtime_fields
     }
 
     return ctx
 
 
-def debug_data(ctx):
-    print("\n" + "=" * 100)
-    print("AFTER NORMALIZE")
-    print("=" * 100)
-    print(ctx.data)
-    print("=" * 100)
+def debug_data(
+        ctx: FormContext,
+):
+    logger.debug(
+        "FORM DATA AFTER NORMALIZE: %s",
+        ctx.data,
+    )
 
     return ctx
 
@@ -227,13 +200,12 @@ BUILD_PIPELINE = [
 SUBMIT_PIPELINE = [
     check_permission,
     load_instance,
-
     apply_payload,
     load_runtime_fields,
     build_schema,
-    debug_data,
     filter_editable_fields,
     normalize,
+    debug_data,
     validate_entity,
     before_save,
     save_special_fields,
@@ -250,9 +222,7 @@ class BaseForm:
         if self.entity:
             return self.entity
 
-        entity_name = (
-            self.code.split(".")[0]
-        )
+        entity_name = self.code.split(".")[0]
 
         return entity_registry.get(
             entity_name
@@ -264,7 +234,6 @@ class BaseForm:
             mode,
             pk,
     ):
-
         entity = self.get_entity()
 
         if hasattr(
@@ -285,29 +254,22 @@ class BaseForm:
             mode,
             pk=None,
     ):
-
         pk = self.resolve_pk(
             request,
             mode,
             pk,
         )
 
-        # create + pk => edit
-
         if (
-                pk and
-                mode == "create"
+            pk
+            and mode == "create"
         ):
             mode = "edit"
 
         ctx = FormContext(
-
             form=self,
-
             request=request,
-
             mode=mode,
-
             pk=pk,
         )
 
@@ -315,18 +277,10 @@ class BaseForm:
             step(ctx)
 
         return {
-
-            "entity":
-                ctx.entity.entity,
-
-            "fields":
-                ctx.fields,
-
-            "initial":
-                ctx.data,
-
-            "capabilities":
-                ctx.capabilities,
+            "entity": ctx.entity.entity,
+            "fields": ctx.fields,
+            "initial": ctx.data,
+            "capabilities": ctx.capabilities,
         }
 
     @transaction.atomic
@@ -337,7 +291,6 @@ class BaseForm:
             payload,
             pk=None,
     ):
-
         if mode == "view":
             raise PermissionDenied
 
@@ -356,23 +309,33 @@ class BaseForm:
         )
 
         try:
-
             for step in SUBMIT_PIPELINE:
-                logger.info("STEP: %s", step.__name__)
+                logger.debug(
+                    "FORM STEP: %s",
+                    step.__name__,
+                )
                 step(ctx)
 
-        except ValidationError as e:
-
+        except (
+            DjangoValidationError,
+            DRFValidationError,
+        ) as exc:
             return {
                 "status": "error",
-                "errors": validation_error_to_dict(e),
+                "errors": validation_error_to_dict(
+                    exc
+                ),
             }
 
         except Exception:
-
-            logger.exception("Unhandled exception in form submit")
-            traceback.print_exc()
-
+            logger.exception(
+                "Unhandled exception in form submit",
+                extra={
+                    "entity": ctx.entity.entity,
+                    "mode": mode,
+                    "pk": pk,
+                },
+            )
             raise
 
         return {
