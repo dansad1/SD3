@@ -8,11 +8,10 @@ import {
   Heading,
   Section,
   Stack,
-  Text,
 } from "@/framework"
 
-const ArticleFormPage = page(
-  "article:form",
+const ArticleSectionFormPage = page(
+  "article-section:form",
 
   <Container
     maxWidth="xl"
@@ -21,32 +20,24 @@ const ArticleFormPage = page(
     <Section>
       <Stack gap="lg">
 
-        <Stack gap="sm">
-          <Heading
-            level={1}
-            text="Статья: $article.title"
-            fallback="Новая статья"
-          />
-
-          <Text
-            value="Создание и редактирование статьи базы знаний"
-            muted
-          />
-        </Stack>
+        <Heading
+          level={1}
+          text="Раздел базы знаний"
+        />
 
         <Action
-          label="Назад к базе знаний"
-          to="article:list"
+          label="Назад к разделам"
+          to="article-section:list"
           variant="secondary"
         />
 
         <Form
-          entity="article"
+          entity="article-section"
           objectId="$query.id"
           submit={{
             label: "Сохранить",
             redirect: {
-              to: "article:list",
+              to: "article-section:list",
             },
           }}
           formLayout={{
@@ -60,4 +51,4 @@ const ArticleFormPage = page(
   </Container>
 )
 
-export default ArticleFormPage
+export default ArticleSectionFormPage

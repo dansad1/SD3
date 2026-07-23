@@ -10,8 +10,8 @@ import {
   Table,
 } from "@/framework"
 
-const ArticleListPage = page(
-  "article:list",
+const ArticleSectionListPage = page(
+  "article-section:list",
 
   <Container
     maxWidth="xl"
@@ -23,18 +23,24 @@ const ArticleListPage = page(
         <Stack gap="sm">
           <Heading
             level={1}
-            text="База знаний"
+            text="Разделы базы знаний"
           />
 
           <Action
-            label="Создать статью"
-            to="article:form"
+            label="Создать раздел"
+            to="article-section:form"
             variant="primary"
+          />
+
+          <Action
+            label="К статьям"
+            to="article:list"
+            variant="secondary"
           />
         </Stack>
 
         <Table
-          entity="article"
+          entity="article-section"
           features={{
             toolbar: true,
             search: true,
@@ -50,17 +56,17 @@ const ArticleListPage = page(
             ],
           }}
           rowClick={{
-            to: "article:form",
+            to: "article-section:form",
             ctx: {
               id: "$row.id",
             },
           }}
           rowActions={[
             {
-              key: "open",
-              label: "Открыть",
+              key: "edit",
+              label: "Редактировать",
               variant: "secondary",
-              to: "article:form",
+              to: "article-section:form",
               ctx: {
                 id: "$row.id",
               },
@@ -71,11 +77,11 @@ const ArticleListPage = page(
               variant: "danger",
               action: "entity.delete",
               ctx: {
-                entity: "article",
+                entity: "article-section",
                 id: "$row.id",
               },
               confirm: {
-                message: "Удалить статью?",
+                message: "Удалить раздел?",
               },
             },
           ]}
@@ -86,4 +92,4 @@ const ArticleListPage = page(
   </Container>
 )
 
-export default ArticleListPage
+export default ArticleSectionListPage

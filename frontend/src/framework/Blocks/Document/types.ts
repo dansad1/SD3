@@ -1,68 +1,52 @@
+import type { submitAction } from "@/framework/api/action/submitAction"
 import type { BaseBlock } from "../BlockType"
+
+export type DocumentToolbar =
+  | "minimal"
+  | "compact"
+  | "full"
+
+export type DocumentMode =
+  | "edit"
+  | "read"
+
+export type DocumentVM = {
+  loading: boolean
+  saving: boolean
+  error: string | null
+
+  content: string
+
+  mode: DocumentMode
+  editable: boolean
+  fullscreen: boolean
+  toolbar: DocumentToolbar
+
+  setContent: (value: string) => void
+
+  save: () => Promise<void>
+}
+type SubmitActionContext =
+  Parameters<typeof submitAction>[2]
 
 export type DocumentBlock = BaseBlock & {
   type: "document"
 
-  /*
-   * actions
-   */
-
   openAction: string
   saveAction?: string
 
-  /*
-   * target
-   */
-
   objectId?: string
 
-  /*
-   * runtime ctx
-   */
+  ctx?: SubmitActionContext
 
-  ctx?: Record<string, unknown>
-
-  /*
-   * editor
-   */
-
+  mode?: "edit" | "read"
   editable?: boolean
 
   autosave?: boolean
   autosaveDelay?: number
 
-  /*
-   * ui
-   */
-
-  toolbar?: (
-    | "minimal"
-    | "compact"
-    | "full"
-  )
-
+  toolbar?: "minimal" | "compact" | "full"
   fullscreen?: boolean
-
-  /*
-   * integrations
-   */
 
   refresh?: string[]
-}
-// types.ts
-
-export type DocumentVM = {
-  loading: boolean
-  saving: boolean
-
-  content: string
-
-  editable: boolean
-  fullscreen?: boolean
-
-  setContent: (
-    value: string
-  ) => void
-
-  save: () => void
 }

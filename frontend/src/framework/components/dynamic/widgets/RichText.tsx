@@ -1,3 +1,7 @@
+import type {
+  ComponentProps,
+} from "react"
+
 import { CKEditor } from "@ckeditor/ckeditor5-react"
 
 import ClassicEditor
@@ -5,7 +9,6 @@ import ClassicEditor
 
 import {
   useEffect,
-  useRef,
   useState,
 } from "react"
 
@@ -48,6 +51,10 @@ const desktopToolbar = [
   "redo",
 ]
 
+const CompatibleClassicEditor =
+  ClassicEditor as unknown as
+  ComponentProps<typeof CKEditor>["editor"]
+
 export function RichTextWidget(
   props: WidgetProps
 ) {
@@ -57,10 +64,6 @@ export function RichTextWidget(
     onChange,
     loading,
   } = props
-
-  /* =========================
-     MOBILE
-  ========================= */
 
   const [isMobile, setIsMobile] =
     useState(false)
@@ -95,80 +98,61 @@ export function RichTextWidget(
     }
   }, [])
 
-  /* =========================
-     LOCAL STATE
-  ========================= */
-
-  const [localValue, setLocalValue] =
-    useState(
-      String(value || "")
-    )
-
-  const isInternalChange =
-    useRef(false)
-
-  useEffect(() => {
-    if (
-      isInternalChange.current
-    ) {
-      isInternalChange.current =
-        false
-
-      return
-    }
-
-    setLocalValue(
-      String(value || "")
-    )
-  }, [value])
-
-  /* =========================
-     RENDER
-  ========================= */
+  const content =
+    typeof value === "string"
+      ? value
+      : ""
 
   return (
     <BaseWidget
       field={field}
       loading={loading}
     >
-      {({ disabled }) => (
-        <div className="ui-richtext-widget">
+      {({ disabled }) => {
+        const readonly =
+          disabled ||
+          field.readonly === true
 
-          <CKEditor
-            editor={ClassicEditor}
+        if (readonly) {
+          return (
+            <article
+              className="ui-richtext-readonly"
+              dangerouslySetInnerHTML={{
+                __html: content,
+              }}
+            />
+          )
+        }
 
-            disabled={disabled}
+        return (
+          <div className="ui-richtext-widget">
+            <CKEditor
+              editor={
+                CompatibleClassicEditor
+              }
+              data={content}
+              disabled={false}
+              config={{
+                toolbar: isMobile
+                  ? mobileToolbar
+                  : desktopToolbar,
 
-            data={localValue}
-
-            config={{
-              toolbar: isMobile
-                ? mobileToolbar
-                : desktopToolbar,
-
-              placeholder: field.label
-                ? `Введите: ${field.label}`
-                : "Введите текст",
-            }}
-
-            onChange={(
-              _,
-              editor
-            ) => {
-              const html =
-                editor.getData()
-
-              isInternalChange.current =
-                true
-
-              setLocalValue(html)
-
-              onChange(html)
-            }}
-          />
-
-        </div>
-      )}
+                placeholder: field.label
+                  ? `Введите: ${field.label}`
+                  : "Введите текст",
+              }}
+              onChange={(
+                _,
+                editor
+              ) => {
+                onChange(
+                  editor.getData()
+                )
+              }}
+            />
+          </div>
+        )
+      }}
     </BaseWidget>
   )
 }

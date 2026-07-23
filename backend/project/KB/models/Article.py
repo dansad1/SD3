@@ -1,14 +1,34 @@
-from ckeditor.fields import RichTextField
 from django.db import models
 
-from backend.generic.models import TimeStampedModel
+from backend.generic.models import (
+    TimeStampedModel,
+)
 
 
 class Article(TimeStampedModel):
 
+    STATUS_DRAFT = "draft"
+    STATUS_PUBLISHED = "published"
+    STATUS_ARCHIVED = "archived"
+
+    STATUS_CHOICES = [
+        (
+            STATUS_DRAFT,
+            "Черновик",
+        ),
+        (
+            STATUS_PUBLISHED,
+            "Опубликована",
+        ),
+        (
+            STATUS_ARCHIVED,
+            "В архиве",
+        ),
+    ]
+
     title = models.CharField(
         "Заголовок",
-        max_length=500,
+        max_length=255,
     )
 
     section = models.ForeignKey(
@@ -18,24 +38,44 @@ class Article(TimeStampedModel):
         on_delete=models.PROTECT,
     )
 
-    content = RichTextField(
+    content = models.TextField(
         "Содержание",
+        blank=True,
+        default="",
     )
 
-    is_published = models.BooleanField(
-        "Опубликована",
-        default=True,
+    tags = models.JSONField(
+        "Теги",
+        blank=True,
+        default=list,
+    )
+
+    status = models.CharField(
+        "Статус",
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_DRAFT,
+        db_index=True,
     )
 
     class Meta:
-
         ordering = [
-            "title",
+            "-updated_at",
         ]
 
-        verbose_name = "Статья"
-        verbose_name_plural = "Статьи"
+        verbose_name = (
+            "Статья базы знаний"
+        )
+        verbose_name_plural = (
+            "Статьи базы знаний"
+        )
 
     def __str__(self):
-
         return self.title
+
+    @property
+    def is_readonly(self):
+        return self.status in {
+            self.STATUS_PUBLISHED,
+            self.STATUS_ARCHIVED,
+        }

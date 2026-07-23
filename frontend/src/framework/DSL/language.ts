@@ -628,38 +628,19 @@ chat_thread: {
 },
 document: {
   props: {
-
-    /*
-     * actions
-     */
-
     openAction: "string" as Primitive,
     saveAction: "string" as Primitive,
 
-    /*
-     * target
-     */
-
     objectId: "string" as Primitive,
-
-    /*
-     * runtime ctx
-     */
-
     ctx: "object" as Primitive,
 
-    /*
-     * editor
-     */
-
-    editable: "boolean" as Primitive,
+    mode: [
+      "read",
+      "edit",
+    ] as const,
 
     autosave: "boolean" as Primitive,
     autosaveDelay: "number" as Primitive,
-
-    /*
-     * ui
-     */
 
     toolbar: [
       "minimal",
@@ -668,27 +649,7 @@ document: {
     ] as const,
 
     fullscreen: "boolean" as Primitive,
-
-    /*
-     * refresh integrations
-     */
-
     refresh: "array" as Primitive,
-  },
-
-  features: {
-
-    save: "boolean" as Primitive,
-    autosave: "boolean" as Primitive,
-
-    history: "boolean" as Primitive,
-
-    upload: "boolean" as Primitive,
-    export: "boolean" as Primitive,
-
-    comments: "boolean" as Primitive,
-
-    fullscreen: "boolean" as Primitive,
   },
 },
 timeline: {

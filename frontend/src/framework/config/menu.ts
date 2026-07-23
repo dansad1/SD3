@@ -20,7 +20,7 @@ export const MENU: MenuItem[] = [
 
   {
     label: "База знаний",
-    to: "/page/article:list",
+    to: "/page/article-section:list",
   },
 
   {

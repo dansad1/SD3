@@ -487,21 +487,12 @@ export type DocumentDSL =
   saveAction?: string | `$${string}`
   objectId?: string | `$${string}`
   ctx?: Record<string, unknown> | `$${string}`
-  editable?: boolean | `$${string}`
+  mode?: ("read" | "edit") | `$${string}`
   autosave?: boolean | `$${string}`
   autosaveDelay?: number | `$${string}`
   toolbar?: ("minimal" | "compact" | "full") | `$${string}`
   fullscreen?: boolean | `$${string}`
   refresh?: unknown[] | `$${string}`
-  features?: {
-  save?: boolean | `$${string}`
-  autosave?: boolean | `$${string}`
-  history?: boolean | `$${string}`
-  upload?: boolean | `$${string}`
-  export?: boolean | `$${string}`
-  comments?: boolean | `$${string}`
-  fullscreen?: boolean | `$${string}`
-}
 }
 
 export const Document: DSLComponent<DocumentDSL> = (props) =>
@@ -515,6 +506,11 @@ export type TimelineDSL =
   {
   source?: string | `$${string}`
   params?: Record<string, unknown> | `$${string}`
+  variant?: ("audit" | "ticket") | `$${string}`
+  compact?: boolean | `$${string}`
+  reverse?: boolean | `$${string}`
+  groupByDate?: boolean | `$${string}`
+  emptyText?: string | `$${string}`
 }
 
 export const Timeline: DSLComponent<TimelineDSL> = (props) =>
