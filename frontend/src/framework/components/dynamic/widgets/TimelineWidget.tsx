@@ -128,6 +128,18 @@ function getActionTitle(
     case "assign":
       return "Изменён исполнитель"
 
+    case "sla":
+      return "Изменён срок"
+
+    case "priority":
+      return "Изменён приоритет"
+
+    case "type":
+      return "Изменён тип заявки"
+
+    case "archive":
+      return "Изменено состояние архива"
+
     case "comment":
       return "Комментарий"
 
@@ -163,6 +175,18 @@ function getActionIcon(
 
     case "assign":
       return "👤"
+
+    case "sla":
+      return "⏱"
+
+    case "priority":
+      return "!"
+
+    case "type":
+      return "◆"
+
+    case "archive":
+      return "□"
 
     case "comment":
       return "💬"
@@ -218,6 +242,32 @@ function getVisibleChanges(
     ([field]) =>
       !HIDDEN_FIELDS.has(field)
   )
+}
+
+function getTransitionChange(
+  item: TimelineItem
+): TimelineChange | null {
+  const preferredFields =
+    item.action === "status"
+      ? ["status"]
+      : [
+          "executor",
+          "executors",
+          "assignee",
+          "assignees",
+          "assigned_to",
+          "executor_group",
+        ]
+
+  for (const field of preferredFields) {
+    const change = item.changes?.[field]
+
+    if (change) {
+      return change
+    }
+  }
+
+  return getVisibleChanges(item)[0]?.[1] ?? null
 }
 
 function Changes({
@@ -333,10 +383,20 @@ function EventBody({
     item.action === "status" ||
     item.action === "assign"
   ) {
+    const change = getTransitionChange(item)
+
+    const from =
+      item.meta?.from ??
+      change?.before
+
+    const to =
+      item.meta?.to ??
+      change?.after
+
     return (
       <div className="ticket-timeline-transition">
         <span>
-          {formatValue(item.meta?.from)}
+          {formatValue(from)}
         </span>
 
         <span className="ticket-timeline-arrow">
@@ -344,7 +404,7 @@ function EventBody({
         </span>
 
         <span>
-          {formatValue(item.meta?.to)}
+          {formatValue(to)}
         </span>
       </div>
     )

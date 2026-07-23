@@ -20,6 +20,15 @@ class TicketCommentService:
         cls,
         text,
     ):
+        if isinstance(
+            text,
+            dict,
+        ):
+            text = text.get(
+                "text",
+                "",
+            )
+
         return str(
             text or "",
         ).strip()
